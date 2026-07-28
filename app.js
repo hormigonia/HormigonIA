@@ -3,6 +3,7 @@ import {
     supabase, 
     signUp, 
     signIn, 
+    signInWithGoogle,
     signOut, 
     getSession, 
     onAuthStateChange, 
@@ -2193,6 +2194,7 @@ function setupSupabaseIntegration() {
     const authErrorMsg = document.getElementById("authErrorMsg");
     const authSuccessMsg = document.getElementById("authSuccessMsg");
     const groupConfirmPassword = document.getElementById("groupConfirmPassword");
+    const btnGoogleAuth = document.getElementById("btnGoogleAuth");
 
     const dbActionsRow = document.getElementById("dbActionsRow");
     const btnSaveMix = document.getElementById("btnSaveMix");
@@ -2267,6 +2269,15 @@ function setupSupabaseIntegration() {
 
     btnCloseAuthModal.addEventListener("click", () => {
         authModal.classList.remove("open");
+    });
+
+    // Google Sign-In click listener
+    btnGoogleAuth.addEventListener("click", async () => {
+        try {
+            await signInWithGoogle();
+        } catch (err) {
+            alert("Error al iniciar sesión con Google: " + err.message);
+        }
     });
 
     // Toggle Mode

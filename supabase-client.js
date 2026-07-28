@@ -70,6 +70,22 @@ export async function signIn(email, password) {
 }
 
 /**
+ * Inicia sesión usando Google (OAuth)
+ */
+export async function signInWithGoogle() {
+    if (!supabase) throw new Error("Supabase client is not initialized.");
+    const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+            redirectTo: window.location.origin
+        }
+    });
+    if (error) throw error;
+    return data;
+}
+
+
+/**
  * Cierra la sesión activa
  */
 export async function signOut() {
