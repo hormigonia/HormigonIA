@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HormigonIA - Dosificador Racional de Precisión (ICPA & Larrard)</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="index.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="header-logo">
+                <div class="logo-icon">🧱</div>
+                <div class="logo-text">
+                    <h1>Hormigon<span class="accent-text">IA</span></h1>
+                    <p>Dosificación Científica de Laboratorio y Asistente Inteligente</p>
+                </div>
+            </div>
+            
+            <div class="header-actions">
+                <!-- Supabase User Status -->
+                <div class="user-session-container">
+                    <button id="btnAuthModal" class="btn btn-secondary btn-icon" title="Iniciar Sesión / Registro">
+                        <span class="icon">👤</span>
+                        <span class="btn-text" id="userSessionText">Iniciar Sesión</span>
+                    </button>
+                </div>
+                <!-- API Key Config -->
+                <div class="api-key-config">
+                    <button id="toggleApiModal" class="btn btn-secondary btn-icon" title="Configurar API Key de Gemini">
+                        <span class="icon">🔑</span>
+                        <span class="btn-text">API Key Gemini</span>
+                    </button>
+                    <span id="apiStatusBadge" class="badge badge-error">Sin API Key</span>
+                </div>
+                <button id="btnExportPDF" class="btn btn-primary btn-icon">
+                    <span class="icon">📥</span> Reporte de Mezcla
+                </button>
+            </div>
+        </header>
+
+        <!-- NAVIGATION TABS -->
+        <nav class="app-nav">
+            <button class="nav-tab active" data-tab="hormigon">Calculador Hormigón</button>
+            <button class="nav-tab disabled" data-tab="armaduras" title="Próximamente">Armaduras (Próximamente)</button>
+            <button class="nav-tab disabled" data-tab="mamposteria" title="Próximamente">Mampostería (Próximamente)</button>
+            <button class="nav-tab disabled" data-tab="pisos" title="Próximamente">Pisos (Próximamente)</button>
+            <button class="nav-tab disabled" data-tab="revestimientos" title="Próximamente">Revestimientos (Próximamente)</button>
+        </nav>
+
+        <!-- MAIN LAYOUT -->
+        <main class="app-main">
+            <!-- TAB CONTENT: HORMIGON (ACTIVE) -->
+            <div id="tab-hormigon" class="tab-content active">
+                <div class="workspace-grid">
+                    
+                    <!-- PISO 1: ASISTENTE DE IA (CHAT) - ARRIBA DE TODO -->
+                    <section class="panel panel-chat">
+                        <div class="panel-header">
+                            <div class="panel-header-title">
+                                <span class="panel-icon">🤖</span>
+                                <h2>Asistente de Mezcla AI</h2>
+                                <span id="aiTypingIndicator" class="typing-indicator hidden">Pensando...</span>
+                            </div>
+                            <button id="btnClearChat" class="btn btn-text btn-xs" title="Limpiar conversación">Borrar Chat</button>
+                        </div>
+                        <div class="panel-body chat-panel-body">
+                            <div class="chat-container">
+                                <div class="chat-messages" id="chatMessages">
+                                    <div class="chat-bubble ai">
+                                        <p>¡Hola! Soy tu asistente **HormigónMix AI**. Estoy listo para analizar tu dosificación.</p>
+                                        <p>Ingresá el **peso retenido en gramos** de cada tamiz en la tabla de abajo. Estimaré la granulometría pasante acumulada de laboratorio y calcularé la compacidad de Larrard y la receta en peso seco y húmedo de los componentes.</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="chat-quick-prompts">
+                                    <button class="quick-prompt-btn">Ajustar para zapata (cimentación)</button>
+                                    <button class="quick-prompt-btn">Ajustar para columna delgada</button>
+                                    <button class="quick-prompt-btn">¿Cómo influye no usar balanza en obra?</button>
+                                </div>
+                                
+                                <div class="chat-input-bar">
+                                    <textarea id="chatInput" placeholder="Escribe un prompt para el asistente de dosificación..." rows="1"></textarea>
+                                    <button id="btnSendChat" class="btn btn-primary">
+                                        <span class="btn-text">Enviar</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- PISO 2: ENTRADA DE DATOS DEL PROYECTO -->
+                    <section class="panel panel-project">
+                        <div class="panel-header">
+                            <span class="panel-icon">🔧</span>
+                            <h2>Parámetros del Proyecto e Inclusiones</h2>
+                        </div>
+                        <div class="panel-body-project">
+                            <!-- Left: Project Inputs -->
+                            <div class="project-params-col">
+                                <!-- 1. Elemento a Hormigonar -->
+                                <div class="form-group">
+                                    <label for="selectStructuralElement">Elemento a Hormigonar</label>
+                                    <select id="selectStructuralElement" class="form-select">
+                                        <option value="" disabled selected>Seleccione un elemento estructural...</option>
+                                        <option value="fund_pilotes">Fundaciones Indirectas (Pilotes y Pilotines)</option>
+                                        <option value="fund_directas">Fundaciones Directas (Plateas, Zapatas y Vigas de Fund.)</option>
+                                        <option value="estructuras_elev">Estructuras en Elevación (Losas, Vigas y Escaleras)</option>
+                                        <option value="tabiques">Tabiques de Hormigón Armado / Muros Pantalla</option>
+                                        <option value="columnas_alta">Columnas de Alta Carga / Edificaciones en Altura</option>
+                                        <option value="pavimentos">Pavimentos Urbanos y Cordones Cuneta</option>
+                                        <option value="pisos_ind">Pisos Industriales y Playas de Maniobra</option>
+                                        <option value="proyectado">Hormigón Proyectado (Shotcrete / Túneles y Taludes)</option>
+                                        <option value="clima_frio">Clima Frío (Anticongelante - Norma ICPA Cap. 11)</option>
+                                        <option value="clima_calido">Clima Cálido (Grandes Volúmenes - Retardado)</option>
+                                        <option value="puentes">Tableros de Puentes e Infraestructura Expuesta</option>
+                                        <option value="relleno">Bases de Limpieza y Hormigón de Relleno</option>
+                                        <option value="personalizado">Personalizado (Ingresar tamiz máximo D)</option>
+                                    </select>
+                                </div>
+
+                                <!-- 2. Clase de Hormigón -->
+                                <div class="form-group">
+                                    <label style="display: block; margin-bottom: 6px;">Clase de Hormigón (Hx)</label>
+                                    <div class="concrete-counter" style="display: flex; align-items: center; justify-content: space-between; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px; max-width: 250px; margin: 0 auto 10px auto;">
+                                        <button type="button" id="btnDecreaseClass" class="btn btn-secondary" style="width: 40px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s;">-</button>
+                                        <span id="displayConcreteClass" style="font-size: 1.15rem; font-weight: 700; color: var(--accent); min-width: 120px; text-align: center;">H21</span>
+                                        <button type="button" id="btnIncreaseClass" class="btn btn-secondary" style="width: 40px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s;">+</button>
+                                    </div>
+                                    <select id="selectConcreteClass" style="display: none;">
+                                        <option value="H8">H8</option>
+                                        <option value="H15">H15</option>
+                                        <option value="H20">H20</option>
+                                        <option value="H21" selected>H21</option>
+                                        <option value="H25">H25</option>
+                                        <option value="H30">H30</option>
+                                        <option value="H35">H35</option>
+                                        <option value="H38">H38</option>
+                                        <option value="H40">H40</option>
+                                        <option value="H45">H45</option>
+                                        <option value="Personalizado">Personalizado</option>
+                                    </select>
+                                </div>
+
+                                <!-- 3. Exposición -->
+                                <div class="form-group">
+                                    <label for="selectExposureClass">Exposición Ambiental (CIRSOC 201)</label>
+                                    <select id="selectExposureClass" class="form-select">
+                                        <option value="ninguna" selected>A1 - Sin Exigencia (Interiores Secos)</option>
+                                        <option value="a2">A2 - Exposición Moderada (Humedad/Exteriores)</option>
+                                        <option value="a3">A3 - Exposición Severa (Intemperie/Lluvia)</option>
+                                        <option value="h1">H1 - Humedad Continua (Elementos Sumergidos)</option>
+                                        <option value="c1">C1 - Hielo/Deshielo (Ciclos de congelación sin sales)</option>
+                                        <option value="c2">C2 - Hielo/Deshielo con sales (Ciclos con descongelantes)</option>
+                                        <option value="q1">Q1 - Ataque Químico Leve (Suelos/Agua débilmente agresiva)</option>
+                                        <option value="q2">Q2 - Ataque Químico Moderado (Contacto con sulfatos)</option>
+                                        <option value="q3">Q3 - Ataque Químico Fuerte (Ácidos/Ambientes industriales)</option>
+                                        <option value="m1">M1 - Exposición Marina Aérea (Cercanía a la costa &lt;5km)</option>
+                                        <option value="m2">M2 - Exposición Marina Directa (Mareas y salpicaduras)</option>
+                                    </select>
+                                </div>
+
+
+
+                                <!-- 5. Volumen del Pastón -->
+                                <div class="form-group">
+                                    <label for="inputBatchVolume" style="font-weight: 600; color: var(--text); font-size: 0.95rem;">Volumen del Pastón a Mezclar</label>
+                                    <div class="range-container" style="margin-top: 4px; margin-bottom: 10px;">
+                                        <input type="range" id="inputBatchVolume" min="10" max="1000" step="5" value="80" class="form-range" style="height: 8px;">
+                                        <span class="range-value" style="font-size: 1.1rem; font-weight: 700; color: var(--primary);"><span id="batchVolumeDisplay">80</span> L</span>
+                                    </div>
+                                    <div class="volume-presets" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px;">
+                                        <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="50">50L</button>
+                                        <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="80">80L</button>
+                                        <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="150">150L</button>
+                                        <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="250">250L</button>
+                                        <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="500">500L</button>
+                                        <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="1000">1000L</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Right: Additives only -->
+                            <div class="project-addons-col">
+                                <!-- Additives Dynamic Section -->
+                                <div class="additives-section" style="padding-top: 0; margin-top: 0;">
+                                     <div class="section-title-with-actions">
+                                         <h3>🧪 Aditivos e Inclusiones (Dosificación Activa)</h3>
+                                     </div>
+                                    <div class="additives-list-header" style="display: grid; grid-template-columns: 2fr 1.2fr auto; gap: 8px; font-size: 0.75rem; color: var(--text-muted); font-weight: 500; padding: 0 6px 4px 6px; border-bottom: 1px dashed var(--border-color); margin-bottom: 5px;">
+                                        <div>Nombre</div>
+                                        <div style="text-align: center;" title="Dosis (%) respecto a cemento">Dosis (%)</div>
+                                        <div></div>
+                                    </div>
+                                    <div class="additives-list" id="additivesList">
+                                        <!-- Dynamic rows created here -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- PISO 2.5: PRONÓSTICO CLIMÁTICO Y GEOLOCALIZACIÓN DE OBRA - CENTRADO Y ANCHO COMPLETO -->
+                    <section class="panel panel-weather" id="gpsWeatherSection">
+                        <div class="panel-header">
+                            <span class="panel-icon">🌦️</span>
+                            <h2>Ubicación de Obra y Pronóstico de Curado (GPS)</h2>
+                        </div>
+                        <div class="panel-body">
+                            <!-- Coordenadas Google Maps & GPS fallback -->
+                            <div style="display: flex; gap: 15px; justify-content: center; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <label for="inputGpsCoords" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Coordenadas (Lat, Lon):</label>
+                                    <input type="text" id="inputGpsCoords" value="-34.6037, -58.3816" class="form-input" placeholder="Pegar desde Google Maps" style="min-width: 280px; height: 34px; padding: 6px 12px; font-size: 0.88rem; text-align: center; border-radius: 6px;">
+                                </div>
+                                <button type="button" id="btnGetGpsWeather" class="btn btn-primary" style="min-width: 200px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; padding: 8px 16px; font-size: 0.88rem; height: 34px; border-radius: 6px;">
+                                    <span>📍 Obtener Clima y Terreno</span>
+                                    <span id="gpsLoadingSpinner" class="hidden">🔄</span>
+                                </button>
+                            </div>
+                            <div id="gpsLocationDetails" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; display: none; background-color: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                <!-- Detailed weather and scrollable forecast will render here -->
+                            </div>
+                            <div id="gpsWeatherAlerts" style="display: flex; flex-direction: column; gap: 6px; margin-top: 15px;">
+                                <!-- Live weather exposure and 72-hour forecast warnings will be rendered here -->
+                            </div>
+                        </div>
+                    </section>
+                    
+                    <!-- PISO 3: CONFIGURACION AVANZADA Y LABORATORIO -->
+                    <div class="floor-config-lab">
+                        <!-- Panel de Configuración Manual -->
+                        <section class="panel panel-config" id="customParamsSection">
+                            <div class="panel-header">
+                                <span class="panel-icon">⚙️</span>
+                                <h2>Configuración Manual de Mezcla</h2>
+                            </div>
+                            <div class="panel-body" style="display: flex; flex-direction: column; gap: 12px;">
+                                <!-- Método de Diseño -->
+                                <div class="form-group">
+                                    <label for="selectDesignMethod">Método de Diseño de Mezcla / Curva de Agregados</label>
+                                    <select id="selectDesignMethod" class="form-select">
+                                        <option value="bolomey" selected>Bolomey (Curva de Referencia Excel original)</option>
+                                        <option value="fuller">Fuller (Racional ICPA - n=0.5, A=0)</option>
+                                        <option value="delapena">De la Peña (Español - Curva Ideal n=0.4, A=16)</option>
+                                        <option value="aci">ACI 211.1 (Volumen de Agregado Grueso - Abs. Vol.)</option>
+                                    </select>
+                                </div>
+                                <!-- Cemento y Resistencia Especificada -->
+                                <div class="form-grid-2" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px;">
+                                    <div class="form-group">
+                                        <label for="selectCementCategory">Categoría de Cemento</label>
+                                        <select id="selectCementCategory" class="form-select">
+                                            <option value="CPC40" selected>CPC40 (Compuesto 40 - K=96)</option>
+                                            <option value="CPN50">CPN50 (Normal 50 - K=120)</option>
+                                            <option value="CPC30">CPC30 (Compuesto 30 - K=75)</option>
+                                            <option value="LC3">LC3 (Arcilla Calcinada - K=85)</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputManualStrength">Resistencia f'ce (MPa)</label>
+                                        <input type="number" id="inputManualStrength" value="21" step="1" min="8" max="60" class="form-input">
+                                    </div>
+                                </div>
+
+                                <!-- Nombre Clase Personalizada -->
+                                <div id="divCustomClassNameContainer" class="form-group hidden">
+                                    <label for="inputCustomClassName">Nombre de Mezcla Personalizada</label>
+                                    <input type="text" id="inputCustomClassName" value="H-Especial" class="form-input" placeholder="Ej: H-38 Especial, H-42">
+                                </div>
+
+                                <!-- Cemento, w/c, Bolomey A -->
+                                <div class="form-grid-3">
+                                    <div class="form-group">
+                                        <label for="inputCustomCement">Cto. Base (kg/m³)</label>
+                                        <input type="number" id="inputCustomCement" value="350" step="10" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputCustomWC">Relación a/c</label>
+                                        <input type="number" id="inputCustomWC" value="0.45" step="0.01" min="0.25" max="0.9" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputCustomBolomeyA">Bolomey A</label>
+                                        <input type="number" id="inputCustomBolomeyA" value="13.0" step="0.5" class="form-input">
+                                    </div>
+                                </div>
+
+                                <!-- Tamiz y Aire -->
+                                <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div class="form-group">
+                                        <label for="inputMaxSieveSize">Tamaño Máx. D (mm)</label>
+                                        <input type="number" id="inputMaxSieveSize" value="38.0" step="0.5" class="form-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputAirPercentage">Aire Objetivo (%)</label>
+                                        <input type="number" id="inputAirPercentage" value="1.5" step="0.5" min="1.0" max="10.0" class="form-input">
+                                    </div>
+                                </div>
+                                <!-- Alertas de Diseño Manual -->
+                                <div id="manualDesignAlerts" style="display: none; margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;"></div>
+                            </div>
+                        </section>
+
+                        <!-- Panel de Laboratorio de Hormigón -->
+                        <section class="panel panel-laboratory" id="laboratorySection">
+                            <div class="panel-header">
+                                <span class="panel-icon">🔬</span>
+                                <h2>Laboratorio de Hormigón (Áridos y Ensayos)</h2>
+                            </div>
+                            <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
+                                <!-- Propiedades Físicas -->
+                                <div class="form-group">
+                                    <label style="font-weight: 600; color: var(--text);">🧪 Propiedades Físicas de los Componentes</label>
+                                    <div class="materials-table-wrapper" style="margin-top: 6px;">
+                                        <table class="data-table small-table" style="font-size: 0.75rem;">
+                                            <thead>
+                                                <tr>
+                                                    <th>Material</th>
+                                                    <th>Dens. (kg/m³)</th>
+                                                    <th>Coef. Ap</th>
+                                                    <th>Hum. (L/m³ / %)</th>
+                                                    <th>Abs. (%)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Cemento</strong></td>
+                                                    <td><input type="number" id="densCement" value="1400" step="50" class="table-input"></td>
+                                                    <td><input type="number" id="coefCement" value="0.47" step="0.01" class="table-input"></td>
+                                                    <td class="text-muted">N/A</td>
+                                                    <td class="text-muted">N/A</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Arena</strong></td>
+                                                    <td><input type="number" id="densSand" value="1650" step="50" class="table-input"></td>
+                                                    <td><input type="number" id="coefSand" value="0.63" step="0.01" class="table-input"></td>
+                                                    <td><input type="number" id="moistSand" value="80" step="5" class="table-input"></td>
+                                                    <td><input type="number" id="absSand" value="0.6" step="0.1" class="table-input"></td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Piedra</strong></td>
+                                                    <td><input type="number" id="densStone" value="1600" step="50" class="table-input"></td>
+                                                    <td><input type="number" id="coefStone" value="0.51" step="0.01" class="table-input"></td>
+                                                    <td><input type="number" id="moistStone" value="50" step="5" class="table-input"></td>
+                                                    <td><input type="number" id="absStone" value="0.5" step="0.1" class="table-input"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Tamizado Granulométrico -->
+                                <div class="sieve-input-section" style="margin-top: 5px;">
+                                    <div class="section-title-with-actions" style="margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                                        <label style="font-weight: 600; color: var(--text);">📊 Tamizado de Áridos (Peso Retenido)</label>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <select id="selectSieveSeries" class="form-select btn-xs" style="height: 24px; padding: 2px 6px; font-size: 0.72rem; width: auto; background-color: var(--bg-panel);">
+                                                <option value="ASTM" selected>ASTM (No./in)</option>
+                                                <option value="IRAM">IRAM (Métrico)</option>
+                                                <option value="UNE">UNE (Norma Esp.)</option>
+                                                <option value="ISO">ISO (Norma Int.)</option>
+                                                <option value="ACI">ACI (Americana)</option>
+                                            </select>
+                                            <button id="btnLoadSampleSieves" class="btn btn-text btn-xs" style="padding: 0; height: auto;">Cargar Muestra Excel</button>
+                                        </div>
+                                    </div>
+                                    <div class="sieve-table-wrapper">
+                                        <table class="data-table" id="tableSieves" style="font-size: 0.75rem;">
+                                            <thead>
+                                                <tr>
+                                                    <th>Tamiz ASTM</th>
+                                                    <th>Ret. Arena (g)</th>
+                                                    <th>Ret. Piedra (g)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr data-sieve="37.5"><td><strong>37.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="20" min="0" step="1" class="table-input stone-sieve"></td></tr>
+                                                <tr data-sieve="25.0"><td><strong>25.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="230" min="0" step="1" class="table-input stone-sieve"></td></tr>
+                                                <tr data-sieve="19.0"><td><strong>19.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="200" min="0" step="1" class="table-input stone-sieve"></td></tr>
+                                                <tr data-sieve="9.5"><td><strong>9.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input stone-sieve"></td></tr>
+                                                <tr data-sieve="4.75"><td><strong>4.75 (N°4)</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="150" min="0" step="1" class="table-input stone-sieve"></td></tr>
+                                                <tr data-sieve="2.36"><td><strong>2.36 (N°8)</strong></td><td><input type="number" value="120" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="50" min="0" step="1" class="table-input stone-sieve"></td></tr>
+                                                <tr data-sieve="1.18"><td><strong>1.18 (N°16)</strong></td><td><input type="number" value="180" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input stone-sieve"></td></tr>
+                                                <tr data-sieve="0.6"><td><strong>0.6 (N°30)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input stone-sieve"></td></tr>
+                                                <tr data-sieve="0.3"><td><strong>0.3 (N°50)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input stone-sieve"></td></tr>
+                                                <tr data-sieve="0.15"><td><strong>0.15 (N°100)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input stone-sieve"></td></tr>
+                                                <tr data-sieve="0.0"><td><strong>Fondo (Pan)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input stone-sieve"></td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="form-group" style="margin-top: 5px;">
+                                        <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">
+                                            Muestra Total Arena: <strong id="totalSandSample">1000</strong> g | Muestra Total Piedra: <strong id="totalStoneSample">1000</strong> g
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+
+                    <!-- PISO 4: GRAFICOS Y RESULTADOS DE DOSIFICACION - ABAJO DE TODO -->
+                    <div class="floor-results-chart">
+                        <!-- Left Stack: Chart & Mixing Guide -->
+                        <div class="left-stack">
+                            <!-- Sieve Chart Panel -->
+                            <section class="panel panel-chart">
+                                <div class="panel-header">
+                                    <span class="panel-icon">📈</span>
+                                    <h2>Curva Granulométrica (Bolomey vs. Real)</h2>
+                                </div>
+                                <div class="panel-body chart-panel-body">
+                                    <div class="chart-container">
+                                        <canvas id="sieveChart"></canvas>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- SikaFume Mixing Guide -->
+                            <section class="panel panel-guide collapsible-section collapsed" id="fumeGuideSection">
+                                <div class="panel-header section-trigger" style="border-bottom: none;">
+                                    <span class="panel-icon">📋</span>
+                                    <h2 style="flex-grow: 1;">Guía de Mezclado Especial (SikaFume® / Microsílice)</h2>
+                                    <span class="arrow">▼</span>
+                                </div>
+                                <div class="panel-body section-content" style="border-top: 1px solid var(--border-color); padding: 15px; font-size: 0.82rem; background-color: rgba(245, 158, 11, 0.04);">
+                                    <p style="margin-bottom: 8px; font-weight: 500; color: var(--warning);">
+                                        ⚠️ El diseño incluye Microsílice / Humo de sílice. Para evitar grumos y garantizar la dispersión del aditivo, respeta este orden en el trompo:
+                                    </p>
+                                    <ol style="margin-left: 20px; display: flex; flex-direction: column; gap: 6px;">
+                                        <li><strong>Etapa 1 (Agua Base):</strong> Cargar el 90% del agua de amasado + el **SikaFume** + **33% del Plastificante**. Mezclar durante 1 minuto hasta homogeneizar la lechada.</li>
+                                        <li><strong>Etapa 2 (Polvo Fino):</strong> Incorporar el **Cemento** + **50% del Plastificante**. Mezclar hasta formar una pasta homogénea y fluida.</li>
+                                        <li><strong>Etapa 3 (Agregados):</strong> Incorporar la **Arena** y la **Piedra**. Mezclar durante 2 minutos para asegurar el rozamiento y la humectación.</li>
+                                        <li><strong>Etapa 4 (Ajuste Final):</strong> Añadir el **17% restante del Plastificante** y el **Hidrófugo**. Mezclar durante 1 minuto a velocidad máxima antes del vaciado.</li>
+                                    </ol>
+                                </div>
+                            </section>
+                        </div>
+
+                        <!-- Results Panel (Receta de Dosificación) -->
+                        <section class="panel panel-results" id="resultsSection">
+                            <div class="panel-header">
+                                <span class="panel-icon">📊</span>
+                                <h2>Receta de Dosificación y Resultados</h2>
+                            </div>
+                            
+                            <div class="panel-body">
+                                <!-- Database Persistence Actions (Supabase) -->
+                                <div class="db-actions-row" id="dbActionsRow" style="margin-bottom: 15px; padding: 12px; background-color: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; gap: 10px; display: flex; flex-direction: column;">
+                                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">Persistencia en la Nube</div>
+                                    <div style="display: flex; gap: 8px; width: 100%;">
+                                        <button id="btnSaveMix" class="btn btn-secondary btn-icon" style="flex: 1; justify-content: center; font-size: 0.8rem; padding: 8px 12px;" disabled title="Iniciá sesión para guardar dosificaciones">
+                                            <span class="icon">💾</span> Guardar Mezcla
+                                        </button>
+                                        <button id="btnListMixes" class="btn btn-secondary btn-icon" style="flex: 1; justify-content: center; font-size: 0.8rem; padding: 8px 12px;" disabled title="Iniciá sesión para ver tus mezclas">
+                                            <span class="icon">📂</span> Cargar Mezcla
+                                        </button>
+                                    </div>
+                                    <div id="dbStatusText" style="font-size: 0.7rem; color: var(--text-muted); text-align: center;">Iniciá sesión para guardar tus diseños de mezcla</div>
+                                </div>
+
+                                <!-- Volume indicator -->
+                                <div class="results-meta">
+                                    <div class="meta-label">Receta de pastón para:</div>
+                                    <div class="meta-value"><span class="val-highlight" id="resVolumeDisplay">80</span> Litros</div>
+                                </div>
+
+                                <!-- Target strength details -->
+                                <div class="results-meta" style="margin-top: -5px; font-size: 0.8rem; background-color: rgba(255,255,255,0.01);">
+                                    <div class="meta-label">Resistencia Media de Diseño ($f'_{cm}$):</div>
+                                    <div class="meta-value" style="color: var(--accent);"><span id="resStrengthFcm">36.6</span> MPa</div>
+                                </div>
+
+                                <!-- Core Recipe Cards -->
+                                <div class="recipe-cards-grid">
+                                    <!-- Cement -->
+                                    <div class="recipe-card item-cement">
+                                        <div class="card-icon">🧱</div>
+                                        <div class="card-content">
+                                            <div class="card-label">Cemento</div>
+                                            <div class="card-value"><span id="resCement">0.0</span> <span class="unit">kg</span></div>
+                                            <div class="card-subtext"><span id="resCementPerM3">0</span> kg/m³ de base</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Water -->
+                                    <div class="recipe-card item-water">
+                                        <div class="card-icon">💧</div>
+                                        <div class="card-content">
+                                            <div class="card-label">Agua a Añadir</div>
+                                            <div class="card-value"><span id="resWaterCorrected">0.00</span> <span class="unit">L</span></div>
+                                            <div class="card-details">
+                                                <span>Teórica: <strong id="resWaterTheoretical">0.00</strong> L</span>
+                                                <span>Factor G: <strong id="resFactorGDisplay">1.000</strong></span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Sand -->
+                                    <div class="recipe-card item-sand">
+                                        <div class="card-icon">⏳</div>
+                                        <div class="card-content">
+                                            <div class="card-label">Arena Húmeda</div>
+                                            <div class="card-value"><span id="resSand">0.0</span> <span class="unit">kg</span></div>
+                                            <div class="card-subtext">Prop. Mezcla: <span id="resSandRatio">0.0</span>%</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Stone -->
+                                    <div class="recipe-card item-stone">
+                                        <div class="card-icon">🪨</div>
+                                        <div class="card-content">
+                                            <div class="card-label">Piedra Húmeda</div>
+                                            <div class="card-value"><span id="resStone">0.0</span> <span class="unit">kg</span></div>
+                                            <div class="card-subtext">Prop. Mezcla: <span id="resStoneRatio">0.0</span>%</div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Dynamic Additives Results Container -->
+                                <div class="additives-results-section" id="additivesResultsContainer">
+                                    <h3>Aditivos Calculados:</h3>
+                                    <div class="additives-results-grid" id="additivesResultsGrid">
+                                        <!-- Dynamic additive cards will be rendered here -->
+                                    </div>
+                                </div>
+
+                                <!-- Quality & Properties Indicators -->
+                                <div class="quality-indicators-section">
+                                    <h3>Propiedades y Consistencia</h3>
+                                    
+                                    <div class="indicator-row">
+                                        <span class="indicator-label">Asentamiento Predicho:</span>
+                                        <span class="indicator-value-group">
+                                            <span class="indicator-value" id="resSlump">0.0</span> <span class="unit">cm</span>
+                                            <span class="badge" id="resConsistencyBadge">Seca</span>
+                                        </span>
+                                    </div>
+                                    <div class="slump-meter-bar">
+                                        <div class="slump-indicator-pin" id="slumpPin"></div>
+                                        <div class="slump-zone zone-seca" title="Seca (0-2 cm)">Seca</div>
+                                        <div class="slump-zone zone-plastica" title="Plástica (3-5 cm)">Plást.</div>
+                                        <div class="slump-zone zone-blanda" title="Blanda (6-9 cm)">Bland.</div>
+                                        <div class="slump-zone zone-fluida" title="Fluida (10-15 cm)">Fluid.</div>
+                                        <div class="slump-zone zone-liquida" title="Líquida (>15 cm)">Líq.</div>
+                                    </div>
+
+                                    <div class="indicator-grid-2">
+                                        <div class="indicator-box">
+                                            <span class="box-label">Módulo de Finura (MF)</span>
+                                            <span class="box-value" id="resMF">0.00</span>
+                                        </div>
+                                        <div class="indicator-box">
+                                            <span class="box-label">Desviación Total Granul.</span>
+                                            <span class="box-value" id="resTotalDiff">0.0</span>%
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- API KEY CONFIGURATION MODAL -->
+    <div id="apiModal" class="modal">
+        <div class="modal-content">
+            <span class="modal-close" id="btnCloseApiModal">&times;</span>
+            <h2>Clave API de Google Gemini</h2>
+            <p>La aplicación utiliza la API de Gemini para el Asistente Técnico. Tu clave API se guarda de manera segura <strong>localmente en tu propio navegador</strong> (localStorage) y nunca se transmite a ningún servidor de terceros.</p>
+            
+            <div class="form-group" style="margin-top: 15px;">
+                <label for="inputApiKey">Ingresar API Key:</label>
+                <input type="password" id="inputApiKey" placeholder="AIzaSy..." class="form-input">
+            </div>
+            
+            <div class="api-key-help">
+                <p><strong>¿Cómo conseguir una clave gratis?</strong></p>
+                <ol>
+                    <li>Ingresá a <a href="https://aistudio.google.com/" target="_blank">Google AI Studio</a>.</li>
+                    <li>Iniciá sesión con tu cuenta de Google.</li>
+                    <li>Hacé clic en el botón <strong>"Get API key"</strong> en la parte superior izquierda.</li>
+                    <li>Creá una nueva clave y pegala acá.</li>
+                </ol>
+            </div>
+            
+            <div class="modal-footer">
+                <button id="btnDeleteApiKey" class="btn btn-secondary">Borrar Clave</button>
+                <button id="btnSaveApiKey" class="btn btn-primary">Guardar Clave</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AUTHENTICATION MODAL -->
+    <div id="authModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <span class="modal-close" id="btnCloseAuthModal">&times;</span>
+            <h2 id="authModalTitle" style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 10px;">Iniciar Sesión</h2>
+            <p id="authModalSubtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Accedé a tu cuenta de HormigonIA para sincronizar tus dosificaciones.</p>
+            
+            <form id="authForm">
+                <div class="form-group">
+                    <label for="inputAuthEmail">Correo Electrónico:</label>
+                    <input type="email" id="inputAuthEmail" required placeholder="correo@ejemplo.com" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="inputAuthPassword">Contraseña:</label>
+                    <input type="password" id="inputAuthPassword" required placeholder="••••••••" class="form-input">
+                </div>
+                <div class="form-group" id="groupConfirmPassword" style="display: none;">
+                    <label for="inputAuthConfirmPassword">Confirmar Contraseña:</label>
+                    <input type="password" id="inputAuthConfirmPassword" placeholder="••••••••" class="form-input">
+                </div>
+                <div class="auth-error-msg" id="authErrorMsg" style="color: var(--error); margin-top: 10px; font-size: 0.85rem; display: none; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.2);"></div>
+                <div class="auth-success-msg" id="authSuccessMsg" style="color: var(--accent); margin-top: 10px; font-size: 0.85rem; display: none; background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2);"></div>
+                
+                <div class="modal-footer" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                    <button type="submit" id="btnSubmitAuth" class="btn btn-primary" style="width: 100%; justify-content: center;">Entrar</button>
+                    <button type="button" id="btnToggleAuthMode" class="btn btn-secondary" style="font-size: 0.85rem; width: 100%; justify-content: center; background: transparent; border: none; text-decoration: underline;">¿No tenés cuenta? Registrate</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- SAVED MIXES MODAL -->
+    <div id="mixesModal" class="modal">
+        <div class="modal-content" style="max-width: 600px;">
+            <span class="modal-close" id="btnCloseMixesModal">&times;</span>
+            <h2 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 5px;">Mis Mezclas Guardadas</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Cargá una dosificación anteriormente guardada en tu panel.</p>
+            
+            <div id="mixesListContainer" class="mixes-list-container" style="max-height: 350px; overflow-y: auto; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
+                <div style="text-align: center; color: var(--text-muted); padding: 30px;">Cargando dosificaciones...</div>
+            </div>
+            
+            <div class="modal-footer" style="justify-content: flex-end;">
+                <button id="btnDismissMixes" class="btn btn-secondary">Cerrar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script type="module" src="supabase-client.js"></script>
+    <script type="module" src="ai.js"></script>
+    <script type="module" src="app.js"></script>
+</body>
+</html>
