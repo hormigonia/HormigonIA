@@ -2157,8 +2157,6 @@ function createAlertCard(type, title, text) {
     return card;
 }
 
-}
-
 function addAdditiveIfMissing(typeKey, defaultDose) {
     const exists = additives.some(a => a.typeKey === typeKey);
     if (!exists) {
