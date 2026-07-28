@@ -13,378 +13,222 @@ function showServerErrorOverlay() {
     }
 }
 
-// Simple deterministic password hashing for client-side demo safety
-function hashPassword(password) {
-    let hash = 0;
-    for (let i = 0; i < password.length; i++) {
-        const char = password.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32bit integer
-    }
-    return hash.toString(36);
-}
-
-let loginMode = "login"; // "login" or "register"
-let usersDatabase = [];
-let activeUser = null;
+let authMode = "signin"; // "signin" or "signup"
 
 function initLoginSystem() {
     const { supabase, onAuthStateChange, signIn, signUp, signOut, signInWithGoogle } = window;
-    // If Supabase is active, hook up its auth listener
+    
+    const authModal = document.getElementById("authModal");
+    const btnAuthModal = document.getElementById("btnAuthModal");
+    const btnCloseAuthModal = document.getElementById("btnCloseAuthModal");
+    const authForm = document.getElementById("authForm");
+    const btnToggleAuthMode = document.getElementById("btnToggleAuthMode");
+    const authModalTitle = document.getElementById("authModalTitle");
+    const authModalSubtitle = document.getElementById("authModalSubtitle");
+    const groupConfirmPassword = document.getElementById("groupConfirmPassword");
+    const btnSubmitAuth = document.getElementById("btnSubmitAuth");
+    const authErrorMsg = document.getElementById("authErrorMsg");
+    const authSuccessMsg = document.getElementById("authSuccessMsg");
+    const btnGoogleAuth = document.getElementById("btnGoogleAuth");
+    const btnLogout = document.getElementById("btnLogout");
+    const userProfileWidget = document.getElementById("userProfileWidget");
+    const userNameLabel = document.getElementById("userNameLabel");
+    const userAvatarCircle = document.getElementById("userAvatarCircle");
+
+    // Auth listeners
     if (supabase) {
         onAuthStateChange((event, session) => {
             currentUserSession = session;
             if (session) {
                 activeUser = session.user.email;
-                onUserLoggedIn(activeUser);
+                if (btnAuthModal) btnAuthModal.style.display = "none";
+                if (userProfileWidget) userProfileWidget.style.display = "flex";
+                if (userNameLabel) userNameLabel.innerText = activeUser.split("@")[0];
+                if (userAvatarCircle) {
+                    userAvatarCircle.innerText = activeUser.charAt(0).toUpperCase();
+                    let charSum = 0;
+                    for (let i = 0; i < activeUser.length; i++) charSum += activeUser.charCodeAt(i);
+                    userAvatarCircle.style.backgroundColor = `hsl(${charSum % 360}, 70%, 45%)`;
+                }
+                LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
             } else {
                 activeUser = null;
-                showLoginScreen();
+                if (btnAuthModal) btnAuthModal.style.display = "inline-flex";
+                if (userProfileWidget) userProfileWidget.style.display = "none";
+                LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes";
             }
+            loadSavedMixes();
         });
     } else {
-        // Fallback: LocalStorage mock check
-        const savedUser = localStorage.getItem("hormigonmix_active_user") || sessionStorage.getItem("hormigonmix_active_user");
+        // Local fallback logic
+        const savedUser = localStorage.getItem("hormigonmix_active_user");
         if (savedUser) {
             activeUser = savedUser;
-            onUserLoggedIn(activeUser);
+            if (btnAuthModal) btnAuthModal.style.display = "none";
+            if (userProfileWidget) userProfileWidget.style.display = "flex";
+            if (userNameLabel) userNameLabel.innerText = activeUser.split("@")[0];
+            if (userAvatarCircle) {
+                userAvatarCircle.innerText = activeUser.charAt(0).toUpperCase();
+            }
+            LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
         } else {
-            showLoginScreen();
+            activeUser = null;
+            if (btnAuthModal) btnAuthModal.style.display = "inline-flex";
+            if (userProfileWidget) userProfileWidget.style.display = "none";
+            LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes";
         }
+        loadSavedMixes();
     }
 
-    // Load users database
-    const storedDb = localStorage.getItem("hormigonmix_users_db");
-    usersDatabase = storedDb ? JSON.parse(storedDb) : [];
-    
-    // Ensure demo user exists and has the correct password
-    const demoUserIdx = usersDatabase.findIndex(u => u.username.toLowerCase() === "ingeniero");
-    if (demoUserIdx === -1) {
-        usersDatabase.push({
-            username: "ingeniero",
-            passwordHash: hashPassword("sika")
+    // Modal triggers
+    if (btnAuthModal) {
+        btnAuthModal.addEventListener("click", () => {
+            if (authModal) authModal.classList.add("open");
+            if (authErrorMsg) authErrorMsg.style.display = "none";
+            if (authSuccessMsg) authSuccessMsg.style.display = "none";
         });
-    } else {
-        usersDatabase[demoUserIdx].passwordHash = hashPassword("sika");
     }
-    localStorage.setItem("hormigonmix_users_db", JSON.stringify(usersDatabase));
-    
-    // Switch between Login and Register
-    const switchLink = document.getElementById("btnSwitchToRegister");
-    if (switchLink) {
-        switchLink.addEventListener("click", (e) => {
-            e.preventDefault();
-            const cardTitle = document.getElementById("loginCardTitle");
-            const submitBtn = document.getElementById("btnLoginSubmit");
+    if (btnCloseAuthModal) {
+        btnCloseAuthModal.addEventListener("click", () => {
+            if (authModal) authModal.classList.remove("open");
+        });
+    }
+
+    // Mode toggling
+    if (btnToggleAuthMode) {
+        btnToggleAuthMode.addEventListener("click", () => {
+            if (authErrorMsg) authErrorMsg.style.display = "none";
+            if (authSuccessMsg) authSuccessMsg.style.display = "none";
             
-            if (loginMode === "login") {
-                loginMode = "register";
-                cardTitle.innerText = "Crear Cuenta";
-                submitBtn.innerText = "Registrarse e Ingresar";
-                switchLink.innerText = "Iniciar Sesión";
-                document.querySelector(".login-switch-text").innerHTML = 
-                    `¿Ya tienes cuenta? <a href="#" id="btnSwitchToRegister" style="color: var(--accent); font-weight: 600; text-decoration: none;">Iniciar Sesión</a>`;
+            if (authMode === "signin") {
+                authMode = "signup";
+                if (authModalTitle) authModalTitle.innerText = "Registrarse";
+                if (authModalSubtitle) authModalSubtitle.innerText = "Creá una cuenta en HormigonIA para sincronizar tus mezclas.";
+                if (groupConfirmPassword) groupConfirmPassword.style.display = "block";
+                if (btnSubmitAuth) btnSubmitAuth.innerText = "Registrarse";
+                btnToggleAuthMode.innerText = "¿Ya tenés cuenta? Iniciá Sesión";
             } else {
-                loginMode = "login";
-                cardTitle.innerText = "Iniciar Sesión";
-                submitBtn.innerText = "Ingresar al Sistema";
-                switchLink.innerText = "Crear Cuenta";
-                document.querySelector(".login-switch-text").innerHTML = 
-                    `¿No tienes cuenta? <a href="#" id="btnSwitchToRegister" style="color: var(--accent); font-weight: 600; text-decoration: none;">Crear Cuenta</a>`;
+                authMode = "signin";
+                if (authModalTitle) authModalTitle.innerText = "Iniciar Sesión";
+                if (authModalSubtitle) authModalSubtitle.innerText = "Accedé a tu cuenta de HormigonIA para sincronizar tus dosificaciones.";
+                if (groupConfirmPassword) groupConfirmPassword.style.display = "none";
+                if (btnSubmitAuth) btnSubmitAuth.innerText = "Entrar";
+                btnToggleAuthMode.innerText = "¿No tenés cuenta? Registrate";
             }
-            // Re-hook the switch link since we replaced the HTML
-            initLoginSwitchLink();
         });
     }
-    
+
     // Form submission
-    const loginForm = document.getElementById("loginForm");
-    if (loginForm) {
-        loginForm.addEventListener("submit", async (e) => {
+    if (authForm) {
+        authForm.addEventListener("submit", async (e) => {
             e.preventDefault();
-            
-            const usernameInput = document.getElementById("loginUsername");
-            const passwordInput = document.getElementById("loginPassword");
-            const rememberMeInput = document.getElementById("loginRememberMe");
-            
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value;
-            const rememberMe = rememberMeInput ? rememberMeInput.checked : false;
-            
-            if (!username || !password) return;
-            
+            if (authErrorMsg) authErrorMsg.style.display = "none";
+            if (authSuccessMsg) authSuccessMsg.style.display = "none";
+
+            const email = document.getElementById("inputAuthEmail").value.trim();
+            const password = document.getElementById("inputAuthPassword").value;
+            const confirmPassword = document.getElementById("inputAuthConfirmPassword") ? document.getElementById("inputAuthConfirmPassword").value : "";
+
+            if (!email || !password) return;
+
+            if (authMode === "signup" && password !== confirmPassword) {
+                if (authErrorMsg) {
+                    authErrorMsg.innerText = "Las contraseñas no coinciden.";
+                    authErrorMsg.style.display = "block";
+                }
+                return;
+            }
+
             if (supabase) {
-                // Supabase email auth flow
                 try {
-                    const submitBtn = document.getElementById("btnLoginSubmit");
-                    submitBtn.disabled = true;
-                    submitBtn.innerText = "Procesando...";
-                    
-                    if (loginMode === "login") {
-                        await signIn(username, password);
-                        alert("✨ Sesión iniciada con éxito.");
+                    if (btnSubmitAuth) {
+                        btnSubmitAuth.disabled = true;
+                        btnSubmitAuth.innerText = "Cargando...";
+                    }
+
+                    if (authMode === "signin") {
+                        await signIn(email, password);
+                        if (authModal) authModal.classList.remove("open");
                     } else {
-                        await signUp(username, password);
-                        alert("✉️ Registro enviado. Por favor verifica tu correo para confirmar tu cuenta.");
+                        await signUp(email, password);
+                        if (authSuccessMsg) {
+                            authSuccessMsg.innerText = "¡Registro enviado! Te enviamos un correo de confirmación.";
+                            authSuccessMsg.style.display = "block";
+                        }
                     }
                 } catch (err) {
-                    alert("❌ Error: " + err.message);
+                    if (authErrorMsg) {
+                        authErrorMsg.innerText = err.message || "Error al procesar la solicitud.";
+                        authErrorMsg.style.display = "block";
+                    }
                 } finally {
-                    const submitBtn = document.getElementById("btnLoginSubmit");
-                    submitBtn.disabled = false;
-                    submitBtn.innerText = loginMode === "login" ? "Ingresar al Sistema" : "Registrarse e Ingresar";
+                    if (btnSubmitAuth) {
+                        btnSubmitAuth.disabled = false;
+                        btnSubmitAuth.innerText = authMode === "signin" ? "Entrar" : "Registrarse";
+                    }
                 }
             } else {
-                // Fallback local mock flow
-                if (loginMode === "login") {
-                    const user = usersDatabase.find(u => u.username.toLowerCase() === username.toLowerCase());
-                    if (user && user.passwordHash === hashPassword(password)) {
-                        activeUser = user.username;
-                        if (rememberMe) {
-                            localStorage.setItem("hormigonmix_active_user", activeUser);
-                        } else {
-                            sessionStorage.setItem("hormigonmix_active_user", activeUser);
-                        }
-                        onUserLoggedIn(activeUser);
-                    } else {
-                        alert("❌ Usuario o contraseña incorrectos.");
-                    }
-                } else {
-                    const userExists = usersDatabase.some(u => u.username.toLowerCase() === username.toLowerCase());
-                    if (userExists) {
-                        alert("❌ El nombre de usuario ya está registrado.");
-                        return;
-                    }
-                    usersDatabase.push({
-                        username: username,
-                        passwordHash: hashPassword(password)
-                    });
-                    localStorage.setItem("hormigonmix_users_db", JSON.stringify(usersDatabase));
-                    activeUser = username;
-                    if (rememberMe) {
-                        localStorage.setItem("hormigonmix_active_user", activeUser);
-                    } else {
-                        sessionStorage.setItem("hormigonmix_active_user", activeUser);
-                    }
-                    alert("✨ Cuenta creada con éxito.");
-                    onUserLoggedIn(activeUser);
+                // Mock email login fallback
+                activeUser = email;
+                localStorage.setItem("hormigonmix_active_user", activeUser);
+                if (btnAuthModal) btnAuthModal.style.display = "none";
+                if (userProfileWidget) userProfileWidget.style.display = "flex";
+                if (userNameLabel) userNameLabel.innerText = activeUser.split("@")[0];
+                if (authModal) authModal.classList.remove("open");
+                LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
+                loadSavedMixes();
+            }
+        });
+    }
+
+    // Google Authentication
+    if (btnGoogleAuth) {
+        btnGoogleAuth.addEventListener("click", async () => {
+            if (supabase) {
+                try {
+                    await signInWithGoogle();
+                } catch (err) {
+                    alert("Error de autenticación con Google: " + err.message);
+                }
+            } else {
+                // Simulated Google flow
+                const email = prompt("Ingresá tu correo electrónico de Google para simular acceso:");
+                if (email && email.trim()) {
+                    activeUser = email.trim();
+                    localStorage.setItem("hormigonmix_active_user", activeUser);
+                    if (btnAuthModal) btnAuthModal.style.display = "none";
+                    if (userProfileWidget) userProfileWidget.style.display = "flex";
+                    if (userNameLabel) userNameLabel.innerText = activeUser.split("@")[0];
+                    if (authModal) authModal.classList.remove("open");
+                    LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
+                    loadSavedMixes();
                 }
             }
         });
     }
-    
-    // Logout button
-    const btnLogout = document.getElementById("btnLogout");
+
+    // Logout
     if (btnLogout) {
         btnLogout.addEventListener("click", async (e) => {
             e.preventDefault();
-            if (confirm("¿Seguro que deseas cerrar sesión?")) {
+            if (confirm("¿Deseas cerrar la sesión activa?")) {
                 if (supabase) {
                     try {
                         await signOut();
-                        alert("Sesión cerrada.");
                     } catch (err) {
                         alert("Error al cerrar sesión: " + err.message);
                     }
                 } else {
                     localStorage.removeItem("hormigonmix_active_user");
-                    sessionStorage.removeItem("hormigonmix_active_user");
                     activeUser = null;
-                    showLoginScreen();
+                    if (btnAuthModal) btnAuthModal.style.display = "inline-flex";
+                    if (userProfileWidget) userProfileWidget.style.display = "none";
+                    LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes";
+                    loadSavedMixes();
                 }
             }
         });
     }
-
-    // Google Sign-In button
-    const btnGoogleLogin = document.getElementById("btnGoogleLogin");
-    if (btnGoogleLogin) {
-        btnGoogleLogin.addEventListener("click", async () => {
-            if (supabase) {
-                try {
-                    await signInWithGoogle();
-                } catch (err) {
-                    alert("Error al iniciar sesión con Google: " + err.message);
-                }
-            } else {
-                showGoogleChooserModalSimulated();
-            }
-        });
-    }
-}
-
-function showGoogleChooserModalSimulated() {
-    let modal = document.getElementById("googleChooserModal");
-    if (!modal) {
-        modal = document.createElement("div");
-        modal.id = "googleChooserModal";
-        modal.style.position = "fixed";
-        modal.style.top = "0";
-        modal.style.left = "0";
-        modal.style.width = "100vw";
-        modal.style.height = "100vh";
-        modal.style.backgroundColor = "rgba(15, 23, 42, 0.85)";
-        modal.style.backdropFilter = "blur(8px)";
-        modal.style.zIndex = "10000";
-        modal.style.display = "flex";
-        modal.style.alignItems = "center";
-        modal.style.justifyContent = "center";
-        
-        modal.innerHTML = `
-            <div style="background: #ffffff; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; width: 100%; max-width: 380px; border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.3); padding: 30px 24px; text-align: center; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; animation: cardEnter 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;">
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
-                    <svg width="24" height="24" viewBox="0 0 24 24" style="margin-bottom: 5px;">
-                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69a5.74 5.74 0 0 1-2.48 3.77v3.13h4.02c2.35-2.17 3.71-5.36 3.71-8.75z"/>
-                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-4.02-3.13c-1.12.75-2.55 1.19-3.91 1.19-3.02 0-5.58-2.04-6.49-4.8H1.38v3.2A11.99 11.99 0 0 0 12 24z"/>
-                        <path fill="#FBBC05" d="M5.51 14.35A7.16 7.16 0 0 1 5.09 12c0-.82.14-1.63.42-2.35V6.45H1.38A11.99 11.99 0 0 0 0 12c0 2.22.6 4.31 1.66 6.13l3.85-3.78z"/>
-                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.24 0 3.19 2.73 1.38 6.45l4.13 4.12c.91-2.76 3.47-4.8 6.49-4.8z"/>
-                    </svg>
-                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 500; color: #202124;">Elige una cuenta</h3>
-                    <span style="font-size: 0.88rem; color: #5f6368;">para continuar en HormigónMix AI</span>
-                </div>
-                
-                <div style="display: flex; flex-direction: column; border: 1px solid #dadce0; border-radius: 8px; overflow: hidden; text-align: left;">
-                    <div class="google-acc-btn" data-username="Ale" data-email="ale.engineering@gmail.com" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #dadce0; transition: background 0.2s;">
-                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #e8f0fe; color: #1a73e8; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.95rem;">A</div>
-                        <div style="display: flex; flex-direction: column; line-height: 1.3;">
-                            <span style="font-weight: 600; font-size: 0.82rem; color: #3c4043;">Ale</span>
-                            <span style="font-size: 0.72rem; color: #5f6368;">ale.engineering@gmail.com</span>
-                        </div>
-                    </div>
-                    <div class="google-acc-btn" data-username="Ingeniero Invitado" data-email="invitado@gmail.com" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #dadce0; transition: background 0.2s;">
-                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #e6f4ea; color: #137333; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.95rem;">I</div>
-                        <div style="display: flex; flex-direction: column; line-height: 1.3;">
-                            <span style="font-weight: 600; font-size: 0.82rem; color: #3c4043;">Ingeniero Invitado</span>
-                            <span style="font-size: 0.72rem; color: #5f6368;">invitado@gmail.com</span>
-                        </div>
-                    </div>
-                    <div class="google-acc-btn-custom" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; transition: background 0.2s;">
-                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #f1f3f4; color: #5f6368; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">👤</div>
-                        <span style="font-weight: 500; font-size: 0.82rem; color: #1a73e8;">Usar otra cuenta</span>
-                    </div>
-                </div>
-                
-                <button type="button" id="btnGoogleChooserCancel" style="border: none; background: transparent; color: #5f6368; font-size: 0.82rem; font-weight: 500; cursor: pointer; padding: 6px; align-self: flex-end; margin-top: 5px;">Cancelar</button>
-            </div>
-        `;
-        document.body.appendChild(modal);
-    }
-    
-    modal.style.display = "flex";
-    
-    const hoverBtns = modal.querySelectorAll(".google-acc-btn, .google-acc-btn-custom");
-    hoverBtns.forEach(btn => {
-        btn.addEventListener("mouseenter", () => btn.style.backgroundColor = "#f8f9fa");
-        btn.addEventListener("mouseleave", () => btn.style.backgroundColor = "transparent");
-    });
-    
-    const accounts = modal.querySelectorAll(".google-acc-btn");
-    accounts.forEach(acc => {
-        acc.addEventListener("click", () => {
-            const username = acc.getAttribute("data-username");
-            activeUser = username;
-            localStorage.setItem("hormigonmix_active_user", activeUser);
-            onUserLoggedIn(activeUser);
-            modal.style.display = "none";
-            alert(`✨ Bienvenido, ${activeUser} (conectado vía Google).`);
-        });
-    });
-    
-    const btnCustom = modal.querySelector(".google-acc-btn-custom");
-    if (btnCustom) {
-        btnCustom.addEventListener("click", () => {
-            const username = prompt("Ingresa el nombre de tu cuenta Google:");
-            if (username && username.trim()) {
-                activeUser = username.trim();
-                localStorage.setItem("hormigonmix_active_user", activeUser);
-                onUserLoggedIn(activeUser);
-                modal.style.display = "none";
-                alert(`✨ Bienvenido, ${activeUser} (conectado vía Google).`);
-            }
-        });
-    }
-    
-    const btnCancel = modal.querySelector("#btnGoogleChooserCancel");
-    if (btnCancel) {
-        btnCancel.addEventListener("click", () => {
-            modal.style.display = "none";
-        });
-    }
-}
-
-function initLoginSwitchLink() {
-    const switchLink = document.getElementById("btnSwitchToRegister");
-    if (switchLink) {
-        switchLink.addEventListener("click", (e) => {
-            e.preventDefault();
-            const cardTitle = document.getElementById("loginCardTitle");
-            const submitBtn = document.getElementById("btnLoginSubmit");
-            
-            if (loginMode === "login") {
-                loginMode = "register";
-                cardTitle.innerText = "Crear Cuenta";
-                submitBtn.innerText = "Registrarse e Ingresar";
-                document.querySelector(".login-switch-text").innerHTML = 
-                    `¿Ya tienes cuenta? <a href="#" id="btnSwitchToRegister" style="color: var(--accent); font-weight: 600; text-decoration: none;">Iniciar Sesión</a>`;
-            } else {
-                loginMode = "login";
-                cardTitle.innerText = "Iniciar Sesión";
-                submitBtn.innerText = "Ingresar al Sistema";
-                document.querySelector(".login-switch-text").innerHTML = 
-                    `¿No tienes cuenta? <a href="#" id="btnSwitchToRegister" style="color: var(--accent); font-weight: 600; text-decoration: none;">Crear Cuenta</a>`;
-            }
-            initLoginSwitchLink();
-        });
-    }
-}
-
-function showLoginScreen() {
-    document.querySelector(".app-container").style.display = "none";
-    document.getElementById("loginWrapper").style.display = "flex";
-    
-    // Clear inputs
-    const usernameInput = document.getElementById("loginUsername");
-    const passwordInput = document.getElementById("loginPassword");
-    if (usernameInput) usernameInput.value = "";
-    if (passwordInput) passwordInput.value = "";
-}
-
-function onUserLoggedIn(username) {
-    document.getElementById("loginWrapper").style.display = "none";
-    document.querySelector(".app-container").style.display = "flex";
-    
-    // Set user widget
-    const nameLabel = document.getElementById("userNameLabel");
-    if (nameLabel) nameLabel.innerText = username;
-    const avatarCircle = document.getElementById("userAvatarCircle");
-    if (avatarCircle) {
-        avatarCircle.innerText = username.charAt(0).toUpperCase();
-        // Generate a random stable color based on name length/ascii for the avatar
-        let charSum = 0;
-        for (let i = 0; i < username.length; i++) charSum += username.charCodeAt(i);
-        const hue = charSum % 360;
-        avatarCircle.style.backgroundColor = `hsl(${hue}, 70%, 45%)`;
-        avatarCircle.style.color = "#ffffff";
-    }
-    
-    // Isolate localStorage keys for the logged user
-    LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + username;
-    
-    // Re-initialize state
-    loadSavedMixes();
-    renderSavedMixesTable();
-    
-    // Force weather fetch if coordinates are entered
-    const coordsVal = document.getElementById("inputGpsCoords") ? document.getElementById("inputGpsCoords").value.trim() : "";
-    const parts = coordsVal.split(",");
-    if (parts.length >= 2) {
-        const lat = parseFloat(parts[0]);
-        const lon = parseFloat(parts[1]);
-        if (!isNaN(lat) && !isNaN(lon)) {
-            fetchWeatherForCoordinates(lat, lon, false);
-        }
-    }
-    calculateAndUpdate();
 }
 
 
