@@ -182,3 +182,15 @@ export async function deleteMix(mixId) {
 
     if (error) throw error;
 }
+
+// Bind to window for standard scripts integration
+window.supabase = supabase;
+window.signUp = signUp;
+window.signIn = signIn;
+window.signInWithGoogle = signInWithGoogle;
+window.signOut = signOut;
+window.getSession = getSession;
+window.onAuthStateChange = onAuthStateChange;
+window.saveConcreteMix = saveConcreteMix;
+window.getUserMixes = getUserMixes;
+window.deleteMix = deleteMix;

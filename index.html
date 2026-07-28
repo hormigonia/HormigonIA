@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HormigonIA - Dosificador Racional de Precisión (ICPA & Larrard)</title>
+    <title>HormigónMix AI - Dosificador Racional de Precisión (ICPA & Larrard)</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,28 +18,93 @@
         }
       }
     </script>
-    <link rel="stylesheet" href="index.css">
+    <script type="module" src="supabase-client.js"></script>
+    <link rel="stylesheet" href="index.css?v=1.0.1">
+    <!-- Google Identity Services client -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
-    <div class="app-container">
+    <!-- LOGIN SCREEN WRAPPER -->
+    <div id="loginWrapper" class="login-wrapper">
+        <div class="login-bg-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+        </div>
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo-icon">🧱</div>
+                <h2>HormigónMix <span class="accent-text">AI</span></h2>
+                <p>Software de Ingeniería y Dosificación Científica de Mezclas</p>
+            </div>
+            
+            <!-- Login Form -->
+            <form id="loginForm" class="login-form" style="display: flex; flex-direction: column; gap: 15px;">
+                <h3 id="loginCardTitle" style="margin: 0 0 5px 0;">Iniciar Sesión</h3>
+                
+                <div class="form-group-floating">
+                    <input type="text" id="loginUsername" required placeholder=" ">
+                    <label for="loginUsername">Usuario</label>
+                </div>
+                
+                <div class="form-group-floating">
+                    <input type="password" id="loginPassword" required placeholder=" ">
+                    <label for="loginPassword">Contraseña</label>
+                </div>
+                
+                <div class="login-options" style="display: flex; justify-content: space-between; align-items: center; font-size: 0.78rem;">
+                    <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; color: var(--text-muted);">
+                        <input type="checkbox" id="loginRememberMe" style="accent-color: var(--accent);"> Recordarme
+                    </label>
+                </div>
+                
+                <button type="submit" id="btnLoginSubmit" class="btn btn-primary login-btn" style="width: 100%; height: 42px; font-size: 0.95rem; font-weight: 600; border-radius: 8px; border: none; cursor: pointer; margin-top: 10px;">Ingresar al Sistema</button>
+                
+                <div class="login-divider" style="display: flex; align-items: center; text-align: center; margin: 10px 0; color: var(--text-muted); font-size: 0.72rem;">
+                    <span style="flex-grow: 1; height: 1px; background: rgba(255,255,255,0.08); margin-right: 10px;"></span>
+                    o continuar con
+                    <span style="flex-grow: 1; height: 1px; background: rgba(255,255,255,0.08); margin-left: 10px;"></span>
+                </div>
+                
+                <button type="button" id="btnGoogleLogin" class="btn-google" style="display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; height: 42px; background: #ffffff; color: #1f2937; border: 1px solid #e5e7eb; border-radius: 8px; font-weight: 500; font-size: 0.88rem; cursor: pointer; transition: all 0.25s ease; margin-bottom: 5px;">
+                    <svg width="18" height="18" viewBox="0 0 18 18">
+                        <path fill="#4285F4" d="M17.64 9.2c0-.63-.06-1.25-.16-1.84H9v3.47h4.84a4.14 4.14 0 0 1-1.8 2.71v2.26h2.91c1.7-1.56 2.69-3.86 2.69-6.6z"/>
+                        <path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.2l-2.91-2.26c-.8.54-1.83.86-3.05.86-2.34 0-4.33-1.58-5.04-3.71H.95v2.3A9 9 0 0 0 9 18z"/>
+                        <path fill="#FBBC05" d="M3.96 10.69A5.4 5.4 0 0 1 3.6 9c0-.59.1-1.17.28-1.69V5.01H.95A8.99 8.99 0 0 0 0 9c0 1.55.4 3.01 1.09 4.3l2.87-2.61z"/>
+                        <path fill="#EA4335" d="M9 3.58c1.32 0 2.5.45 3.44 1.35L15 2.05C13.46.62 11.43 0 9 0 5.48 0 2.44 2.02.95 5.01l2.87 2.3c.71-2.13 2.7-3.71 5.04-3.71z"/>
+                    </svg>
+                    <span>Iniciar sesión con Google</span>
+                </button>
+                
+                <p class="login-switch-text" style="text-align: center; margin: 10px 0 0 0; font-size: 0.8rem; color: var(--text-muted);">
+                    ¿No tienes cuenta? <a href="#" id="btnSwitchToRegister" style="color: var(--accent); font-weight: 600; text-decoration: none;">Crear Cuenta</a>
+                </p>
+            </form>
+            
+            <div class="demo-credentials">
+                🔑 <strong>Acceso Demo Rápido:</strong><br>
+                Usuario: <code>ingeniero</code> | Contraseña: <code>sika</code>
+            </div>
+        </div>
+    </div>
+
+    <div class="app-container" style="display: none;">
         <!-- HEADER -->
         <header class="app-header">
             <div class="header-logo">
                 <div class="logo-icon">🧱</div>
                 <div class="logo-text">
-                    <h1>Hormigon<span class="accent-text">IA</span></h1>
+                    <h1>HormigónMix <span class="accent-text">AI</span></h1>
                     <p>Dosificación Científica de Laboratorio y Asistente Inteligente</p>
                 </div>
             </div>
             
             <div class="header-actions">
-                <!-- Supabase User Status -->
-                <div class="user-session-container">
-                    <button id="btnAuthModal" class="btn btn-secondary btn-icon" title="Iniciar Sesión / Registro">
-                        <span class="icon">👤</span>
-                        <span class="btn-text" id="userSessionText">Iniciar Sesión</span>
-                    </button>
-                </div>
+                <!-- Simulación Config -->
+                <button id="btnOpenSimModal" class="btn btn-secondary btn-icon" title="Ejecutar Simulación de Robustez del Calculador">
+                    <span class="icon">🔄</span>
+                    <span class="btn-text">Simular Robustez</span>
+                </button>
+
                 <!-- API Key Config -->
                 <div class="api-key-config">
                     <button id="toggleApiModal" class="btn btn-secondary btn-icon" title="Configurar API Key de Gemini">
@@ -48,6 +113,19 @@
                     </button>
                     <span id="apiStatusBadge" class="badge badge-error">Sin API Key</span>
                 </div>
+                <button id="btnResetApp" class="btn btn-secondary btn-icon" style="margin-right: 8px; background-color: rgba(239, 68, 68, 0.1); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3);">
+                    <span class="icon">🔄</span> Reiniciar Campos
+                </button>
+                                <div id="userProfileWidget" class="user-profile-widget" style="display: flex; align-items: center; gap: 8px; margin-left: 10px; border-left: 1px solid var(--border-color); padding-left: 15px;">
+                    <div id="userAvatarCircle" class="user-avatar" style="width: 32px; height: 32px; border-radius: 50%; background-color: var(--accent); color: var(--bg); display: flex; align-items: center; justify-content: center; font-weight: 700; font-family: 'Outfit'; font-size: 0.9rem;">
+                        U
+                    </div>
+                    <div style="display: flex; flex-direction: column;">
+                        <span id="userNameLabel" style="font-weight: 600; font-size: 0.8rem; color: var(--text);">Usuario</span>
+                        <a href="#" id="btnLogout" style="font-size: 0.65rem; color: #f87171; text-decoration: none;">Cerrar Sesión</a>
+                    </div>
+                </div>
+
                 <button id="btnExportPDF" class="btn btn-primary btn-icon">
                     <span class="icon">📥</span> Reporte de Mezcla
                 </button>
@@ -57,7 +135,8 @@
         <!-- NAVIGATION TABS -->
         <nav class="app-nav">
             <button class="nav-tab active" data-tab="hormigon">Calculador Hormigón</button>
-            <button class="nav-tab disabled" data-tab="armaduras" title="Próximamente">Armaduras (Próximamente)</button>
+            <button class="nav-tab" data-tab="laboratorio-aridos">Laboratorio de Áridos</button>
+            <button class="nav-tab" data-tab="optimizacion-ia">Optimización y Predicción IA</button>
             <button class="nav-tab disabled" data-tab="mamposteria" title="Próximamente">Mampostería (Próximamente)</button>
             <button class="nav-tab disabled" data-tab="pisos" title="Próximamente">Pisos (Próximamente)</button>
             <button class="nav-tab disabled" data-tab="revestimientos" title="Próximamente">Revestimientos (Próximamente)</button>
@@ -69,12 +148,88 @@
             <div id="tab-hormigon" class="tab-content active">
                 <div class="workspace-grid">
                     
-                    <!-- PISO 1: ASISTENTE DE IA (CHAT) - ARRIBA DE TODO -->
+                    <!-- PISO 0: HISTORIAL DE MEZCLAS GUARDADAS (ARRIBA DE TODO) -->
+                    <section class="panel panel-saved-mixes" id="savedMixesPanel" style="margin-bottom: 15px;">
+                        <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="panel-icon">💾</span>
+                                <h2>Historial de Mezclas Guardadas</h2>
+                            </div>
+                            <button type="button" id="btnSaveCurrentMix" class="btn btn-primary btn-xs">💾 Guardar Mezcla Actual</button>
+                        </div>
+                        <div class="panel-body">
+                            <div class="table-responsive">
+                                <table class="table" style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
+                                    <thead>
+                                        <tr style="border-bottom: 2px solid var(--border-color); text-align: left; color: var(--text-muted); font-size: 0.75rem;">
+                                            <th style="padding: 8px;">Nombre</th>
+                                            <th style="padding: 8px;">Clase / Res.</th>
+                                            <th style="padding: 8px;">Método</th>
+                                            <th style="padding: 8px;">Cemento</th>
+                                            <th style="padding: 8px;">A/C</th>
+                                            <th style="padding: 8px;">Tamiz D</th>
+                                            <th style="padding: 8px;">Fecha</th>
+                                            <th style="padding: 8px; text-align: center; width: 130px;">Acciones</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="savedMixesTableBody">
+                                        <!-- Dynamically rendered -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div id="noSavedMixesMessage" style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 0.85rem;">
+                                No hay mezclas guardadas en el historial. ¡Diseña y guarda una mezcla!
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- PISO 1: UBICACIÓN DE OBRA Y PRONÓSTICO DE CURADO (GPS) -->
+                    <section class="panel panel-weather" id="gpsWeatherSection">
+                        <div class="panel-header">
+                            <span class="panel-icon">🌦️</span>
+                            <h2>Ubicación de Obra y Pronóstico de Curado (GPS)</h2>
+                        </div>
+                        <div class="panel-body">
+                            <!-- Coordenadas Google Maps & GPS fallback -->
+                            <div style="display: flex; gap: 15px; justify-content: center; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <label for="inputGpsCoords" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Coordenadas (Lat, Lon):</label>
+                                    <input type="text" id="inputGpsCoords" value="-34.6037, -58.3816" class="form-input" placeholder="Pegar desde Google Maps" style="min-width: 200px; height: 34px; padding: 6px 12px; font-size: 0.88rem; text-align: center; border-radius: 6px;">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <label for="inputForecastDate" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Fecha:</label>
+                                    <input type="date" id="inputForecastDate" class="form-input" style="height: 34px; padding: 6px 12px; font-size: 0.88rem; border-radius: 6px; background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); cursor: pointer;">
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <label for="inputForecastTime" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Hora:</label>
+                                    <input type="time" id="inputForecastTime" value="09:00" class="form-input" style="height: 34px; padding: 6px 12px; font-size: 0.88rem; border-radius: 6px; background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); cursor: pointer;">
+                                </div>
+                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                    <button type="button" id="btnGetGpsWeatherManual" class="btn btn-secondary" style="height: 34px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85rem; border-radius: 6px; padding: 8px 16px;">
+                                        <span>🔍 Consultar Coordenadas</span>
+                                        <span id="manualGpsLoadingSpinner" class="hidden">🔄</span>
+                                    </button>
+                                    <button type="button" id="btnGetGpsWeatherAuto" class="btn btn-primary" style="height: 34px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85rem; border-radius: 6px; padding: 8px 16px;">
+                                        <span>📍 Ubicación Actual (GPS)</span>
+                                        <span id="autoGpsLoadingSpinner" class="hidden">🔄</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div id="gpsLocationDetails" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; display: none; background-color: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                <!-- Detailed weather and scrollable forecast will render here -->
+                            </div>
+                            <div id="gpsWeatherAlerts" style="display: flex; flex-direction: column; gap: 6px; margin-top: 15px;">
+                                <!-- Live weather exposure and 72-hour forecast warnings will be rendered here -->
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- PISO 2: ASISTENTE DE IA (CHAT) -->
                     <section class="panel panel-chat">
                         <div class="panel-header">
                             <div class="panel-header-title">
                                 <span class="panel-icon">🤖</span>
-                                <h2>Asistente de Mezcla AI</h2>
+                                <h2>Asistente de mezcla IA</h2>
                                 <span id="aiTypingIndicator" class="typing-indicator hidden">Pensando...</span>
                             </div>
                             <button id="btnClearChat" class="btn btn-text btn-xs" title="Limpiar conversación">Borrar Chat</button>
@@ -104,16 +259,16 @@
                         </div>
                     </section>
                     
-                    <!-- PISO 2: ENTRADA DE DATOS DEL PROYECTO -->
-                    <section class="panel panel-project">
-                        <div class="panel-header">
-                            <span class="panel-icon">🔧</span>
-                            <h2>Parámetros del Proyecto e Inclusiones</h2>
-                        </div>
-                        <div class="panel-body-project">
-                            <!-- Left: Project Inputs -->
-                            <div class="project-params-col">
-                                <!-- 1. Elemento a Hormigonar -->
+                    <!-- PISO 3: PARÁMETROS DEL PROYECTO Y CONFIGURACIÓN MANUAL (ALINEADOS AL LADO) -->
+                    <div class="floor-params-config">
+                        <!-- Entrada de Datos del Proyecto -->
+                        <section class="panel panel-project">
+                            <div class="panel-header">
+                                <span class="panel-icon">🔧</span>
+                                <h2>Parámetros del Proyecto</h2>
+                            </div>
+                            <div class="panel-body">
+                                <!-- Elemento a Hormigonar -->
                                 <div class="form-group">
                                     <label for="selectStructuralElement">Elemento a Hormigonar</label>
                                     <select id="selectStructuralElement" class="form-select">
@@ -134,13 +289,16 @@
                                     </select>
                                 </div>
 
-                                <!-- 2. Clase de Hormigón -->
+                                <!-- Clase de Hormigón -->
                                 <div class="form-group">
                                     <label style="display: block; margin-bottom: 6px;">Clase de Hormigón (Hx)</label>
-                                    <div class="concrete-counter" style="display: flex; align-items: center; justify-content: space-between; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px; max-width: 250px; margin: 0 auto 10px auto;">
+                                    <div class="concrete-counter" style="display: flex; align-items: center; justify-content: space-between; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px; max-width: 250px; margin: 0 auto 4px auto;">
                                         <button type="button" id="btnDecreaseClass" class="btn btn-secondary" style="width: 40px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s;">-</button>
                                         <span id="displayConcreteClass" style="font-size: 1.15rem; font-weight: 700; color: var(--accent); min-width: 120px; text-align: center;">H21</span>
                                         <button type="button" id="btnIncreaseClass" class="btn btn-secondary" style="width: 40px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s;">+</button>
+                                    </div>
+                                    <div id="displayConcreteClassStrengthInfo" style="font-size: 0.72rem; text-align: center; color: var(--text-muted); margin-bottom: 12px; line-height: 1.2;">
+                                        Resistencia: f'<sub>c</sub> = 21.0 MPa | f'<sub>cm</sub> = 27.6 MPa
                                     </div>
                                     <select id="selectConcreteClass" style="display: none;">
                                         <option value="H8">H8</option>
@@ -157,7 +315,7 @@
                                     </select>
                                 </div>
 
-                                <!-- 3. Exposición -->
+                                <!-- Exposición -->
                                 <div class="form-group">
                                     <label for="selectExposureClass">Exposición Ambiental (CIRSOC 201)</label>
                                     <select id="selectExposureClass" class="form-select">
@@ -175,9 +333,7 @@
                                     </select>
                                 </div>
 
-
-
-                                <!-- 5. Volumen del Pastón -->
+                                <!-- Volumen del Pastón -->
                                 <div class="form-group">
                                     <label for="inputBatchVolume" style="font-weight: 600; color: var(--text); font-size: 0.95rem;">Volumen del Pastón a Mezclar</label>
                                     <div class="range-container" style="margin-top: 4px; margin-bottom: 10px;">
@@ -194,71 +350,30 @@
                                     </div>
                                 </div>
                             </div>
+                        </section>
 
-                            <!-- Right: Additives only -->
-                            <div class="project-addons-col">
-                                <!-- Additives Dynamic Section -->
-                                <div class="additives-section" style="padding-top: 0; margin-top: 0;">
-                                     <div class="section-title-with-actions">
-                                         <h3>🧪 Aditivos e Inclusiones (Dosificación Activa)</h3>
-                                     </div>
-                                    <div class="additives-list-header" style="display: grid; grid-template-columns: 2fr 1.2fr auto; gap: 8px; font-size: 0.75rem; color: var(--text-muted); font-weight: 500; padding: 0 6px 4px 6px; border-bottom: 1px dashed var(--border-color); margin-bottom: 5px;">
-                                        <div>Nombre</div>
-                                        <div style="text-align: center;" title="Dosis (%) respecto a cemento">Dosis (%)</div>
-                                        <div></div>
-                                    </div>
-                                    <div class="additives-list" id="additivesList">
-                                        <!-- Dynamic rows created here -->
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
-
-                    <!-- PISO 2.5: PRONÓSTICO CLIMÁTICO Y GEOLOCALIZACIÓN DE OBRA - CENTRADO Y ANCHO COMPLETO -->
-                    <section class="panel panel-weather" id="gpsWeatherSection">
-                        <div class="panel-header">
-                            <span class="panel-icon">🌦️</span>
-                            <h2>Ubicación de Obra y Pronóstico de Curado (GPS)</h2>
-                        </div>
-                        <div class="panel-body">
-                            <!-- Coordenadas Google Maps & GPS fallback -->
-                            <div style="display: flex; gap: 15px; justify-content: center; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <label for="inputGpsCoords" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Coordenadas (Lat, Lon):</label>
-                                    <input type="text" id="inputGpsCoords" value="-34.6037, -58.3816" class="form-input" placeholder="Pegar desde Google Maps" style="min-width: 280px; height: 34px; padding: 6px 12px; font-size: 0.88rem; text-align: center; border-radius: 6px;">
-                                </div>
-                                <button type="button" id="btnGetGpsWeather" class="btn btn-primary" style="min-width: 200px; display: flex; align-items: center; justify-content: center; gap: 8px; font-weight: 600; padding: 8px 16px; font-size: 0.88rem; height: 34px; border-radius: 6px;">
-                                    <span>📍 Obtener Clima y Terreno</span>
-                                    <span id="gpsLoadingSpinner" class="hidden">🔄</span>
-                                </button>
-                            </div>
-                            <div id="gpsLocationDetails" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; display: none; background-color: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
-                                <!-- Detailed weather and scrollable forecast will render here -->
-                            </div>
-                            <div id="gpsWeatherAlerts" style="display: flex; flex-direction: column; gap: 6px; margin-top: 15px;">
-                                <!-- Live weather exposure and 72-hour forecast warnings will be rendered here -->
-                            </div>
-                        </div>
-                    </section>
-                    
-                    <!-- PISO 3: CONFIGURACION AVANZADA Y LABORATORIO -->
-                    <div class="floor-config-lab">
-                        <!-- Panel de Configuración Manual -->
+                        <!-- Configuración Manual de Mezcla -->
                         <section class="panel panel-config" id="customParamsSection">
-                            <div class="panel-header">
-                                <span class="panel-icon">⚙️</span>
-                                <h2>Configuración Manual de Mezcla</h2>
+                            <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="panel-icon">⚙️</span>
+                                    <h2>Configuración Manual de Mezcla</h2>
+                                </div>
+                                <div class="history-controls" style="display: flex; gap: 4px; align-items: center;">
+                                    <button type="button" id="btnUndoConfig" class="btn btn-secondary btn-xs btn-history" title="Deshacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↶</button>
+                                    <button type="button" id="btnRedoConfig" class="btn btn-secondary btn-xs btn-history" title="Rehacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↷</button>
+                                </div>
                             </div>
-                            <div class="panel-body" style="display: flex; flex-direction: column; gap: 12px;">
+                            <div class="panel-body">
                                 <!-- Método de Diseño -->
                                 <div class="form-group">
                                     <label for="selectDesignMethod">Método de Diseño de Mezcla / Curva de Agregados</label>
                                     <select id="selectDesignMethod" class="form-select">
-                                        <option value="bolomey" selected>Bolomey (Curva de Referencia Excel original)</option>
-                                        <option value="fuller">Fuller (Racional ICPA - n=0.5, A=0)</option>
-                                        <option value="delapena">De la Peña (Español - Curva Ideal n=0.4, A=16)</option>
-                                        <option value="aci">ACI 211.1 (Volumen de Agregado Grueso - Abs. Vol.)</option>
+                                        <option value="bolomey" selected>Bolomey</option>
+                                        <option value="fuller">Fuller</option>
+                                        <option value="delapena">La peña</option>
+                                        <option value="aci">ACI 211.1</option>
+                                        <option value="larrard">Larrard (Compacidad Máxima LPDM)</option>
                                     </select>
                                 </div>
                                 <!-- Cemento y Resistencia Especificada -->
@@ -278,14 +393,8 @@
                                     </div>
                                 </div>
 
-                                <!-- Nombre Clase Personalizada -->
-                                <div id="divCustomClassNameContainer" class="form-group hidden">
-                                    <label for="inputCustomClassName">Nombre de Mezcla Personalizada</label>
-                                    <input type="text" id="inputCustomClassName" value="H-Especial" class="form-input" placeholder="Ej: H-38 Especial, H-42">
-                                </div>
-
                                 <!-- Cemento, w/c, Bolomey A -->
-                                <div class="form-grid-3">
+                                <div id="rowCustomParams" class="form-grid-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
                                     <div class="form-group">
                                         <label for="inputCustomCement">Cto. Base (kg/m³)</label>
                                         <input type="number" id="inputCustomCement" value="350" step="10" class="form-input">
@@ -294,14 +403,14 @@
                                         <label for="inputCustomWC">Relación a/c</label>
                                         <input type="number" id="inputCustomWC" value="0.45" step="0.01" min="0.25" max="0.9" class="form-input">
                                     </div>
-                                    <div class="form-group">
+                                    <div class="form-group" id="divCustomBolomeyA">
                                         <label for="inputCustomBolomeyA">Bolomey A</label>
                                         <input type="number" id="inputCustomBolomeyA" value="13.0" step="0.5" class="form-input">
                                     </div>
                                 </div>
 
-                                <!-- Tamiz y Aire -->
-                                <div class="form-grid-2" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                <!-- Tamiz, Aire y Asentamiento Objetivo -->
+                                <div class="form-grid-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
                                     <div class="form-group">
                                         <label for="inputMaxSieveSize">Tamaño Máx. D (mm)</label>
                                         <input type="number" id="inputMaxSieveSize" value="38.0" step="0.5" class="form-input">
@@ -310,17 +419,67 @@
                                         <label for="inputAirPercentage">Aire Objetivo (%)</label>
                                         <input type="number" id="inputAirPercentage" value="1.5" step="0.5" min="1.0" max="10.0" class="form-input">
                                     </div>
+                                    <div class="form-group">
+                                        <label for="inputSlumpTarget">Asentamiento Obj. (cm)</label>
+                                        <input type="number" id="inputSlumpTarget" value="10" step="1" min="2" max="25" class="form-input">
+                                    </div>
                                 </div>
                                 <!-- Alertas de Diseño Manual -->
                                 <div id="manualDesignAlerts" style="display: none; margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;"></div>
                             </div>
                         </section>
+                    </div>
 
+                    <!-- PISO 4: ADITIVOS (DOSIFICACIÓN DE ADITIVOS E INFORMACIÓN DE ADITIVOS) -->
+                    <section class="panel panel-additives" id="additivesPanel">
+                        <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="panel-icon">🧪</span>
+                                <h2>Aditivos</h2>
+                            </div>
+                            <div class="history-controls" style="display: flex; gap: 4px; align-items: center;">
+                                <button type="button" id="btnUndoAdditives" class="btn btn-secondary btn-xs btn-history" title="Deshacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↶</button>
+                                <button type="button" id="btnRedoAdditives" class="btn btn-secondary btn-xs btn-history" title="Rehacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↷</button>
+                            </div>
+                        </div>
+                        <div class="panel-body panel-additives-body">
+                            <!-- Columna Izquierda: Dosificación de Aditivos -->
+                            <div class="project-addons-col" style="background-color: rgba(255, 255, 255, 0.01); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
+                                <div class="additives-section" style="padding-top: 0; margin-top: 0;">
+                                     <div class="section-title-with-actions" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                         <h3 style="font-size: 0.95rem; font-weight: 600;">🧪 Dosificación de Aditivos</h3>
+                                         <button type="button" id="btnAddAdditive" class="btn btn-secondary btn-xs" style="padding: 4px 8px; font-size: 0.75rem; border-radius: 4px;">+ Agregar</button>
+                                     </div>
+                                     <div class="additives-list" id="additivesList">
+                                         <!-- Dynamic rows created here -->
+                                     </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Columna Derecha: Información Aditivos -->
+                            <div class="additives-guide-col" style="background-color: rgba(255, 255, 255, 0.01); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
+                                <h3 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 5px;">📋 Información Aditivos</h3>
+                                <div id="additivesInfoGuideContainer">
+                                    <!-- Dynamic additive mixing guide will render here -->
+                                    <p style="color: var(--text-muted); font-size: 0.8rem; line-height: 1.4;">Agregue aditivos para ver el resumen de su ficha técnica y funcionamiento.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- PISO 5: LABORATORIO DE HORMIGÓN Y GRÁFICO (ALINEADOS VERTICALMENTE) -->
+                    <div class="floor-lab-chart">
                         <!-- Panel de Laboratorio de Hormigón -->
                         <section class="panel panel-laboratory" id="laboratorySection">
-                            <div class="panel-header">
-                                <span class="panel-icon">🔬</span>
-                                <h2>Laboratorio de Hormigón (Áridos y Ensayos)</h2>
+                            <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="panel-icon">🔬</span>
+                                    <h2>Laboratorio de Hormigón</h2>
+                                </div>
+                                <div class="history-controls" style="display: flex; gap: 4px; align-items: center;">
+                                    <button type="button" id="btnUndoLab" class="btn btn-secondary btn-xs btn-history" title="Deshacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↶</button>
+                                    <button type="button" id="btnRedoLab" class="btn btn-secondary btn-xs btn-history" title="Rehacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↷</button>
+                                </div>
                             </div>
                             <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
                                 <!-- Propiedades Físicas -->
@@ -352,12 +511,19 @@
                                                     <td><input type="number" id="moistSand" value="80" step="5" class="table-input"></td>
                                                     <td><input type="number" id="absSand" value="0.6" step="0.1" class="table-input"></td>
                                                 </tr>
-                                                <tr>
-                                                    <td><strong>Piedra</strong></td>
-                                                    <td><input type="number" id="densStone" value="1600" step="50" class="table-input"></td>
-                                                    <td><input type="number" id="coefStone" value="0.51" step="0.01" class="table-input"></td>
-                                                    <td><input type="number" id="moistStone" value="50" step="5" class="table-input"></td>
-                                                    <td><input type="number" id="absStone" value="0.5" step="0.1" class="table-input"></td>
+                                                <tr id="trLabGravilla">
+                                                    <td><strong id="lblLabGravilla">Gravilla</strong></td>
+                                                    <td><input type="number" id="densGravilla" value="1600" step="50" class="table-input"></td>
+                                                    <td><input type="number" id="coefGravilla" value="0.51" step="0.01" class="table-input"></td>
+                                                    <td><input type="number" id="moistGravilla" value="50" step="5" class="table-input"></td>
+                                                    <td><input type="number" id="absGravilla" value="0.5" step="0.1" class="table-input"></td>
+                                                </tr>
+                                                <tr id="trLabGrava">
+                                                    <td><strong>Grava</strong></td>
+                                                    <td><input type="number" id="densGrava" value="1600" step="50" class="table-input"></td>
+                                                    <td><input type="number" id="coefGrava" value="0.51" step="0.01" class="table-input"></td>
+                                                    <td><input type="number" id="moistGrava" value="50" step="5" class="table-input"></td>
+                                                    <td><input type="number" id="absGrava" value="0.5" step="0.1" class="table-input"></td>
                                                 </tr>
                                             </tbody>
                                         </table>
@@ -369,6 +535,10 @@
                                     <div class="section-title-with-actions" style="margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
                                         <label style="font-weight: 600; color: var(--text);">📊 Tamizado de Áridos (Peso Retenido)</label>
                                         <div style="display: flex; align-items: center; gap: 6px;">
+                                            <select id="selectNumAggregates" class="form-select btn-xs" style="height: 24px; padding: 2px 6px; font-size: 0.72rem; width: auto; background-color: var(--bg-panel); font-weight: bold; border-color: var(--accent); margin-right: 4px;">
+                                                <option value="3" selected>3 Áridos</option>
+                                                <option value="2">2 Áridos</option>
+                                            </select>
                                             <select id="selectSieveSeries" class="form-select btn-xs" style="height: 24px; padding: 2px 6px; font-size: 0.72rem; width: auto; background-color: var(--bg-panel);">
                                                 <option value="ASTM" selected>ASTM (No./in)</option>
                                                 <option value="IRAM">IRAM (Métrico)</option>
@@ -376,103 +546,203 @@
                                                 <option value="ISO">ISO (Norma Int.)</option>
                                                 <option value="ACI">ACI (Americana)</option>
                                             </select>
-                                            <button id="btnLoadSampleSieves" class="btn btn-text btn-xs" style="padding: 0; height: auto;">Cargar Muestra Excel</button>
                                         </div>
                                     </div>
                                     <div class="sieve-table-wrapper">
-                                        <table class="data-table" id="tableSieves" style="font-size: 0.75rem;">
+                                        <table class="data-table" id="tableSieves" style="font-size: 0.72rem;">
                                             <thead>
-                                                <tr>
-                                                    <th>Tamiz ASTM</th>
-                                                    <th>Ret. Arena (g)</th>
-                                                    <th>Ret. Piedra (g)</th>
-                                                </tr>
+                                                 <tr>
+                                                     <th>Tamiz</th>
+                                                     <th>Arena (g)</th>
+                                                     <th id="thCoarse1">Gravilla (g)</th>
+                                                     <th id="thCoarse2">Grava (g)</th>
+                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr data-sieve="37.5"><td><strong>37.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="20" min="0" step="1" class="table-input stone-sieve"></td></tr>
-                                                <tr data-sieve="25.0"><td><strong>25.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="230" min="0" step="1" class="table-input stone-sieve"></td></tr>
-                                                <tr data-sieve="19.0"><td><strong>19.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="200" min="0" step="1" class="table-input stone-sieve"></td></tr>
-                                                <tr data-sieve="9.5"><td><strong>9.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input stone-sieve"></td></tr>
-                                                <tr data-sieve="4.75"><td><strong>4.75 (N°4)</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="150" min="0" step="1" class="table-input stone-sieve"></td></tr>
-                                                <tr data-sieve="2.36"><td><strong>2.36 (N°8)</strong></td><td><input type="number" value="120" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="50" min="0" step="1" class="table-input stone-sieve"></td></tr>
-                                                <tr data-sieve="1.18"><td><strong>1.18 (N°16)</strong></td><td><input type="number" value="180" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input stone-sieve"></td></tr>
-                                                <tr data-sieve="0.6"><td><strong>0.6 (N°30)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input stone-sieve"></td></tr>
-                                                <tr data-sieve="0.3"><td><strong>0.3 (N°50)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input stone-sieve"></td></tr>
-                                                <tr data-sieve="0.15"><td><strong>0.15 (N°100)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input stone-sieve"></td></tr>
-                                                <tr data-sieve="0.0"><td><strong>Fondo (Pan)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input stone-sieve"></td></tr>
+                                                <tr data-sieve="37.5"><td><strong>37.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="20" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="25.0"><td><strong>25.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="230" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="19.0"><td><strong>19.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="9.5"><td><strong>9.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="100" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="250" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="4.75"><td><strong>4.75 (N°4)</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="100" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="2.36"><td><strong>2.36 (N°8)</strong></td><td><input type="number" value="120" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="50" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="1.18"><td><strong>1.18 (N°16)</strong></td><td><input type="number" value="180" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="150" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="0.6"><td><strong>0.6 (N°30)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="50" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="0.3"><td><strong>0.3 (N°50)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="0.15"><td><strong>0.15 (N°100)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="0.0"><td><strong>Fondo (Pan)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
                                             </tbody>
                                         </table>
                                     </div>
                                     <div class="form-group" style="margin-top: 5px;">
-                                        <span style="font-size: 0.72rem; color: var(--text-muted); display: block;">
-                                            Muestra Total Arena: <strong id="totalSandSample">1000</strong> g | Muestra Total Piedra: <strong id="totalStoneSample">1000</strong> g
+                                        <span style="font-size: 0.68rem; color: var(--text-muted); display: block; line-height: 1.4;">
+                                            Muestras totales: Arena: <strong id="totalSandSample">1000</strong>g | Gravilla: <strong id="totalGravillaSample">1000</strong>g | Grava: <strong id="totalGravaSample">1000</strong>g
                                         </span>
                                     </div>
                                 </div>
                             </div>
                         </section>
+
+                        <!-- Sieve Chart Panel (Alineado al lado de Laboratorio) -->
+                        <section class="panel panel-chart">
+                            <div class="panel-header">
+                                <span class="panel-icon">📈</span>
+                                <h2 id="chartTitleText">Curva Granulométrica (Bolomey vs. Real)</h2>
+                            </div>
+                            <div class="panel-body chart-panel-body">
+                                <div class="chart-container" style="position: relative; height: 380px; width: 100%;">
+                                    <canvas id="sieveChart"></canvas>
+                                </div>
+                            </div>
+                        </section>
                     </div>
 
-                    <!-- PISO 4: GRAFICOS Y RESULTADOS DE DOSIFICACION - ABAJO DE TODO -->
-                    <div class="floor-results-chart">
-                        <!-- Left Stack: Chart & Mixing Guide -->
-                        <div class="left-stack">
-                            <!-- Sieve Chart Panel -->
-                            <section class="panel panel-chart">
-                                <div class="panel-header">
-                                    <span class="panel-icon">📈</span>
-                                    <h2>Curva Granulométrica (Bolomey vs. Real)</h2>
+                    <!-- PISO 5: CONTROL DE CALIDAD Y OPTIMIZACIÓN REOLÓGICA (ROUSSEL, ARRHENIUS Y PASTÓN IDEAL) -->
+                    <section class="panel panel-quality-control-unified" id="qualityControlPanelUnified" style="margin-top: 15px;">
+                        <div class="panel-header">
+                            <span class="panel-icon">🔬</span>
+                            <h2>Control de Calidad y Optimización Reológica</h2>
+                        </div>
+                        <div class="panel-body" style="display: grid; grid-template-columns: 1fr 1.2fr; gap: 15px;">
+                            
+                            <!-- Columna Izquierda: Ingreso de Resultados de Ensayos Realizados -->
+                            <div style="background-color: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
+                                <h3 style="font-size: 0.88rem; font-weight: 600; color: var(--accent); margin-bottom: 2px;">🧪 Ensayos del Pastón (Laboratorio / Obra)</h3>
+                                
+                                <div class="form-group" style="background-color: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 4px; border-left: 3px solid var(--accent); display: flex; flex-direction: column; justify-content: center; height: 32px;">
+                                    <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7;">Asentamiento Obj. Definido:</span>
+                                    <strong style="font-size: 0.85rem; color: var(--accent);"><span id="displaySlumpTargetCm">10</span> cm (<span id="displaySlumpTargetMm">100</span> mm)</strong>
                                 </div>
-                                <div class="panel-body chart-panel-body">
-                                    <div class="chart-container">
-                                        <canvas id="sieveChart"></canvas>
+
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div class="form-group">
+                                        <label for="inputSlumpMeasured">Asentamiento Medido (cm)</label>
+                                        <input type="number" id="inputSlumpMeasured" value="8" step="0.5" min="0" max="25" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputTimeElapsed">Tiempo t1 (minutos)</label>
+                                        <input type="number" id="inputTimeElapsed" value="15" step="1" class="form-input" style="height: 30px; font-size: 0.8rem;">
                                     </div>
                                 </div>
-                            </section>
 
-                            <!-- SikaFume Mixing Guide -->
-                            <section class="panel panel-guide collapsible-section collapsed" id="fumeGuideSection">
-                                <div class="panel-header section-trigger" style="border-bottom: none;">
-                                    <span class="panel-icon">📋</span>
-                                    <h2 style="flex-grow: 1;">Guía de Mezclado Especial (SikaFume® / Microsílice)</h2>
-                                    <span class="arrow">▼</span>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div class="form-group">
+                                        <label for="inputTempConcrete">Temp. Mezcla Tc (°C)</label>
+                                        <input type="number" id="inputTempConcrete" value="22" step="0.5" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputDensityReal">Densidad Real (kg/m³)</label>
+                                        <input type="number" id="inputDensityReal" placeholder="Dejar vacío (teórica)" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
                                 </div>
-                                <div class="panel-body section-content" style="border-top: 1px solid var(--border-color); padding: 15px; font-size: 0.82rem; background-color: rgba(245, 158, 11, 0.04);">
-                                    <p style="margin-bottom: 8px; font-weight: 500; color: var(--warning);">
-                                        ⚠️ El diseño incluye Microsílice / Humo de sílice. Para evitar grumos y garantizar la dispersión del aditivo, respeta este orden en el trompo:
-                                    </p>
-                                    <ol style="margin-left: 20px; display: flex; flex-direction: column; gap: 6px;">
-                                        <li><strong>Etapa 1 (Agua Base):</strong> Cargar el 90% del agua de amasado + el **SikaFume** + **33% del Plastificante**. Mezclar durante 1 minuto hasta homogeneizar la lechada.</li>
-                                        <li><strong>Etapa 2 (Polvo Fino):</strong> Incorporar el **Cemento** + **50% del Plastificante**. Mezclar hasta formar una pasta homogénea y fluida.</li>
-                                        <li><strong>Etapa 3 (Agregados):</strong> Incorporar la **Arena** y la **Piedra**. Mezclar durante 2 minutos para asegurar el rozamiento y la humectación.</li>
-                                        <li><strong>Etapa 4 (Ajuste Final):</strong> Añadir el **17% restante del Plastificante** y el **Hidrófugo**. Mezclar durante 1 minuto a velocidad máxima antes del vaciado.</li>
-                                    </ol>
-                                </div>
-                            </section>
-                        </div>
 
-                        <!-- Results Panel (Receta de Dosificación) -->
-                        <section class="panel panel-results" id="resultsSection">
-                            <div class="panel-header">
-                                <span class="panel-icon">📊</span>
-                                <h2>Receta de Dosificación y Resultados</h2>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: 2px;">
+                                    <div class="form-group">
+                                        <label for="inputQualityStrength7d">Resistencia 7d (MPa)</label>
+                                        <input type="number" id="inputQualityStrength7d" placeholder="Ej: 16.5" step="0.1" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputQualityStrength28d">Resistencia 28d (MPa)</label>
+                                        <input type="number" id="inputQualityStrength28d" placeholder="Vacío = estimar" step="0.1" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                </div>
                             </div>
                             
-                            <div class="panel-body">
-                                <!-- Database Persistence Actions (Supabase) -->
-                                <div class="db-actions-row" id="dbActionsRow" style="margin-bottom: 15px; padding: 12px; background-color: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; gap: 10px; display: flex; flex-direction: column;">
-                                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-muted); font-weight: 600;">Persistencia en la Nube</div>
-                                    <div style="display: flex; gap: 8px; width: 100%;">
-                                        <button id="btnSaveMix" class="btn btn-secondary btn-icon" style="flex: 1; justify-content: center; font-size: 0.8rem; padding: 8px 12px;" disabled title="Iniciá sesión para guardar dosificaciones">
-                                            <span class="icon">💾</span> Guardar Mezcla
-                                        </button>
-                                        <button id="btnListMixes" class="btn btn-secondary btn-icon" style="flex: 1; justify-content: center; font-size: 0.8rem; padding: 8px 12px;" disabled title="Iniciá sesión para ver tus mezclas">
-                                            <span class="icon">📂</span> Cargar Mezcla
-                                        </button>
-                                    </div>
-                                    <div id="dbStatusText" style="font-size: 0.7rem; color: var(--text-muted); text-align: center;">Iniciá sesión para guardar tus diseños de mezcla</div>
+                            <!-- Columna Derecha: Pestañas de Acción e Historial -->
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <!-- Encabezado de Pestañas -->
+                                <div class="tab-header" style="display: flex; gap: 4px; border-bottom: 1px solid var(--border-color); padding-bottom: 2px;">
+                                    <button type="button" id="tabBtnRheology" class="tab-btn active" style="padding: 6px 12px; font-size: 0.78rem; font-weight: bold; background: none; border: none; border-bottom: 2px solid var(--accent); color: var(--accent); cursor: pointer;">🧪 Ajuste Reológico (Fresco)</button>
+                                    <button type="button" id="tabBtnStrength" class="tab-btn" style="padding: 6px 12px; font-size: 0.78rem; font-weight: bold; background: none; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); cursor: pointer;">📈 Reformulación de Resistencia (Pastón Ideal)</button>
                                 </div>
+                                
+                                <!-- Contenedor de Contenido de Pestañas -->
+                                <div class="tab-content-container" style="flex: 1; min-height: 250px; display: flex; flex-direction: column;">
+                                    
+                                    <!-- Contenido Pestaña 1: Ajuste Reológico -->
+                                    <div id="tabContentRheology" class="tab-content" style="display: flex; flex-direction: column; gap: 8px;">
+                                        <p style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.35; margin: 2px 0;">
+                                            Simula la pérdida de asentamiento (Roussel + Arrhenius) y calcula dosificaciones correctivas para mezclas secas o fluidas a escala de laboratorio de 80 L.
+                                        </p>
+                                        
+                                        <div style="display: flex; gap: 8px; margin-top: 4px;">
+                                            <button type="button" id="btnCalcularReologia" class="btn btn-primary" style="flex: 1; height: 32px; font-size: 0.8rem; font-weight: bold; background-color: var(--accent); border-color: var(--accent); color: #000; cursor: pointer;">Calcular Ajuste Reológico</button>
+                                            <button type="button" id="btnValidarMezcla" class="btn btn-secondary" style="flex: 1; height: 32px; font-size: 0.8rem; display: none; cursor: pointer;">Validar y Re-escalar a 1 m³</button>
+                                        </div>
+                                        
+                                        <!-- Resultados de Reología -->
+                                        <div id="rheologyResultCard" style="display: none; background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; font-size: 0.75rem; line-height: 1.4;">
+                                            <div id="rheologyStatus" style="font-weight: bold; font-size: 0.8rem; margin-bottom: 6px;"></div>
+                                            <div id="rheologyCorrectionInfo" style="margin-bottom: 8px;"></div>
+                                            
+                                            <!-- Tabla de Slump Loss -->
+                                            <div style="border-top: 1px dashed var(--border-color); padding-top: 8px;">
+                                                <strong style="color: var(--accent); display: block; margin-bottom: 4px; font-size: 0.75rem;">📈 Proyección de Pérdida de Asentamiento (Slump Loss)</strong>
+                                                <div class="table-responsive" style="max-height: 100px; overflow-y: auto;">
+                                                    <table class="data-table small-table" style="font-size: 0.68rem; text-align: center; width: 100%;">
+                                                        <thead>
+                                                            <tr>
+                                                                <th>Tiempo</th>
+                                                                <th>Edad Eq. 20°C</th>
+                                                                <th>Fluencia</th>
+                                                                <th>Asentamiento</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="rheologyTimelineBody"></tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Contenido Pestaña 2: Reformulación de Resistencia -->
+                                    <div id="tabContentStrength" class="tab-content" style="display: none; flex-direction: column; gap: 8px;">
+                                        <p style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.35; margin: 2px 0;">
+                                            Ajusta de forma iterativa el cemento y la relación a/c en base al desvío de resistencia mecánica a 7/28 días (CIRSOC 201 / ACI 211.1).
+                                        </p>
+                                        
+                                        <button type="button" id="btnReformulateMix" class="btn btn-primary" style="height: 32px; font-size: 0.8rem; font-weight: bold; background-color: var(--accent); border-color: var(--accent); color: #000; cursor: pointer; margin-top: 4px;">🧪 Reformular por Resistencia (Pastón Ideal)</button>
+                                        
+                                        <!-- Historial de Iteraciones -->
+                                        <div style="background-color: rgba(255, 255, 255, 0.01); padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 2px;">
+                                                <strong style="font-size: 0.75rem; color: var(--accent);">📈 Historial de Iteraciones y Ajustes</strong>
+                                                <span style="font-size: 0.7rem; color: var(--text-muted);">Iteración Actual: #<span id="displayQualityIteration">0</span></span>
+                                            </div>
+                                            <div class="iterations-history-table-wrapper" style="overflow-y: auto; max-height: 130px;">
+                                                <table class="data-table small-table" style="font-size: 0.68rem; width: 100%; text-align: center;">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Iter.</th>
+                                                            <th>Agua (L)</th>
+                                                            <th>Cto. (kg)</th>
+                                                            <th>a/c</th>
+                                                            <th>Asent. (cm)</th>
+                                                            <th>f'c 28d (MPa)</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="qualityIterationsHistoryBody">
+                                                        <tr>
+                                                            <td colspan="6" style="color: var(--text-muted); font-style: italic; padding: 10px;">No se han realizado reformulaciones para este diseño.</td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </section>
 
+                    <!-- PISO 6: RECETA DE DOSIFICACIÓN (ABAJO DE TODO) -->
+                    <section class="panel panel-results" id="resultsSection">
+                        <div class="panel-header">
+                            <span class="panel-icon">📊</span>
+                            <h2>Receta de Dosificación</h2>
+                        </div>
+                        <div class="panel-body">
                                 <!-- Volume indicator -->
                                 <div class="results-meta">
                                     <div class="meta-label">Receta de pastón para:</div>
@@ -481,7 +751,7 @@
 
                                 <!-- Target strength details -->
                                 <div class="results-meta" style="margin-top: -5px; font-size: 0.8rem; background-color: rgba(255,255,255,0.01);">
-                                    <div class="meta-label">Resistencia Media de Diseño ($f'_{cm}$):</div>
+                                    <div class="meta-label">Resistencia Media de Diseño (f'<sub>cm</sub>):</div>
                                     <div class="meta-value" style="color: var(--accent);"><span id="resStrengthFcm">36.6</span> MPa</div>
                                 </div>
 
@@ -514,19 +784,29 @@
                                     <div class="recipe-card item-sand">
                                         <div class="card-icon">⏳</div>
                                         <div class="card-content">
-                                            <div class="card-label">Arena Húmeda</div>
+                                            <div class="card-label">Arena</div>
                                             <div class="card-value"><span id="resSand">0.0</span> <span class="unit">kg</span></div>
                                             <div class="card-subtext">Prop. Mezcla: <span id="resSandRatio">0.0</span>%</div>
                                         </div>
                                     </div>
-
-                                    <!-- Stone -->
-                                    <div class="recipe-card item-stone">
+  
+                                    <!-- Gravilla -->
+                                    <div class="recipe-card item-gravilla">
                                         <div class="card-icon">🪨</div>
                                         <div class="card-content">
-                                            <div class="card-label">Piedra Húmeda</div>
-                                            <div class="card-value"><span id="resStone">0.0</span> <span class="unit">kg</span></div>
-                                            <div class="card-subtext">Prop. Mezcla: <span id="resStoneRatio">0.0</span>%</div>
+                                            <div class="card-label">Gravilla</div>
+                                            <div class="card-value"><span id="resGravilla">0.0</span> <span class="unit">kg</span></div>
+                                            <div class="card-subtext">Prop. Mezcla: <span id="resGravillaRatio">0.0</span>%</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Grava -->
+                                    <div class="recipe-card item-grava">
+                                        <div class="card-icon">🧱</div>
+                                        <div class="card-content">
+                                            <div class="card-label">Piedra</div>
+                                            <div class="card-value"><span id="resGrava">0.0</span> <span class="unit">kg</span></div>
+                                            <div class="card-subtext">Prop. Mezcla: <span id="resGravaRatio">0.0</span>%</div>
                                         </div>
                                     </div>
                                 </div>
@@ -560,19 +840,669 @@
                                     </div>
 
                                     <div class="indicator-grid-2">
-                                        <div class="indicator-box">
-                                            <span class="box-label">Módulo de Finura (MF)</span>
-                                            <span class="box-value" id="resMF">0.00</span>
+                                         <div class="indicator-box">
+                                             <span class="box-label">Módulo de Finura (MF)</span>
+                                             <span class="box-value" id="resMF">0.00</span>
+                                         </div>
+                                         <div class="indicator-box">
+                                             <span class="box-label">Desviación Total Granul.</span>
+                                             <span class="box-value" id="resTotalDiff">0.0</span>%
+                                         </div>
+                                     </div>
+                                     <div class="indicator-grid-2" style="margin-top: 8px;">
+                                         <div class="indicator-box" title="Maximum Paste Thickness (MPT): Espesor medio de la película de pasta sobre los agregados según Larrard.">
+                                             <span class="box-label">Espesor Pasta (MPT)</span>
+                                             <span class="box-value" id="resLarrardMPT">0.000</span> <span class="unit">mm</span>
+                                         </div>
+                                         <div class="indicator-box" title="Matrix Final Porosity (MFP): Estimación teórica de la porosidad en estado endurecido según Larrard.">
+                                             <span class="box-label">Porosidad Matriz (MFP)</span>
+                                             <span class="box-value" id="resLarrardMFP">0.0</span> <span class="unit">%</span>
+                                         </div>
+                                     </div>
+                                </div>
+                            </div>
+                        </section>
+                    
+
+                    </div>
+            </div>
+
+            <!-- TAB CONTENT: LABORATORIO ARIDOS -->
+            <div id="tab-laboratorio-aridos" class="tab-content">
+                <div class="workspace-grid" style="margin-top: 20px;">
+                    
+                    <!-- PANEL DE CONTROL DEL ARIDO ACTIVO -->
+                    <section class="panel">
+                        <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="panel-icon">🔬</span>
+                                <h2>Selección de Árido Activo para Ensayos</h2>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 5px;">
+                                Selecciona qué árido estás ensayando. Los campos correspondientes cargarán los datos guardados para dicho árido y permitirán vincular los resultados calculados directamente en la pestaña del Calculador de Dosificación de Hormigón.
+                            </p>
+                            <div class="form-group" style="max-width: 300px; margin-top: 5px;">
+                                <label for="selectLabActiveAggregate" style="font-weight: bold;">Árido a Ensayar:</label>
+                                <select id="selectLabActiveAggregate" class="form-select">
+                                    <option value="arena">Arena (Árido Fino)</option>
+                                    <option value="gravilla">Gravilla (Árido Grueso Intermedio)</option>
+                                    <option value="grava">Grava (Árido Grueso Grande)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SUB-TAB NAVIGATION -->
+                    <div class="sub-nav-tabs">
+                        <button type="button" class="sub-tab-btn active" data-subtab="fisica">Física</button>
+                        <button type="button" class="sub-tab-btn" data-subtab="mecanica">Mecánica / Geométrica</button>
+                        <button type="button" class="sub-tab-btn" data-subtab="quimica">Química / Calidad</button>
+                    </div>
+
+                    <!-- SUB-TAB CONTENT: FÍSICA -->
+                    <div id="subtab-fisica" class="sub-tab-content active">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex-wrap: wrap;">
+                            
+                            <!-- TARJETA 1: DENSIDADES, OQUEDAD Y PASTA (MÓDULOS 1 & 2) -->
+                            <section class="panel">
+                                <div class="panel-header">
+                                    <span class="panel-icon">⚖️</span>
+                                    <h2>Módulo 1 & 2: Densidades, Oquedad y Demanda de Pasta</h2>
+                                </div>
+                                <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
+                                    <div>
+                                        <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">A. Densidad de Conjunto (&rho;<sub>conj</sub>)</h3>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                             <div class="form-group">
+                                                <label for="inputMrec">Masa Recipiente (M<sub>rec</sub>) [g] <span style="font-size: 0.72rem; opacity: 0.75; font-weight: normal;">(0 si balanza está tarada)</span>:</label>
+                                                <input type="number" id="inputMrec" value="3200" class="form-input" min="0">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputMlleno">Masa Lleno (M<sub>lleno</sub>) [g]:</label>
+                                                <input type="number" id="inputMlleno" value="19700" class="form-input" min="0">
+                                            </div>
                                         </div>
-                                        <div class="indicator-box">
-                                            <span class="box-label">Desviación Total Granul.</span>
-                                            <span class="box-value" id="resTotalDiff">0.0</span>%
+                                        <div class="form-group" style="margin-top: 8px;">
+                                            <label for="inputVrec">Volumen Recipiente (V<sub>rec</sub>) [Litros]:</label>
+                                            <input type="number" id="inputVrec" value="10.0" class="form-input" step="0.1" min="0.1">
+                                        </div>
+                                    </div>
+
+                                    <div>
+                                        <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">B. Densidad Relativa del Árido Seco (&rho;<sub>rel</sub>)</h3>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                            <div class="form-group">
+                                                <label for="inputMseco">Masa Seca (M<sub>seco</sub>) [g]:</label>
+                                                <input type="number" id="inputMseco" value="1000" class="form-input" min="0">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputVaguaIni">Vol. Agua Inicial (V<sub>ini</sub>) [ml]:</label>
+                                                <input type="number" id="inputVaguaIni" value="500" class="form-input" min="0">
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="margin-top: 8px;">
+                                            <label for="inputVaguaFin">Vol. Agua Final (V<sub>fin</sub>) [ml]:</label>
+                                            <input type="number" id="inputVaguaFin" value="880" class="form-input" min="0">
+                                        </div>
+                                    </div>
+
+                                    <div style="background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 5px;">
+                                        <h3 style="font-size: 0.88rem; font-weight: bold; margin-bottom: 8px;">Resultados y Vinculación</h3>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; line-height: 1.4;">
+                                            <div>• Dens. Conjunto (&rho;<sub>conj</sub>): <strong id="resRhoConj">1.650</strong> kg/dm³</div>
+                                            <div>• Dens. Relativa (&rho;<sub>rel</sub>): <strong id="resRhoRel">2.632</strong> g/cm³</div>
+                                            <div>• Porcentaje Oquedad (O): <strong id="resOquedad">37.3</strong> %</div>
+                                        </div>
+                                        <div class="form-group" style="margin-top: 10px;">
+                                            <label for="inputVconj" style="font-size: 0.75rem;">Vol. de Conjunto en Mezcla (V<sub>conj</sub>) [Litros]:</label>
+                                            <input type="number" id="inputVconj" value="600" class="form-input" style="height: 28px; padding: 2px 8px; font-size: 0.8rem;" min="0">
+                                        </div>
+                                        <div style="font-size: 0.8rem; margin-top: 5px;">• Vol. Pasta Mínima (V<sub>pasta</sub>): <strong id="resVPasta">223.8</strong> Litros</div>
+
+                                        <button type="button" id="btnLinkDensities" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 12px; font-weight: bold; padding: 8px 12px;">💾 Vincular Densidades a Dosificación</button>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- COLUMNA 2 DE FÍSICA: HUMEDAD (MÓDULO 3) Y ABSORCIÓN (MÓDULO 5) -->
+                            <div style="display: flex; flex-direction: column; gap: 20px;">
+                                
+                                <!-- TARJETA 2: HUMEDAD Y ENTUMECIMIENTO DE ARENA (MÓDULO 3) -->
+                                <section class="panel" id="panelSandMoistureBulking">
+                                    <div class="panel-header">
+                                        <span class="panel-icon">💧</span>
+                                        <h2>Módulo 3: Humedad y Entumecimiento (Exclusivo Arena)</h2>
+                                    </div>
+                                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
+                                        <div>
+                                            <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">A. Humedad del Árido (H)</h3>
+                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                                <div class="form-group">
+                                                    <label for="inputMhumedo">Masa Muestra Húmeda [g]:</label>
+                                                    <input type="number" id="inputMhumedo" value="1050" class="form-input" min="0">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="inputMsecado">Masa Muestra Seca [g]:</label>
+                                                    <input type="number" id="inputMsecado" value="1000" class="form-input" min="0">
+                                                </div>
+                                            </div>
+                                            <div class="form-group" style="margin-top: 8px;">
+                                                <label for="inputMtara">Masa Recipiente Vacío / Tara [g] <span style="font-size: 0.72rem; opacity: 0.75; font-weight: normal;">(0 si balanza está tarada)</span>:</label>
+                                                <input type="number" id="inputMtara" value="100" class="form-input" min="0">
+                                            </div>
+                                        </div>
+
+                                        <div>
+                                            <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">B. Coeficiente de Entumecimiento (K<sub>ent</sub>)</h3>
+                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                                <div class="form-group">
+                                                    <label for="selectSandType">Tipo de Arena:</label>
+                                                    <select id="selectSandType" class="form-select">
+                                                        <option value="fina">Fina</option>
+                                                        <option value="media" selected>Media</option>
+                                                        <option value="gruesa">Gruesa</option>
+                                                    </select>
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="inputVdesignSeco">Volumen Seco Diseño [L]:</label>
+                                                    <input type="number" id="inputVdesignSeco" value="400" class="form-input" min="0">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div style="background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 5px;">
+                                            <h3 style="font-size: 0.88rem; font-weight: bold; margin-bottom: 8px;">Resultados y Vinculación</h3>
+                                            <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; line-height: 1.4;">
+                                                <div>• Humedad Calculada (H): <strong id="resSandMoisture">5.00</strong> %</div>
+                                                <div>• Coef. Entumecimiento (K<sub>ent</sub>): <strong id="resKent">1.28</strong></div>
+                                                <div>• Volumen en Obra Corregido (V<sub>obra</sub>): <strong id="resVObra">512.0</strong> Litros</div>
+                                                <div style="color: var(--accent); font-weight: bold; margin-top: 4px;">• Humedad equivalente para dosificación: <strong id="resMoistEquivalent">82.5</strong> L/m³</div>
+                                            </div>
+
+                                            <button type="button" id="btnLinkMoisture" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 12px; font-weight: bold; padding: 8px 12px;">💾 Vincular Humedad a Dosificación</button>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                <!-- TARJETA 3: COEFICIENTE DE ABSORCIÓN DE AGUA (MÓDULO 5) -->
+                                <section class="panel">
+                                    <div class="panel-header">
+                                        <span class="panel-icon">💧</span>
+                                        <h2>Módulo 5: Coeficiente de Absorción de Agua</h2>
+                                    </div>
+                                    <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
+                                        <div>
+                                            <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">A. Ensayo de Absorción (Ab)</h3>
+                                            <div class="form-group" style="margin-bottom: 8px;">
+                                                <label for="selectAggregateOriginType">Origen del Árido:</label>
+                                                <select id="selectAggregateOriginType" class="form-select">
+                                                    <option value="natural" selected>Árido Natural (Riesgo Hielo/Deshielo)</option>
+                                                    <option value="reciclado">Árido Reciclado (Hormigón de RCD)</option>
+                                                </select>
+                                            </div>
+                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                                <div class="form-group">
+                                                    <label for="inputMsss">Masa SSS (M<sub>SSS</sub>) [g]:</label>
+                                                    <input type="number" id="inputMsss" value="1010" class="form-input" min="0">
+                                                </div>
+                                                <div class="form-group">
+                                                    <label for="inputMsecoEstufa">Masa Seca (M<sub>seco</sub>) [g]:</label>
+                                                    <input type="number" id="inputMsecoEstufa" value="1000" class="form-input" min="0">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div style="background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 5px;">
+                                            <h3 style="font-size: 0.88rem; font-weight: bold; margin-bottom: 8px;">Resultados y Alertas</h3>
+                                            <div style="font-size: 0.82rem; line-height: 1.4; margin-bottom: 8px;">
+                                                • Coeficiente de Absorción (Ab): <strong id="resAbsCoef">1.00</strong> %
+                                            </div>
+                                            <div id="badgeAbsorcion" class="badge-container badge-success">✔️ Apto</div>
+                                            <button type="button" id="btnLinkAbsorcion" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 12px; font-weight: bold; padding: 8px 12px;">💾 Vincular Absorción a Dosificación</button>
+                                        </div>
+                                    </div>
+                                </section>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- SUB-TAB CONTENT: MECÁNICA/GEOMÉTRICA -->
+                    <div id="subtab-mecanica" class="sub-tab-content">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex-wrap: wrap;">
+                            
+                            <!-- TARJETA 1: ENSAYO LOS ANGELES (MÓDULO 4) -->
+                            <section class="panel">
+                                <div class="panel-header">
+                                    <span class="panel-icon">🔨</span>
+                                    <h2>Módulo 4: Ensayo Mecánico de Fragmentación</h2>
+                                </div>
+                                <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
+                                    <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">A. Ensayo de Los Ángeles</h3>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                            <div class="form-group">
+                                                <label for="inputLAInitial">Masa Inicial (M<sub>ini</sub>) [g]:</label>
+                                                <input type="number" id="inputLAInitial" value="5000" class="form-input" min="0">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputLAFinal">Masa Ret. 1.6mm (M<sub>fin</sub>) [g]:</label>
+                                                <input type="number" id="inputLAFinal" value="3800" class="form-input" min="0">
+                                            </div>
+                                        </div>
+                                        <div style="font-size: 0.8rem; margin-bottom: 6px;">
+                                            Coeficiente Los Ángeles (LA): <strong id="resLACoef">24.0</strong> %
+                                        </div>
+                                        <div id="badgeLA" class="badge-container badge-success">✔️ Apto</div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- TARJETA 2: PROPIEDADES GEOMÉTRICAS DE LA GRAVA (MÓDULO 6) -->
+                            <section class="panel">
+                                <div class="panel-header">
+                                    <span class="panel-icon">📐</span>
+                                    <h2>Módulo 6: Propiedades Geométricas de la Grava</h2>
+                                </div>
+                                <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
+                                    <!-- Índice de Lajas -->
+                                    <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">A. Índice de Lajas (I<sub>Lajas</sub>)</h3>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                            <div class="form-group">
+                                                <label for="inputMallasTotal">Masa Total Mallas [g]:</label>
+                                                <input type="number" id="inputMallasTotal" value="1000" class="form-input" min="0">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputBarrasPasa">Masa Pasa Barras [g]:</label>
+                                                <input type="number" id="inputBarrasPasa" value="250" class="form-input" min="0">
+                                            </div>
+                                        </div>
+                                        <div style="font-size: 0.8rem; margin-bottom: 6px;">
+                                            Índice de Lajas (I<sub>Lajas</sub>): <strong id="resILajas">25.0</strong> %
+                                        </div>
+                                        <div id="badgeLajas" class="badge-container badge-success">✔️ Apto</div>
+                                    </div>
+
+                                    <!-- Coeficiente de Forma -->
+                                    <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">B. Coeficiente de Forma (C<sub>f</sub>)</h3>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                            <div class="form-group">
+                                                <label for="inputVgranos">Vol. 20 Granos [cm³]:</label>
+                                                <input type="number" id="inputVgranos" value="25" class="form-input" min="0">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputSumL3">Sumatoria L<sub>i</sub>³ [cm³]:</label>
+                                                <input type="number" id="inputSumL3" value="400" class="form-input" min="0">
+                                            </div>
+                                        </div>
+                                        <div style="font-size: 0.8rem; margin-bottom: 6px;">
+                                            Coeficiente de Forma (C<sub>f</sub>): <strong id="resCf">0.12</strong>
+                                        </div>
+                                        <div id="badgeForma" class="badge-container badge-danger">🚨 La forma del árido es inadecuada (Límite: 0.15)</div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <!-- SUB-TAB CONTENT: QUÍMICA/CALIDAD -->
+                    <div id="subtab-quimica" class="sub-tab-content">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; flex-wrap: wrap;">
+                            
+                            <!-- TARJETA 1: FINOS Y EQUIVALENTE DE ARENA -->
+                            <section class="panel">
+                                <div class="panel-header">
+                                    <span class="panel-icon">⌛</span>
+                                    <h2>Módulo 4: Finos y Pureza de la Arena</h2>
+                                </div>
+                                <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
+                                    <!-- Contenido de Finos -->
+                                    <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">A. Contenido de Finos (Tamiz &lt; 0.063 mm)</h3>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                            <div class="form-group">
+                                                <label for="inputFinosMuestra">Masa Total Seca [g]:</label>
+                                                <input type="number" id="inputFinosMuestra" value="2000" class="form-input" min="0">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputFinosOlla">Masa en Olla Fondo [g]:</label>
+                                                <input type="number" id="inputFinosOlla" value="45" class="form-input" min="0">
+                                            </div>
+                                        </div>
+                                        <div class="form-group" style="margin-bottom: 8px;">
+                                            <label for="selectFinosAggregateType">Origen del Árido:</label>
+                                            <select id="selectFinosAggregateType" class="form-select">
+                                                <option value="rodado">Rodado (Canto Rodado)</option>
+                                                <option value="machaqueo">Machaqueo Calizo (Piedra Partida)</option>
+                                            </select>
+                                        </div>
+                                        <div style="font-size: 0.8rem; margin-bottom: 6px;">
+                                            Porcentaje de Finos: <strong id="resFinosPct">2.25</strong> %
+                                        </div>
+                                        <div id="badgeFinos" class="badge-container badge-success">✔️ Apto</div>
+                                    </div>
+
+                                    <!-- Equivalente de Arena -->
+                                    <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">B. Equivalente de Arena (EA - Solo Arena)</h3>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                            <div class="form-group">
+                                                <label for="inputEAArcilla">Lectura Arcilla (h<sub>arcilla</sub>) [mm]:</label>
+                                                <input type="number" id="inputEAArcilla" value="100" class="form-input" min="0">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputEAArena">Lectura Arena (h<sub>arena</sub>) [mm]:</label>
+                                                <input type="number" id="inputEAArena" value="78" class="form-input" min="0">
+                                            </div>
+                                        </div>
+                                        <div style="font-size: 0.8rem; margin-bottom: 6px;">
+                                            Equivalente de Arena (EA): <strong id="resEA">78.0</strong> %
+                                        </div>
+                                        <div id="badgeEA" class="badge-container badge-success">✔️ Apto</div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- TARJETA 2: REACTIVIDAD Y DURABILIDAD QUÍMICA (MÓDULO 4 & 7) -->
+                            <section class="panel">
+                                <div class="panel-header">
+                                    <span class="panel-icon">🧪</span>
+                                    <h2>Módulo 7: Durabilidad Química y Reactividad</h2>
+                                </div>
+                                <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
+                                    <div class="form-group">
+                                        <label for="selectConcreteStructureType">Tipo de Hormigón a Fabricar:</label>
+                                        <select id="selectConcreteStructureType" class="form-select">
+                                            <option value="masa">Hormigón en Masa</option>
+                                            <option value="armado" selected>Hormigón Armado</option>
+                                            <option value="pretensado">Hormigón Pretensado</option>
+                                        </select>
+                                    </div>
+
+                                    <!-- Cloruros -->
+                                    <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">A. Contenido de Cloruros (Cl<sup>-</sup>)</h3>
+                                        <div class="form-group" style="margin-bottom: 8px;">
+                                            <label for="inputChlorides">Porcentaje en Masa Seca (%):</label>
+                                            <input type="number" id="inputChlorides" value="0.02" class="form-input" step="0.005" min="0">
+                                        </div>
+                                        <div id="badgeChlorides" class="badge-container badge-success">✔️ Cloruros dentro de límites</div>
+                                    </div>
+
+                                    <!-- Sulfatos -->
+                                    <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">B. Contenido de Sulfatos (SO<sub>3</sub>)</h3>
+                                        <div class="form-group" style="margin-bottom: 8px;">
+                                            <label for="inputSulfates">Porcentaje en Masa Seca (%):</label>
+                                            <input type="number" id="inputSulfates" value="0.12" class="form-input" step="0.01" min="0">
+                                        </div>
+                                        <div id="badgeSulfates" class="badge-container badge-success">✔️ Sulfatos dentro de límites</div>
+                                    </div>
+
+                                    <!-- Reacción Álcali-Sílice (RAS) (Módulo 7 - A) -->
+                                    <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">C. Reacción Álcali-Sílice (RAS)</h3>
+                                        <div class="form-group" style="margin-bottom: 8px;">
+                                            <label for="selectRASMineralogy">Mineralogía Dominante:</label>
+                                            <select id="selectRASMineralogy" class="form-select">
+                                                <option value="sano" selected>Cuarzo Sano / Silíceo Estable (Estable)</option>
+                                                <option value="deformado">Cuarzo altamente deformado (Reactivo a largo plazo)</option>
+                                                <option value="opalo">Ópalo / Calcedonia / Tridimita (Reactivo a corto plazo)</option>
+                                                <option value="dolomitico">Dolomítico (Riesgo Reacción Álcali-Carbonato)</option>
+                                            </select>
+                                        </div>
+                                        <div id="badgeRAS" class="badge-container badge-success">✔️ Árido químicamente estable</div>
+                                    </div>
+
+                                    <!-- Sulfuros Oxidables (Módulo 7 - B) -->
+                                    <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">D. Contenido de Sulfuros Oxidables (Piritas)</h3>
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                            <div class="form-group">
+                                                <label for="inputStotal">Azufre Total (S<sub>total</sub>) [%]:</label>
+                                                <input type="number" id="inputStotal" value="0.15" class="form-input" step="0.05" min="0">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputSO3">Sulfatos (SO<sub>3</sub>) [%]:</label>
+                                                <input type="number" id="inputSO3" value="0.05" class="form-input" step="0.01" min="0">
+                                            </div>
+                                        </div>
+                                        <div style="font-size: 0.8rem; margin-bottom: 6px;">
+                                            Diferencia Sulfuros (&Delta;S): <strong id="resDeltaS">0.10</strong> %
+                                        </div>
+                                        <div id="badgeSulfuros" class="badge-container badge-success">✔️ Sulfuros dentro de límites</div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- TAB CONTENT: OPTIMIZACION Y PREDICCION IA -->
+            <div id="tab-optimizacion-ia" class="tab-content" style="display: none;">
+                <div style="background-color: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin-top: 15px; display: flex; justify-content: space-between; align-items: center; gap: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 1.8rem;">🧠</span>
+                        <div>
+                            <h2 style="font-size: 1.1rem; font-weight: bold; margin: 0; color: var(--accent);">Optimización Híbrida y Predicción Supervisada IA</h2>
+                            <p style="font-size: 0.78rem; color: var(--text-muted); margin: 2px 0 0 0;">Utiliza redes evolutivas y algoritmos de gradiente (CatBoost/XGBoost) entrenados y calibrados con bases de datos reales para estimar la resistencia y reducir costos y emisiones de CO₂.</p>
+                        </div>
+                    </div>
+                    <button type="button" id="btnImportActiveMix" class="btn btn-primary" style="height: 38px; font-weight: bold; background-color: var(--accent); border-color: var(--accent); color: #000; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <span>🔄</span> Importar Dosificación Activa
+                    </button>
+                </div>
+
+                <div class="workspace-grid" style="display: grid; grid-template-columns: 1fr 1.3fr; gap: 20px; margin-top: 15px;">
+                    
+                    <!-- Columna Izquierda: Parámetros del Pastón y Objetivos -->
+                    <section class="panel" style="display: flex; flex-direction: column; gap: 15px;">
+                        <div class="panel-header">
+                            <span class="panel-icon">⚙️</span>
+                            <h2>Dosificación de Entrada (kg/m³)</h2>
+                        </div>
+                        <div class="panel-body" style="display: flex; flex-direction: column; gap: 12px;">
+                            
+                            <!-- Ingredientes de la Mezcla -->
+                            <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(255, 255, 255, 0.01); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                <h3 style="font-size: 0.85rem; font-weight: bold; color: var(--accent); margin-bottom: 2px;">🧱 Proporciones de Componentes</h3>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div class="form-group">
+                                        <label for="inputIaCement">Cemento (kg)</label>
+                                        <input type="number" id="inputIaCement" value="350" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputIaWater">Agua (L)</label>
+                                        <input type="number" id="inputIaWater" value="160" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 6px;">
+                                    <div class="form-group">
+                                        <label for="inputIaSand">Arena (kg)</label>
+                                        <input type="number" id="inputIaSand" value="800" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputIaGravilla">Gravilla (kg)</label>
+                                        <input type="number" id="inputIaGravilla" value="300" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputIaGrava">Grava (kg)</label>
+                                        <input type="number" id="inputIaGrava" value="700" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                </div>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div class="form-group">
+                                        <label for="inputIaAdditive">Aditivo (%)</label>
+                                        <input type="number" id="inputIaAdditive" value="0.8" step="0.1" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputIaSlumpMeasured">Asentamiento (cm)</label>
+                                        <input type="number" id="inputIaSlumpMeasured" value="8.0" step="0.5" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Contexto e Historial Local -->
+                            <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(255, 255, 255, 0.01); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                <h3 style="font-size: 0.85rem; font-weight: bold; color: var(--accent); margin-bottom: 2px;">🌡️ Contexto Industrial y Clima</h3>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div class="form-group">
+                                        <label for="inputIaTempConcrete">Temp. Mezcla (°C)</label>
+                                        <input type="number" id="inputIaTempConcrete" value="22" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputIaTransitTime">Tiempo Tránsito (min)</label>
+                                        <input type="number" id="inputIaTransitTime" value="30" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Objetivos de Optimización -->
+                            <div style="display: flex; flex-direction: column; gap: 8px; background: rgba(255, 255, 255, 0.01); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                <h3 style="font-size: 0.85rem; font-weight: bold; color: var(--accent); margin-bottom: 2px;">🎯 Objetivos Generativos (Pareto)</h3>
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                    <div class="form-group">
+                                        <label for="inputIaTargetStrength">Resistencia Obj (MPa)</label>
+                                        <input type="number" id="inputIaTargetStrength" value="30" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputIaMaxCO2">Límite CO<sub>2</sub> (kg/m³)</label>
+                                        <input type="number" id="inputIaMaxCO2" value="280" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputIaMaxCost">Costo Límite ($/m³)</label>
+                                    <input type="number" id="inputIaMaxCost" value="8500" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                </div>
+                            </div>
+
+                            <button type="button" id="btnIaCalibrar" class="btn btn-secondary" style="height: 32px; font-size: 0.8rem; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px;">
+                                ⚙️ Calibrar con Datos Locales (Entrenamiento)
+                            </button>
+                        </div>
+                    </section>
+
+                    <!-- Columna Derecha: Sub-Pestañas de IA -->
+                    <section class="panel" style="display: flex; flex-direction: column; gap: 15px;">
+                        <div class="panel-header" style="padding-bottom: 2px; border-bottom: 1px solid var(--border-color);">
+                            <div style="display: flex; gap: 10px;">
+                                <button type="button" id="subtabIaBtnPredict" class="tab-btn active" style="padding: 6px 12px; font-size: 0.78rem; font-weight: bold; background: none; border: none; border-bottom: 2px solid var(--accent); color: var(--accent); cursor: pointer;">🔍 Inferencia XGBoost</button>
+                                <button type="button" id="subtabIaBtnOptimize" class="tab-btn" style="padding: 6px 12px; font-size: 0.78rem; font-weight: bold; background: none; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); cursor: pointer;">🚀 Diseño Evolutivo</button>
+                                <button type="button" id="subtabIaBtnVision" class="tab-btn" style="padding: 6px 12px; font-size: 0.78rem; font-weight: bold; background: none; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); cursor: pointer;">🎥 SlumpGuard</button>
+                            </div>
+                        </div>
+                        
+                        <div class="panel-body" style="flex: 1; display: flex; flex-direction: column;">
+                            
+                            <!-- Sub-Pestaña 1: Inferencia XGBoost -->
+                            <div id="subtabIaContentPredict" style="display: flex; flex-direction: column; gap: 12px;">
+                                <p style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; margin: 0;">
+                                    Calcula la resistencia a la compresión esperada a 28 días combinando la dosificación cargada con las variables climáticas e industriales.
+                                </p>
+                                
+                                <button type="button" id="btnIaPredecir" class="btn btn-primary" style="height: 34px; font-weight: bold; background-color: var(--accent); border-color: var(--accent); color: #000; cursor: pointer;">
+                                    Calcular Resistencia Predictiva
+                                </button>
+                                
+                                <!-- Card de Resultado de Inferencia -->
+                                <div id="iaPredictCard" style="display: none; background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; display: flex; flex-direction: column; gap: 10px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div>
+                                            <span style="font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; display: block;">Resistencia Predicha f'<sub>c</sub> (28d):</span>
+                                            <strong style="font-size: 1.6rem; color: var(--accent);"><span id="displayIaStrengthVal">0.0</span> MPa</strong>
+                                        </div>
+                                        <div style="text-align: right;">
+                                            <span style="font-size: 0.7rem; text-transform: uppercase; opacity: 0.7; display: block;">Confiabilidad Dominio (5-NN):</span>
+                                            <span id="displayIaReliabilityBadge" class="badge badge-success" style="font-size: 0.75rem; padding: 4px 8px;">94% Dentro de Dominio</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Gráfico de Explicabilidad SHAP -->
+                                    <div style="border-top: 1px dashed var(--border-color); padding-top: 8px;">
+                                        <strong style="color: var(--accent); display: block; margin-bottom: 6px; font-size: 0.75rem;">⚖️ Contribución Marginal de Componentes (Valores SHAP)</strong>
+                                        <div style="height: 130px; position: relative;">
+                                            <canvas id="iaShapChart"></canvas>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </section>
-                    </div>
+                            
+                            <!-- Sub-Pestaña 2: Diseño Evolutivo (NSGA-II) -->
+                            <div id="subtabIaContentOptimize" style="display: none; flex-direction: column; gap: 12px;">
+                                <p style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; margin: 0;">
+                                    Resuelve el Frente de Pareto entre Costo ($) y Huella de Carbono (CO₂) mediante el algoritmo evolutivo NSGA-II acoplado con XGBoost.
+                                </p>
+                                
+                                <button type="button" id="btnIaOptimizar" class="btn btn-primary" style="height: 34px; font-weight: bold; background-color: var(--accent); border-color: var(--accent); color: #000; cursor: pointer;">
+                                    Ejecutar Optimización NSGA-II
+                                </button>
+                                
+                                <!-- Resultados de la Optimización -->
+                                <div id="iaOptimizeCard" style="display: none; display: flex; flex-direction: column; gap: 12px;">
+                                    <!-- Gráfico Frente de Pareto -->
+                                    <div style="background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 8px; border-radius: 8px; height: 180px; position: relative;">
+                                        <canvas id="iaParetoChart"></canvas>
+                                    </div>
+                                    
+                                    <!-- Tabla de Recomendaciones TOPSIS -->
+                                    <div style="background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; display: flex; flex-direction: column; gap: 6px;">
+                                        <strong style="color: var(--accent); font-size: 0.75rem;">📈 Selección Multicriterio TOPSIS (Mezclas Recomendadas)</strong>
+                                        <div style="overflow-x: auto;">
+                                            <table class="data-table small-table" style="font-size: 0.65rem; width: 100%; text-align: center;">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Opción</th>
+                                                        <th>Cemento (kg)</th>
+                                                        <th>Agua (L)</th>
+                                                        <th>a/c</th>
+                                                        <th>Costo ($)</th>
+                                                        <th>CO₂ (kg)</th>
+                                                        <th>Score</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="iaTopsisTableBody"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Sub-Pestaña 3: SlumpGuard Vision -->
+                            <div id="subtabIaContentVision" style="display: none; flex-direction: column; gap: 12px; align-items: center;">
+                                <p style="font-size: 0.72rem; color: var(--text-muted); line-height: 1.4; margin: 0; width: 100%;">
+                                    Analiza el video de la canaleta de descarga del camión mezclador en obra. Estima la consistencia en tiempo real usando flujo óptico denso.
+                                </p>
+                                
+                                <!-- Contenedor de Video de Simulación de Canaleta -->
+                                <div style="width: 100%; max-width: 320px; aspect-ratio: 16/9; background-color: #000; border: 2px solid var(--border-color); border-radius: 8px; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center;">
+                                    <!-- Canvas para Renderizado de la Canaleta y Vectores -->
+                                    <canvas id="slumpGuardCanvas" style="width: 100%; height: 100%;"></canvas>
+                                    <div id="slumpGuardOverlay" style="position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); padding: 4px 8px; border-radius: 4px; font-size: 0.65rem; font-family: monospace; border: 1px solid var(--border-color); display: none;">
+                                        RoI: [x:110, y:45, w:100, h:90]<br>
+                                        Inclinación: <span id="displaySgAngle">18.5</span>°
+                                    </div>
+                                    <div id="slumpGuardStatus" style="position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #000; padding: 4px 10px; border-radius: 12px; font-size: 0.7rem; font-weight: bold; display: none;">
+                                        ESPERANDO DESCARGA
+                                    </div>
+                                </div>
+                                
+                                <div style="display: flex; gap: 8px; width: 100%;">
+                                    <button type="button" id="btnIaSimularVisión" class="btn btn-primary" style="flex: 1; height: 32px; font-size: 0.8rem; font-weight: bold; background-color: var(--accent); border-color: var(--accent); color: #000; cursor: pointer;">
+                                        Simular Inspección Visual
+                                    </button>
+                                    <button type="button" id="btnIaVincularAsentamiento" class="btn btn-secondary" style="flex: 1; height: 32px; font-size: 0.8rem; cursor: pointer; display: none;">
+                                        Vincular a Entrada
+                                    </button>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </section>
+
                 </div>
             </div>
         </main>
@@ -606,73 +1536,41 @@
             </div>
         </div>
     </div>
-
-    <!-- AUTHENTICATION MODAL -->
-    <div id="authModal" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
-            <span class="modal-close" id="btnCloseAuthModal">&times;</span>
-            <h2 id="authModalTitle" style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 10px;">Iniciar Sesión</h2>
-            <p id="authModalSubtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Accedé a tu cuenta de HormigonIA para sincronizar tus dosificaciones.</p>
-            
-            <form id="authForm">
-                <div class="form-group">
-                    <label for="inputAuthEmail">Correo Electrónico:</label>
-                    <input type="email" id="inputAuthEmail" required placeholder="correo@ejemplo.com" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label for="inputAuthPassword">Contraseña:</label>
-                    <input type="password" id="inputAuthPassword" required placeholder="••••••••" class="form-input">
-                </div>
-                <div class="form-group" id="groupConfirmPassword" style="display: none;">
-                    <label for="inputAuthConfirmPassword">Confirmar Contraseña:</label>
-                    <input type="password" id="inputAuthConfirmPassword" placeholder="••••••••" class="form-input">
-                </div>
-                <div class="auth-error-msg" id="authErrorMsg" style="color: var(--error); margin-top: 10px; font-size: 0.85rem; display: none; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.2);"></div>
-                <div class="auth-success-msg" id="authSuccessMsg" style="color: var(--accent); margin-top: 10px; font-size: 0.85rem; display: none; background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2);"></div>
-                
-                <div class="modal-footer" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
-                    <button type="submit" id="btnSubmitAuth" class="btn btn-primary" style="width: 100%; justify-content: center;">Entrar</button>
-                    <button type="button" id="btnToggleAuthMode" class="btn btn-secondary" style="font-size: 0.85rem; width: 100%; justify-content: center; background: transparent; border: none; text-decoration: underline;">¿No tenés cuenta? Registrate</button>
-                    
-                    <div style="display: flex; align-items: center; text-align: center; margin: 10px 0; color: var(--text-muted); font-size: 0.8rem;">
-                        <hr style="flex-grow: 1; border: none; border-top: 1px solid rgba(255,255,255,0.08); margin-right: 10px;">
-                        <span>o continuar con</span>
-                        <hr style="flex-grow: 1; border: none; border-top: 1px solid rgba(255,255,255,0.08); margin-left: 10px;">
-                    </div>
-                    
-                    <button type="button" id="btnGoogleAuth" class="btn btn-secondary btn-icon" style="width: 100%; justify-content: center; background-color: #ffffff; color: #1f2937; border-color: #e5e7eb; transition: background-color 0.2s;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 8px;">
-                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                        </svg>
-                        Google
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- SAVED MIXES MODAL -->
-    <div id="mixesModal" class="modal">
+    <!-- SIMULATION MODAL -->
+    <div id="simulationModal" class="modal">
         <div class="modal-content" style="max-width: 600px;">
-            <span class="modal-close" id="btnCloseMixesModal">&times;</span>
-            <h2 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 5px;">Mis Mezclas Guardadas</h2>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Cargá una dosificación anteriormente guardada en tu panel.</p>
+            <span class="modal-close" id="btnCloseSimulationModal">&times;</span>
+            <h2>Simulación de Robustez del Motor Físico</h2>
+            <p>Se ejecutarán 1000 pruebas aleatorias variando parámetros de diseño, granulometría, aditivos y clima para verificar que el motor matemático no genere errores (NaN, Infinity o valores negativos).</p>
             
-            <div id="mixesListContainer" class="mixes-list-container" style="max-height: 350px; overflow-y: auto; margin-bottom: 20px; display: flex; flex-direction: column; gap: 10px;">
-                <div style="text-align: center; color: var(--text-muted); padding: 30px;">Cargando dosificaciones...</div>
+            <div style="margin: 20px 0; background-color: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 0.9rem;">
+                    <span>Progreso: <strong id="simProgressPct">0%</strong></span>
+                    <span><span id="simCurrentCount">0</span> / 1000</span>
+                </div>
+                <div style="background-color: var(--border-color); height: 10px; border-radius: 5px; overflow: hidden; margin-bottom: 15px;">
+                    <div id="simProgressBar" style="background-color: var(--accent); width: 0%; height: 100%; transition: width 0.1s;"></div>
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.85rem;">
+                    <div>Pruebas Exitosas: <strong style="color: var(--success);" id="simSuccessCount">0</strong></div>
+                    <div>Pruebas Fallidas: <strong style="color: var(--error);" id="simFailedCount">0</strong></div>
+                </div>
             </div>
             
-            <div class="modal-footer" style="justify-content: flex-end;">
-                <button id="btnDismissMixes" class="btn btn-secondary">Cerrar</button>
+            <div id="simLogConsole" style="background-color: #0b0f19; font-family: monospace; font-size: 0.72rem; padding: 10px; border-radius: 6px; height: 150px; overflow-y: auto; color: #a1a1aa; border: 1px solid var(--border-color); margin-bottom: 15px; line-height: 1.4;">
+                [Consola de simulación vacía]
+            </div>
+            
+            <div class="modal-footer">
+                <button id="btnStartSimulation" class="btn btn-primary">Iniciar Pruebas</button>
             </div>
         </div>
     </div>
     
-    <script type="module" src="supabase-client.js"></script>
-    <script type="module" src="ai.js"></script>
-    <script type="module" src="app.js"></script>
+    <script src="ai.js?v=1.0.1"></script>
+    <script src="app_v1.js?v=1.0.5"></script>
+    <script src="sim.js?v=1.0.1"></script>
+    <!-- PRINTABLE CALCULATION MEMORY (HIDDEN ON SCREEN) -->
+    <div id="printCalcMemory" class="print-only"></div>
 </body>
 </html>
