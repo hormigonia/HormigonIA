@@ -16,9 +16,6 @@ function showServerErrorOverlay() {
 let authMode = "signin"; // "signin" or "signup"
 
 function initLoginSystem() {
-    const { supabase, onAuthStateChange, signIn, signUp, signOut, signInWithGoogle } = window;
-    
-    const authModal = document.getElementById("authModal");
     const btnAuthModal = document.getElementById("btnAuthModal");
     const btnCloseAuthModal = document.getElementById("btnCloseAuthModal");
     const authForm = document.getElementById("authForm");
@@ -34,21 +31,42 @@ function initLoginSystem() {
     const userProfileWidget = document.getElementById("userProfileWidget");
     const userNameLabel = document.getElementById("userNameLabel");
     const userAvatarCircle = document.getElementById("userAvatarCircle");
+    const authModal = document.getElementById("authModal");
 
-    // Auth listeners
-    if (supabase) {
-        onAuthStateChange((event, session) => {
-            currentUserSession = session;
-            if (session) {
-                activeUser = session.user.email;
+    const setupAuthListeners = () => {
+        if (window.supabase) {
+            window.onAuthStateChange((event, session) => {
+                currentUserSession = session;
+                if (session) {
+                    activeUser = session.user.email;
+                    if (btnAuthModal) btnAuthModal.style.display = "none";
+                    if (userProfileWidget) userProfileWidget.style.display = "flex";
+                    if (userNameLabel) userNameLabel.innerText = activeUser.split("@")[0];
+                    if (userAvatarCircle) {
+                        userAvatarCircle.innerText = activeUser.charAt(0).toUpperCase();
+                        let charSum = 0;
+                        for (let i = 0; i < activeUser.length; i++) charSum += activeUser.charCodeAt(i);
+                        userAvatarCircle.style.backgroundColor = `hsl(${charSum % 360}, 70%, 45%)`;
+                    }
+                    LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
+                } else {
+                    activeUser = null;
+                    if (btnAuthModal) btnAuthModal.style.display = "inline-flex";
+                    if (userProfileWidget) userProfileWidget.style.display = "none";
+                    LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes";
+                }
+                loadSavedMixes();
+            });
+        } else {
+            // Local fallback logic
+            const savedUser = localStorage.getItem("hormigonmix_active_user");
+            if (savedUser) {
+                activeUser = savedUser;
                 if (btnAuthModal) btnAuthModal.style.display = "none";
                 if (userProfileWidget) userProfileWidget.style.display = "flex";
                 if (userNameLabel) userNameLabel.innerText = activeUser.split("@")[0];
                 if (userAvatarCircle) {
                     userAvatarCircle.innerText = activeUser.charAt(0).toUpperCase();
-                    let charSum = 0;
-                    for (let i = 0; i < activeUser.length; i++) charSum += activeUser.charCodeAt(i);
-                    userAvatarCircle.style.backgroundColor = `hsl(${charSum % 360}, 70%, 45%)`;
                 }
                 LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
             } else {
@@ -58,27 +76,23 @@ function initLoginSystem() {
                 LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes";
             }
             loadSavedMixes();
-        });
-    } else {
-        // Local fallback logic
-        const savedUser = localStorage.getItem("hormigonmix_active_user");
-        if (savedUser) {
-            activeUser = savedUser;
-            if (btnAuthModal) btnAuthModal.style.display = "none";
-            if (userProfileWidget) userProfileWidget.style.display = "flex";
-            if (userNameLabel) userNameLabel.innerText = activeUser.split("@")[0];
-            if (userAvatarCircle) {
-                userAvatarCircle.innerText = activeUser.charAt(0).toUpperCase();
-            }
-            LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
-        } else {
-            activeUser = null;
-            if (btnAuthModal) btnAuthModal.style.display = "inline-flex";
-            if (userProfileWidget) userProfileWidget.style.display = "none";
-            LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes";
         }
-        loadSavedMixes();
-    }
+    };
+
+    // Poll until window.supabase is loaded
+    let attempts = 0;
+    const checkSupabaseWithFallback = () => {
+        if (window.supabase) {
+            setupAuthListeners();
+        } else if (attempts < 60) { // 3 seconds max
+            attempts++;
+            setTimeout(checkSupabaseWithFallback, 50);
+        } else {
+            console.warn("Supabase not detected, initializing local fallback auth.");
+            setupAuthListeners();
+        }
+    };
+    checkSupabaseWithFallback();
 
     // Modal triggers
     if (btnAuthModal) {
@@ -139,7 +153,7 @@ function initLoginSystem() {
                 return;
             }
 
-            if (supabase) {
+            if (window.supabase) {
                 try {
                     if (btnSubmitAuth) {
                         btnSubmitAuth.disabled = true;
@@ -147,10 +161,10 @@ function initLoginSystem() {
                     }
 
                     if (authMode === "signin") {
-                        await signIn(email, password);
+                        await window.signIn(email, password);
                         if (authModal) authModal.classList.remove("open");
                     } else {
-                        await signUp(email, password);
+                        await window.signUp(email, password);
                         if (authSuccessMsg) {
                             authSuccessMsg.innerText = "¡Registro enviado! Te enviamos un correo de confirmación.";
                             authSuccessMsg.style.display = "block";
@@ -184,9 +198,9 @@ function initLoginSystem() {
     // Google Authentication
     if (btnGoogleAuth) {
         btnGoogleAuth.addEventListener("click", async () => {
-            if (supabase) {
+            if (window.supabase) {
                 try {
-                    await signInWithGoogle();
+                    await window.signInWithGoogle();
                 } catch (err) {
                     alert("Error de autenticación con Google: " + err.message);
                 }
@@ -212,9 +226,9 @@ function initLoginSystem() {
         btnLogout.addEventListener("click", async (e) => {
             e.preventDefault();
             if (confirm("¿Deseas cerrar la sesión activa?")) {
-                if (supabase) {
+                if (window.supabase) {
                     try {
-                        await signOut();
+                        await window.signOut();
                     } catch (err) {
                         alert("Error al cerrar sesión: " + err.message);
                     }
