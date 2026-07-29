@@ -1075,7 +1075,6 @@ document.addEventListener("DOMContentLoaded", () => {
     
     // Saved mixes & global action listeners
     document.getElementById("btnSaveCurrentMix").addEventListener("click", saveCurrentMix);
-    document.getElementById("btnResetApp").addEventListener("click", resetAppFields);
     window.addEventListener("beforeprint", updatePrintCalcMemory);
 
     // Tab switching logic
@@ -1345,32 +1344,6 @@ function setupEventListeners() {
         btnAddAdditive.addEventListener("click", addAdditive);
     }
     
-    // API modal events
-    const apiModal = document.getElementById("apiModal");
-    document.getElementById("toggleApiModal").addEventListener("click", () => {
-        document.getElementById("inputApiKey").value = localStorage.getItem("gemini_api_key") || "";
-        apiModal.classList.add("open");
-    });
-    document.getElementById("btnCloseApiModal").addEventListener("click", () => apiModal.classList.remove("open"));
-    document.getElementById("btnSaveApiKey").addEventListener("click", () => {
-        const key = document.getElementById("inputApiKey").value.trim();
-        if (key) {
-            localStorage.setItem("gemini_api_key", key);
-            alert("API Key guardada correctamente.");
-        } else {
-            localStorage.removeItem("gemini_api_key");
-        }
-        updateApiStatus();
-        apiModal.classList.remove("open");
-    });
-    document.getElementById("btnDeleteApiKey").addEventListener("click", () => {
-        localStorage.removeItem("gemini_api_key");
-        document.getElementById("inputApiKey").value = "";
-        updateApiStatus();
-        alert("API Key eliminada.");
-        apiModal.classList.remove("open");
-    });
-
     // Rheology panel events
     const btnCalcularReologia = document.getElementById("btnCalcularReologia");
     if (btnCalcularReologia) {
@@ -1476,20 +1449,6 @@ function setupEventListeners() {
         btnReformulateMix.addEventListener("click", reformulateMixForIdealPaston);
     }
 
-    updateApiStatus();
-}
-
-function updateApiStatus() {
-    const key = localStorage.getItem("gemini_api_key");
-    const badge = document.getElementById("apiStatusBadge");
-    if (key) {
-        badge.innerText = "API Conectada";
-        badge.className = "badge badge-success";
-    } else {
-        badge.innerText = "Sin API Key";
-        badge.className = "badge badge-error";
-    }
-}
 
 function updateConcreteClassDropdown(minClass) {
     const dropdown = document.getElementById("selectConcreteClass");
@@ -3577,6 +3536,14 @@ async function deleteSavedMixByIndex(index) {
 
 async function saveCurrentMix() {
     const { supabase, saveConcreteMix, deleteMix } = window;
+    
+    if (supabase && !currentUserSession) {
+        alert("Para poder guardar tu mezcla en la nube de forma segura, por favor inicia sesión o crea una cuenta.");
+        const authModal = document.getElementById("authModal");
+        if (authModal) authModal.classList.add("open");
+        return;
+    }
+    
     const rawName = prompt("Ingresa el nombre para esta mezcla:", currentCustomName || "Mi Mezcla");
     if (rawName === null) return;
     
