@@ -4,9 +4,21 @@ import { createClient } from '@supabase/supabase-js';
 let supabaseUrl = '';
 let supabaseAnonKey = '';
 
+// 1. Fetch runtime config from backend API (universal endpoint for dev and prod)
 try {
-    // Check if running under Vite/bundler
-    if (typeof import.meta !== 'undefined' && import.meta.env) {
+    const response = await fetch('/api/config');
+    if (response.ok) {
+        const config = await response.json();
+        supabaseUrl = config.supabaseUrl || '';
+        supabaseAnonKey = config.supabaseAnonKey || '';
+    }
+} catch (err) {
+    console.warn("Could not fetch runtime config from API, trying fallbacks...", err);
+}
+
+// 2. Check if running under Vite/bundler
+try {
+    if (!supabaseUrl && typeof import.meta !== 'undefined' && import.meta.env) {
         supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
         supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
     }
@@ -14,7 +26,7 @@ try {
     // Suppress reference error if import.meta is not supported
 }
 
-// Fallback to window globals or localStorage for build-free local testing
+// 3. Fallback to window globals or localStorage for build-free local testing
 if (!supabaseUrl) {
     supabaseUrl = window.VITE_SUPABASE_URL || localStorage.getItem("VITE_SUPABASE_URL") || '';
 }
@@ -24,7 +36,7 @@ if (!supabaseAnonKey) {
 
 // Validate and clean config URL
 let client = null;
-if (supabaseUrl && supabaseAnonKey) {
+if (supabaseUrl && supabaseAnonKey && !supabaseUrl.startsWith("%") && !supabaseAnonKey.startsWith("%")) {
     let cleanUrl = supabaseUrl.trim();
     if (cleanUrl.endsWith('/')) {
         cleanUrl = cleanUrl.slice(0, -1);
@@ -34,7 +46,7 @@ if (supabaseUrl && supabaseAnonKey) {
     }
     client = createClient(cleanUrl, supabaseAnonKey);
 } else {
-    console.warn("Supabase credentials missing. Local auth and cloud database will be inactive until VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.");
+    console.warn("Supabase credentials missing or unreplaced placeholders. Local auth and cloud database will be inactive until VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.");
 }
 
 export const supabase = client;
