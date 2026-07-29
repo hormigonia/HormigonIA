@@ -1,5 +1,10 @@
 import os
+from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+
+# Load environment variables
+load_dotenv()
+load_dotenv(".env.local")
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
@@ -62,6 +67,13 @@ class WeatherRequest(BaseModel):
 
 class ChatRequest(BaseModel):
     prompt: str
+
+@app.get("/api/config")
+def api_get_config():
+    return {
+        "supabaseUrl": os.environ.get("VITE_SUPABASE_URL", ""),
+        "supabaseAnonKey": os.environ.get("VITE_SUPABASE_ANON_KEY", "")
+    }
 
 @app.get("/api/health")
 def health_check():
