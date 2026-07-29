@@ -1444,11 +1444,11 @@ function setupEventListeners() {
         });
     }
 
-        const btnReformulateMix = document.getElementById("btnReformulateMix");
+    const btnReformulateMix = document.getElementById("btnReformulateMix");
     if (btnReformulateMix) {
         btnReformulateMix.addEventListener("click", reformulateMixForIdealPaston);
     }
-
+}
 
 function updateConcreteClassDropdown(minClass) {
     const dropdown = document.getElementById("selectConcreteClass");
