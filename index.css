@@ -1080,6 +1080,9 @@ label {
         grid-template-columns: repeat(3, 1fr) !important;
         gap: 6px !important;
     }
+    .panel-quality-control-unified .panel-body {
+        grid-template-columns: 1fr !important;
+    }
 }
 
 /* PRINT MEDIA (FOR PDF REPORT GENERATION) */
