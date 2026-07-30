@@ -1545,3 +1545,56 @@ body.printing-active .print-only,
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
     transform: translateY(-1px);
 }
+
+/* Documentos / Manuales Dropdown */
+.dropdown-manuales {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-menu-manuales {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: var(--bg-panel);
+    min-width: 210px;
+    box-shadow: var(--shadow-lg);
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    z-index: 1000;
+    margin-top: 5px;
+    overflow: hidden;
+    animation: fadeInDropdown 0.2s ease;
+}
+
+.dropdown-manuales:hover .dropdown-menu-manuales {
+    display: block;
+}
+
+.dropdown-item-manuales {
+    color: var(--text-main);
+    padding: 10px 15px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    transition: background-color 0.2s, color 0.2s;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.dropdown-item-manuales:last-child {
+    border-bottom: none;
+}
+
+.dropdown-item-manuales:hover {
+    background-color: var(--bg-input);
+    color: var(--accent);
+}
+
+@keyframes fadeInDropdown {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}

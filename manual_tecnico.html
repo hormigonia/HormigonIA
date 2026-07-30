@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual Técnico - HormigonIA</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX CDN for beautiful mathematical formatting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+
+    <style>
+        :root {
+            --bg-color: #0b0f19;
+            --bg-sidebar: #0f172a;
+            --bg-panel: #1e293b;
+            --text-color: #cbd5e1;
+            --text-title: #f8fafc;
+            --primary-color: #3b82f6;
+            --primary-hover: #2563eb;
+            --accent-color: #10b981;
+            --border-color: #334155;
+            --code-bg: #1e293b;
+            --alert-bg: rgba(59, 130, 246, 0.1);
+            --alert-border: #3b82f6;
+            --table-header: #1e293b;
+            --sidebar-width: 320px;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            line-height: 1.6;
+            display: flex;
+            min-height: 100vh;
+        }
+
+        /* Sidebar styling */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--bg-sidebar);
+            border-right: 1px solid var(--border-color);
+            padding: 30px 20px;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 35px;
+        }
+
+        .logo-icon {
+            font-size: 2rem;
+        }
+
+        .logo-text h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            color: var(--text-title);
+            font-weight: 800;
+        }
+
+        .logo-text span {
+            color: var(--primary-color);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .menu-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.88rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu-item:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+            color: var(--text-title);
+        }
+
+        .menu-item.active {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            font-size: 0.75rem;
+            color: #64748b;
+            text-align: center;
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+        }
+
+        /* Content area styling */
+        .content-area {
+            margin-left: var(--sidebar-width);
+            flex-grow: 1;
+            padding: 40px 50px;
+            max-width: 1000px;
+        }
+
+        /* Header controls */
+        .print-header-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-bottom: 35px;
+            background: var(--bg-sidebar);
+            padding: 15px 20px;
+            border-radius: 10px;
+            border: 1px solid var(--border-color);
+        }
+
+        .btn-action {
+            background-color: var(--bg-panel);
+            color: var(--text-title);
+            border: 1px solid var(--border-color);
+            padding: 10px 18px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .btn-action:hover {
+            background-color: #2e3b4e;
+            border-color: #4b5563;
+        }
+
+        .btn-primary-action {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+        }
+
+        .btn-primary-action:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Content elements */
+        .manual-section {
+            display: none;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .manual-section.active {
+            display: block;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            color: var(--text-title);
+            margin-top: 1.8em;
+            margin-bottom: 0.6em;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-top: 0;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 12px;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 8px;
+            color: var(--primary-color);
+            margin-top: 2em;
+        }
+
+        h3 {
+            font-size: 1.25rem;
+            color: var(--text-title);
+        }
+
+        p {
+            margin-bottom: 1.2em;
+            color: var(--text-color);
+        }
+
+        /* Code syntax highlighting mockup */
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            padding: 18px;
+            border-radius: 8px;
+            overflow-x: auto;
+            margin: 20px 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background-color: rgba(255,255,255,0.06);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #f43f5e;
+        }
+
+        pre code {
+            background-color: transparent;
+            padding: 0;
+            color: inherit;
+        }
+
+        /* Tables styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 24px 0;
+            font-size: 0.88rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 12px 14px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--table-header);
+            font-weight: 600;
+            color: var(--text-title);
+        }
+
+        tr:nth-child(even) {
+            background-color: rgba(255,255,255,0.01);
+        }
+
+        /* Alerts/Callouts */
+        .alert {
+            background-color: var(--alert-bg);
+            border-left: 4px solid var(--alert-border);
+            padding: 16px 20px;
+            border-radius: 6px;
+            margin: 24px 0;
+        }
+
+        .alert-title {
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-title);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Math formula centering */
+        .katex-display {
+            padding: 14px 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+            background-color: rgba(255,255,255,0.01);
+            border-radius: 6px;
+            margin: 15px 0;
+        }
+
+        ol, ul {
+            padding-left: 22px;
+            margin-bottom: 1.2em;
+        }
+
+        li {
+            margin-bottom: 0.6em;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive styling */
+        @media (max-width: 900px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid var(--border-color);
+                padding: 20px;
+            }
+
+            .content-area {
+                margin-left: 0;
+                padding: 20px;
+            }
+        }
+
+        /* Clean styles for print or PDF generation */
+        @media print {
+            body {
+                background-color: white !important;
+                color: #1e293b !important;
+                display: block !important;
+                font-size: 11pt;
+            }
+
+            .sidebar, .print-header-actions {
+                display: none !important;
+            }
+
+            .content-area {
+                margin-left: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            .manual-section {
+                display: none;
+                background-color: white !important;
+                color: #1e293b !important;
+            }
+
+            .manual-section.active, .manual-section.print-visible {
+                display: block !important;
+                page-break-after: always;
+            }
+
+            .manual-section:last-child {
+                page-break-after: avoid;
+            }
+
+            h1, h2, h3, h4 {
+                color: #0f172a !important;
+                page-break-after: avoid;
+            }
+
+            h1 {
+                border-bottom-color: #2563eb !important;
+            }
+
+            h2 {
+                border-bottom-color: #cbd5e1 !important;
+                color: #2563eb !important;
+            }
+
+            pre, code {
+                background-color: #f1f5f9 !important;
+                color: #0f172a !important;
+                border-color: #cbd5e1 !important;
+            }
+
+            th {
+                background-color: #e2e8f0 !important;
+                color: #0f172a !important;
+                border-color: #cbd5e1 !important;
+            }
+
+            td, tr {
+                border-color: #cbd5e1 !important;
+            }
+
+            .alert {
+                background-color: #f0f7ff !important;
+                border-left-color: #2563eb !important;
+                color: #1e3a8a !important;
+            }
+
+            .alert-title {
+                color: #1e3a8a !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar">
+        <div class="logo-area">
+            <div class="logo-icon">💻</div>
+            <div class="logo-text">
+                <h1>Hormigon<span>IA</span></h1>
+                <p style="font-size: 0.65rem; color: #64748b; margin: 0;">Manual Técnico V1.2</p>
+            </div>
+        </div>
+
+        <ul class="sidebar-menu">
+            <li class="menu-item active" data-section="sec-intro">📚 1. Resumen General</li>
+            <li class="menu-item" data-section="sec-dosif">📐 2. Dosificación y Bolomey</li>
+            <li class="menu-item" data-section="sec-humedad">💧 3. Humedad de Áridos</li>
+            <li class="menu-item" data-section="sec-baldes">🪣 4. Calibración de Baldes</li>
+            <li class="menu-item" data-section="sec-reologia">🧪 5. Reología y Asentamiento</li>
+            <li class="menu-item" data-section="sec-ia">🤖 6. Asistente IA (Gemini)</li>
+            <li class="menu-item" data-section="sec-sync">☁️ 7. Base de Datos Supabase</li>
+        </ul>
+
+        <div class="sidebar-footer">
+            HormigonIA &copy; 2026<br>
+            Modo Local Ejecutable
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="content-area">
+        <div class="print-header-actions">
+            <button onclick="printSelectedSection()" class="btn-action">
+                🖨️ Imprimir Módulo Activo
+            </button>
+            <button onclick="printFullDocument()" class="btn-action btn-primary-action">
+                📚 Imprimir Manual Completo (PDF)
+            </button>
+        </div>
+
+        <!-- SECTION: INTRO -->
+        <section id="sec-intro" class="manual-section active">
+            <h1>Manual Técnico de HormigonIA</h1>
+            <p style="font-size: 1.1rem; color: var(--text-title); margin-top: 10px;">Especificación Matemática y Algorítmica del Core de Cálculo</p>
+            
+            <h2>1. Arquitectura General y Flujo</h2>
+            <p>HormigonIA es una plataforma científica de diseño y ajuste de mezclas de hormigón que opera bajo un flujo lógico estructurado. El sistema conecta parámetros de laboratorio granulométrico, leyes clásicas de empaquetamiento y modelos de reología viscoplástica avanzada para lograr un diseño óptimo tanto en teoría como en obra.</p>
+            <p>El núcleo de cálculo se divide en seis subsistemas matemáticos autónomos comunicados mediante APIs en formato JSON. En este manual se describen detalladamente las ecuaciones que gobiernan cada módulo.</p>
+            
+            <div class="alert">
+                <div class="alert-title">ℹ️ Nota de Operación Local</div>
+                Este manual está integrado directamente en la estructura de la aplicación y puede ser consultado sin conexión a internet. Los botones de exportación superior activan la hoja de estilos de impresión del navegador para formatear la entrega en un PDF limpio de tamaño A4.
+            </div>
+        </section>
+
+        <!-- SECTION: DOSIFICACIÓN -->
+        <section id="sec-dosif" class="manual-section">
+            <h1>Módulo de Dosificación Racional y Leyes de Mezcla</h1>
+            <p>Este módulo calcula las proporciones teóricas de agua, cemento y agregados por metro cúbico utilizando el método racional clásico ajustado con la curva límite de Bolomey.</p>
+
+            <h2>1. Resistencia de Diseño (Compresión)</h2>
+            <p>La resistencia media requerida en el laboratorio ($f'_{cm}$ o $f'_{cr}$) se calcula a partir de la resistencia especificada en el proyecto ($f'_c$) y la desviación estándar de la planta de hormigón ($s$):</p>
+            
+            $$\text{Para control excelente (planta automatizada): } f'_{cm} = f'_c + 1.34s + 5.0\text{ (MPa)}$$
+            $$\text{Para control estándar (laboratorio/obra común): } f'_{cm} = f'_c + 1.48s\text{ (MPa)}$$
+
+            <h2>2. Relación Agua/Cemento (Ley de Abrams)</h2>
+            <p>La relación $w/c$ teórica se determina a partir del tipo de cemento (CP30, CP40, CP50) y la resistencia objetivo aplicando la curva de regresión exponencial de Abrams:</p>
+            
+            $$w/c = \frac{\ln(A / f'_{cm})}{B}$$
+
+            <p>Donde los parámetros empíricos de resistencia $A$ y $B$ para cada categoría de cemento son:</p>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Categoría de Cemento</th>
+                        <th>Parámetro A (MPa)</th>
+                        <th>Parámetro B</th>
+                        <th>Resistencia Límite Nominal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>CP30</strong></td>
+                        <td>78.4</td>
+                        <td>2.35</td>
+                        <td>30 MPa</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CP40</strong></td>
+                        <td>94.2</td>
+                        <td>2.28</td>
+                        <td>40 MPa</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CP50</strong></td>
+                        <td>112.5</td>
+                        <td>2.21</td>
+                        <td>50 MPa</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2>3. Curva Combinada de Agregados (Bolomey)</h2>
+            <p>La distribución óptima del volumen de agregados se calcula para ajustarse a la parábola ideal de Bolomey. El porcentaje acumulado pasante ideal ($P$) para cada tamiz de diámetro $d$ es:</p>
+            
+            $$P(d) = A + (100 - A) \sqrt{\frac{d}{D}}$$
+
+            <p>Donde:</p>
+            <ul>
+                <li>$d$: Diámetro del tamiz en análisis (en mm).</li>
+                <li>$D$: Tamaño máximo nominal del árido grueso (en mm).</li>
+                <li>$A$: Parámetro de Bolomey (coeficiente de bombeabilidad y consistencia) que varía entre $8$ y $14$ según la trabajabilidad buscada y la aspereza de los agregados.</li>
+            </ul>
+
+            <h2>4. Cálculo de Volumen Absoluto</h2>
+            <p>Una vez calculada la dosis de agua libre ($W$) y de cemento ($C = W / (w/c)$), el volumen restante de la mezcla se completa con los agregados para asegurar un volumen de pastón unitario de exactly $1\text{ m}^3$ ($1000\text{ L}$), incorporando el contenido de aire atrapado ($Air\%$):</p>
+            
+            $$V_{agregados} = 1000 \cdot \left(1 - \frac{Air\%}{100}\right) - \left(\frac{C}{\rho_{cemento}} + \frac{W}{\rho_{agua}} + V_{aditivos}\right)$$
+        </section>
+
+        <!-- SECTION: HUMEDAD -->
+        <section id="sec-humedad" class="manual-section">
+            <h1>Módulo de Corrección por Humedad de Áridos</h1>
+            <p>Ajusta el pesaje de los agregados húmedos y calcula el balance de agua neta a incorporar a la mezcladora debido al agua libre y la absorción interna.</p>
+
+            <h2>1. Peso Húmedo de los Agregados</h2>
+            <p>Para compensar el peso de agua contenido en las pilas de acopio en obra y garantizar que la cantidad de esqueleto seco permanezca constante, los pesos secos de diseño de arena ($S_s$) y piedra ($P_s$) se ajustan a pesos húmedos ($S_h$ y $P_h$):</p>
+            
+            $$S_h = S_s \cdot \left(1 + \frac{h_{sand}}{100}\right) \cdot V_{paston}$$
+            $$P_h = P_s \cdot \left(1 + \frac{h_{stone}}{100}\right) \cdot V_{paston}$$
+
+            <p>Donde $h_{sand}$ y $h_{stone}$ son las humedades gravimétricas medidas en %.</p>
+
+            <h2>2. Aporte de Agua Libre</h2>
+            <p>El árido sólo aporta agua líquida a la mezcla si su humedad medida excede su capacidad interna de absorción ($abs_{sand}$, $abs_{stone}$):</p>
+            
+            $$W_{libre, sand} = S_s \cdot \left(\frac{h_{sand} - abs_{sand}}{100}\right) \cdot V_{paston}$$
+            $$W_{libre, stone} = P_s \cdot \left(\frac{h_{stone} - abs_{stone}}{100}\right) \cdot V_{paston}$$
+
+            <p>Si un árido se encuentra extremadamente seco ($h < abs$), el término será negativo. Esto representa agua absorbida por los agregados secos, la cual se compensará adicionando más agua libre de amasado.</p>
+
+            <h2>3. Agua Neta de Amasado</h2>
+            <p>El agua final a dosificar en el trompo ($W_{amasado, final}$) descuenta las contribuciones de los agregados del agua de diseño corregida por el factor de eficiencia de amasado de laboratorio ($1.1$) y multiplicada por el desvío granulométrico combinatorio ($G$):</p>
+            
+            $$W_{amasado, final} = \left[ \frac{(W_{objetivo} \cdot V_{paston}) - W_{libre, sand} - W_{libre, stone}}{1.1} \right] \cdot G$$
+        </section>
+
+        <!-- SECTION: BALDES -->
+        <section id="sec-baldes" class="manual-section">
+            <h1>Módulo de Calibración Volumétrica por Baldes de Obra</h1>
+            <p>Permite traducir las masas corregidas (en kg) a unidades prácticas de volumen (baldes) mediante densidades aparentes calibradas en campo.</p>
+
+            <h2>1. Volumen Efectivo del Balde</h2>
+            <p>El volumen del balde patrón ($V_{balde}$, en litros) se calibra pesando el balde vacío y luego lleno de agua potable (densidad $\approx 1.0\text{ kg/L}$):</p>
+            
+            $$V_{balde} = M_{lleno\_agua} - M_{vacio}$$
+
+            <h2>2. Densidad Aparente Suelta Húmeda</h2>
+            <p>La densidad aparente suelta de los agregados en las condiciones reales de obra se calcula verter el material húmedo de forma libre en el balde calibrado y pesándolo:</p>
+            
+            $$\rho_{bulk, arena} = \frac{M_{lleno\_arena} - M_{vacio}}{V_{balde} / 1000}\text{ (kg/m}^3\text{)}$$
+            $$\rho_{bulk, piedra} = \frac{M_{lleno\_piedra} - M_{vacio}}{V_{balde} / 1000}\text{ (kg/m}^3\text{)}$$
+
+            <h2>3. Conversión a Dosificación en Volumen</h2>
+            <p>La cantidad de baldes de cada componente requerida por pastón se calcula dividiendo el peso húmedo correspondiente por el peso contenido en un balde calibrado:</p>
+            
+            $$\text{Baldes de Arena: } N_{arena} = \frac{S_h}{\rho_{bulk, arena} \cdot (V_{balde}/1000)}$$
+            $$\text{Baldes de Piedra: } N_{piedra} = \frac{P_h}{\rho_{bulk, piedra} \cdot (V_{balde}/1000)}$$
+            $$\text{Baldes de Agua: } N_{agua} = \frac{W_{amasado, final}}{V_{balde}}$$
+        </section>
+
+        <!-- SECTION: REOLOGIA -->
+        <section id="sec-reologia" class="manual-section">
+            <h1>Módulo de Reología y Predicción de Asentamiento</h1>
+            <p>Resuelve el acoplamiento físico-químico entre el asentamiento del cono de Abrams, la evaporación ambiental y la hidratación térmica del cemento.</p>
+
+            <h2>1. Conversión Abrams - Esfuerzo de Fluencia (Roussel)</h2>
+            <p>El asentamiento medido ($S$) se traduce en el esfuerzo de fluencia umbral ($\tau_y$) del hormigón fresco expresado en Pascales:</p>
+            
+            $$\tau_y = \frac{\rho_{real} \cdot g \cdot (H - S)}{225}$$
+
+            <p>Donde $H = 0.30\text{ m}$ (altura del cono), $g = 9.81\text{ m/s}^2$ y $\rho_{real}$ es la densidad fresca del hormigón compactado.</p>
+
+            <h2>2. Tasa de Evaporación Superficial (Menzel)</h2>
+            <p>La evaporación de agua superficial se calcula a partir de las condiciones climatológicas locales (temperatura ambiente $T_{amb}$, temperatura de la masa de hormigón $T_c$, humedad relativa $HR$ y velocidad del viento $V_{viento}$):</p>
+            
+            $$E_v = 5.0 \cdot \left[ (T_c + 18)^{2.5} - HR \cdot (T_{amb} + 18)^{2.5} \right] \cdot (V_{viento} + 0.4) \cdot 10^{-6}\ (\text{kg/m}^2/\text{h})$$
+
+            <p>El decremento de agua líquida libre penaliza la fluidez aumentando el esfuerzo de corte umbral:</p>
+            
+            $$\tau_{clima}(t) = \frac{\tau(t)}{(w_{remanente} / w_{inicial})^3}$$
+
+            <h2>3. Cinética de Hidratación (Arrhenius)</h2>
+            <p>La rigidización química temprana debido a la hidratación se calcula empleando el principio de madurez por edad equivalente a $20^\circ\text{C}$:</p>
+            
+            $$t_e = \int_0^t \exp\left( -\frac{E_a}{R} \cdot \left[ \frac{1}{273.15 + T_c(t)} - \frac{1}{293.15} \right] \right) dt$$
+            $$\tau_{quimico}(t) = \tau_{inicial} + k_{20} \cdot (t_e)^{1.2}$$
+
+            <h2>4. Algoritmos de Corrección Reológica</h2>
+            
+            <h3>A. Para pastones secos (Falta de fluidez):</h3>
+            <p><strong>1. Aditivo Superplastificante (grams):</strong></p>
+            $$\Delta SP = \frac{\tau_{fresco} - \tau_{target}}{k_{sp}} \cdot M_{cemento\ (paston)}$$
+            <p><strong>2. Adición de agua y cemento compensatorio:</strong></p>
+            $$\Delta W = V_{paston} \cdot W_{1m3} \cdot \left[ \left(\frac{S_1}{S_{target}}\right)^{0.10} - 1.0 \right] \quad \text{y} \quad \Delta C = \frac{\Delta W}{(w/c)_{max}}$$
+
+            <h3>B. Para pastones fluidos (Exceso de fluidez con riesgo de segregación):</h3>
+            $$\text{Masa de sólidos adicionales: } M_{solidos} = V_{paston} \cdot \left( \frac{\beta}{\tau_{target} - \tau_{fresco}} \right)$$
+
+            <h2>5. Re-escalado de Rendimiento Volumétrico a 1 m³</h2>
+            <p>Sumadas las masas agregadas por la corrección al pastón, se recalcula el volumen real producido ($V_{real}$) y se re-escala al volumen exacto de $1000\text{ L}$:</p>
+            
+            $$V_{real} = \frac{\sum M_{componentes\ corregidos}}{\rho_{real}}$$
+            $$\gamma = \frac{1.0}{V_{real}} \implies Componente_{1m3, final} = Componente_{paston, corregido} \cdot \gamma$$
+        </section>
+
+        <!-- SECTION: IA -->
+        <section id="sec-ia" class="manual-section">
+            <h1>Módulo de Asistente Inteligente (HormigonIA Chat)</h1>
+            <p>Documenta el flujo de integración de Large Language Models (LLM) con el motor analítico de cálculo.</p>
+
+            <h2>1. Pipeline de Datos y Contexto</h2>
+            <p>El asistente inteligente utiliza el modelo **Gemini 3.5 Flash** optimizado para razonamiento de ingeniería de materiales. El sistema recopila el estado actual de la dosificación y lo inyecta como contexto estructurado en el system prompt antes de cada consulta del usuario.</p>
+            
+            <pre>
+[System Context Injected in JSON]
+{
+  "diseño_actual": {
+    "cemento": "CP40",
+    "fcm_target": 28.5,
+    "relacion_ac": 0.49,
+    "agua_m3": 178.2,
+    "cemento_m3": 363.7
+  },
+  "granulometria_combinada": {
+    "tamiz_19mm": 98.4,
+    "tamiz_4.75mm": 42.1,
+    "tamiz_0.075mm": 1.2
+  },
+  "clima": {
+    "temperatura": "28.4°C",
+    "evaporacion_menzel": "0.42 kg/m²/h"
+  }
+}
+            </pre>
+
+            <h2>2. Parsing de Parámetros</h2>
+            <p>El backend procesa la respuesta del LLM. Si el asistente sugiere ajustes o detecta anomalías granulométricas (como un desvío crítico respecto a la curva de Bolomey), puede proponer correcciones estructuradas que el frontend lee para disparar eventos visuales.</p>
+        </section>
+
+        <!-- SECTION: SUPABASE -->
+        <section id="sec-sync" class="manual-section">
+            <h1>Módulo de Base de Datos y Sincronización</h1>
+            <p>Detalla el diseño de almacenamiento persistente y las políticas de seguridad a nivel de fila (RLS).</p>
+
+            <h2>1. Esquema Relacional de Supabase</h2>
+            <p>Las dosificaciones se almacenan en la tabla `saved_mixes` vinculada a la tabla de autenticación nativa de Supabase (`auth.users`):</p>
+            
+            <pre>
+Table: saved_mixes
++----------------+--------------------------+
+| Column Name    | Data Type                |
++----------------+--------------------------+
+| id             | UUID (Primary Key)       |
+| user_id        | UUID (Foreign Key)       |
+| name           | TEXT                     |
+| created_at     | TIMESTAMP WITH TIME ZONE |
+| concrete_class | TEXT                     |
+| design_method  | TEXT                     |
+| exposure_class | TEXT                     |
+| batch_volume   | NUMERIC                  |
+| wc_ratio       | NUMERIC                  |
+| cement_base    | NUMERIC                  |
+| sieve_data     | JSONB                    |
+| additives      | JSONB                    |
+| materials      | JSONB                    |
++----------------+--------------------------+
+            </pre>
+
+            <h2>2. Row Level Security (RLS)</h2>
+            <p>Para asegurar que ningún usuario pueda leer ni alterar las recetas de otros, la base de datos implementa políticas estrictas en el motor de PostgreSQL:</p>
+            
+            <pre>
+-- Política SQL para control de lectura propio:
+CREATE POLICY "Permitir lectura propia" ON saved_mixes 
+    FOR SELECT USING (auth.uid() = user_id);
+            </pre>
+        </section>
+    </main>
+
+    <!-- NAVIGATION SCRIPTS -->
+    <script>
+        // Tab switching logic
+        const menuItems = document.querySelectorAll('.menu-item');
+        const sections = document.querySelectorAll('.manual-section');
+
+        menuItems.forEach(item => {
+            item.addEventListener('click', () => {
+                // Remove active class from all menu items
+                menuItems.forEach(mi => mi.classList.remove('active'));
+                // Add active class to clicked item
+                item.classList.add('active');
+
+                // Hide all sections
+                sections.forEach(sec => sec.classList.remove('active'));
+                // Show targeted section
+                const targetId = item.getAttribute('data-section');
+                document.getElementById(targetId).classList.add('active');
+
+                // Scroll to top of content
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        });
+
+        // Print functions
+        function printSelectedSection() {
+            // Section elements
+            const activeSection = document.querySelector('.manual-section.active');
+            
+            // Temporary hide others
+            sections.forEach(sec => {
+                if (sec !== activeSection) {
+                    sec.classList.add('no-print');
+                }
+            });
+
+            window.print();
+
+            // Clear temporary class
+            sections.forEach(sec => {
+                sec.classList.remove('no-print');
+            });
+        }
+
+        function printFullDocument() {
+            // Make all sections visible for printing
+            sections.forEach(sec => {
+                sec.classList.add('print-visible');
+            });
+
+            window.print();
+
+            // Reset back to only active section visible
+            sections.forEach(sec => {
+                sec.classList.remove('print-visible');
+            });
+        }
+    </script>
+</body>
+</html>
