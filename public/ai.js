@@ -144,14 +144,6 @@ async function handleUserMessage() {
     const prompt = chatInput.value.trim();
     if (!prompt) return;
 
-    // Check API Key first
-    const apiKey = localStorage.getItem("gemini_api_key");
-    if (!apiKey) {
-        alert("Por favor, ingresá una clave API de Gemini haciendo clic en el botón 'API Key Gemini' del encabezado.");
-        document.getElementById("toggleApiModal").click();
-        return;
-    }
-
     // Append user message bubble
     appendMessageBubble("user", prompt);
     chatInput.value = "";
@@ -213,10 +205,6 @@ El formato del JSON debe ser exactamente el siguiente, conteniendo solo las vari
 3. Si no es necesario modificar campos del formulario, responde de manera normal sin el bloque JSON.
 4. Mantén las respuestas profesionales, concisas y en idioma español.`;
 
-        // Build Gemini API payload
-        // We use gemini-2.0-flash as the active stable model
-        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-        
         // Push user message to conversation history
         conversationHistory.push({
             role: "user",
@@ -228,30 +216,28 @@ El formato del JSON debe ser exactamente el siguiente, conteniendo solo las vari
             conversationHistory = conversationHistory.slice(conversationHistory.length - 10);
         }
 
-        const requestBody = {
-            contents: conversationHistory,
-            systemInstruction: {
-                parts: [{ text: systemPrompt }]
-            },
-            generationConfig: {
-                temperature: 0.2, // low temperature for precise factual calculations
-                maxOutputTokens: 800
-            }
-        };
+        // Map conversationHistory to standard OpenAI messages format for the API request
+        const messages = [
+            { role: "system", content: systemPrompt },
+            ...conversationHistory.map(h => ({
+                role: h.role === "model" ? "assistant" : "user",
+                content: h.parts[0].text
+            }))
+        ];
 
-        const response = await fetch(url, {
+        const response = await fetch("/api/chat", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(requestBody)
+            body: JSON.stringify({ messages })
         });
 
         if (!response.ok) {
             const errData = await response.json();
-            throw new Error(errData.error?.message || "Error al conectar con la API de Gemini.");
+            throw new Error(errData.detail || "Error al conectar con la API de IA.");
         }
 
         const data = await response.json();
-        const aiResponseText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        const aiResponseText = data.response;
         
         if (!aiResponseText) {
             throw new Error("No se recibió respuesta del asistente de IA.");
@@ -271,7 +257,7 @@ El formato del JSON debe ser exactamente el siguiente, conteniendo solo las vari
 
     } catch (error) {
         console.error(error);
-        appendMessageBubble("ai", `❌ **Error:** ${error.message}. Por favor, verifica que tu API Key sea correcta o intenta nuevamente.`);
+        appendMessageBubble("ai", `❌ **Error:** ${error.message}. Por favor, verifica la configuración de claves API del servidor backend o intenta nuevamente.`);
     } finally {
         aiTypingIndicator.classList.add("hidden");
     }
