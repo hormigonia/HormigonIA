@@ -15,7 +15,7 @@ from typing import List, Dict, Any, Optional
 
 from backend.dosificador import dosificar_mezcla, calcular_reologia_y_perdida, calcular_correcciones_reologia, recalcular_formula_validada, predecir_resistencia_ia, optimizar_mezcla_ia
 from backend.clima import fetch_weather_and_curing
-from backend.gemini import call_gemini_api
+from backend.ai_client import call_ai_api
 
 app = FastAPI(title="HormigónMix AI Backend", version="1.0.0")
 
@@ -69,7 +69,7 @@ class WeatherRequest(BaseModel):
     time: str
 
 class ChatRequest(BaseModel):
-    prompt: str
+    messages: List[Dict[str, str]]
 
 @app.get("/api/config")
 def api_get_config():
@@ -103,7 +103,7 @@ def api_weather(payload: WeatherRequest):
 @app.post("/api/chat")
 def api_chat(payload: ChatRequest):
     try:
-        result = call_gemini_api(payload.prompt)
+        result = call_ai_api(payload.messages)
         return {"response": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
