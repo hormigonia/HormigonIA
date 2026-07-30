@@ -116,12 +116,7 @@ def predict_slump_from_water(mf: float, water_m3: float, water_reduction: float,
                 base_slump = y1 + factor * (y2 - y1)
                 break
                 
-    slump_boost = 0.0
-    if water_reduction < 1.0:
-        spec_pct = (1.0 - water_reduction) * 100.0
-        slump_boost = spec_pct * 0.80
-        
-    return min(24.0, base_slump + slump_boost)
+    return min(24.0, base_slump)
 
 def slump_pred_from_class(concrete_class: str) -> float:
     # Class standard slumps
@@ -725,7 +720,7 @@ def calcular_correcciones_reologia(params: Dict[str, Any]) -> Dict[str, Any]:
     water_1m3 = params.get("waterTargetM3", 185.0)
     
     rho_teorica = cement_1m3 + sand_1m3 + gravilla_1m3 + grava_1m3 + water_1m3
-    rho_real = params.get("densityReal", rho_teorica)
+    rho_real = params.get("densityReal") or rho_teorica
     
     # Physically correct Roussel
     tau_target = rho_teorica * g * max(0.0, H - s_target) / 225.0
@@ -795,7 +790,7 @@ def calcular_correcciones_reologia(params: Dict[str, Any]) -> Dict[str, Any]:
 
 def recalcular_formula_validada(params: Dict[str, Any]) -> Dict[str, Any]:
     vol_paston = 0.080
-    density_real = params.get("densityReal", 2400.0)
+    density_real = params.get("densityReal") or 2400.0
     
     delta_w = params.get("deltaW", 0.0)
     delta_c = params.get("deltaC", 0.0)
