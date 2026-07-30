@@ -2318,6 +2318,9 @@ async function calculateAndUpdate() {
         const combinedFM = data.combinedFM;
         const cementBaseM3 = data.cementBaseM3;
         const waterTargetM3 = data.waterTargetM3;
+        const sandDryWeight = data.sandDryWeight;
+        const gravillaDryWeight = data.gravillaDryWeight;
+        const gravaDryWeight = data.gravaDryWeight;
         
         const sandWetWeight = data.sandWetWeight;
         const gravillaWetWeight = data.gravillaWetWeight;
