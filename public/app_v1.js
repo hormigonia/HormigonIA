@@ -205,21 +205,132 @@ function initLoginSystem() {
                     alert("Error de autenticación con Google: " + err.message);
                 }
             } else {
-                // Simulated Google flow
-                const email = prompt("Ingresá tu correo electrónico de Google para simular acceso:");
-                if (email && email.trim()) {
-                    activeUser = email.trim();
-                    localStorage.setItem("hormigonmix_active_user", activeUser);
-                    if (btnAuthModal) btnAuthModal.style.display = "none";
-                    if (userProfileWidget) userProfileWidget.style.display = "flex";
-                    if (userNameLabel) userNameLabel.innerText = activeUser.split("@")[0];
-                    if (authModal) authModal.classList.remove("open");
-                    LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
-                    loadSavedMixes();
-                }
+                showGoogleChooserModalSimulated();
             }
         });
     }
+
+function showGoogleChooserModalSimulated() {
+    let modal = document.getElementById("googleChooserModal");
+    if (!modal) {
+        modal = document.createElement("div");
+        modal.id = "googleChooserModal";
+        modal.style.position = "fixed";
+        modal.style.top = "0";
+        modal.style.left = "0";
+        modal.style.width = "100vw";
+        modal.style.height = "100vh";
+        modal.style.backgroundColor = "rgba(15, 23, 42, 0.85)";
+        modal.style.backdropFilter = "blur(8px)";
+        modal.style.zIndex = "10000";
+        modal.style.display = "flex";
+        modal.style.alignItems = "center";
+        modal.style.justifyContent = "center";
+        
+        modal.innerHTML = `
+            <div style="background: #ffffff; color: #1f2937; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; width: 100%; max-width: 380px; border-radius: 12px; box-shadow: 0 12px 30px rgba(0,0,0,0.3); padding: 30px 24px; text-align: center; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px;">
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" style="margin-bottom: 5px;">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v3.92h6.69a5.74 5.74 0 0 1-2.48 3.77v3.13h4.02c2.35-2.17 3.71-5.36 3.71-8.75z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-4.02-3.13c-1.12.75-2.55 1.19-3.91 1.19-3.02 0-5.58-2.04-6.49-4.8H1.38v3.2A11.99 11.99 0 0 0 12 24z"/>
+                        <path fill="#FBBC05" d="M5.51 14.35A7.16 7.16 0 0 1 5.09 12c0-.82.14-1.63.42-2.35V6.45H1.38A11.99 11.99 0 0 0 0 12c0 2.22.6 4.31 1.66 6.13l3.85-3.78z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.24 0 3.19 2.73 1.38 6.45l4.13 4.12c.91-2.76 3.47-4.8 6.49-4.8z"/>
+                    </svg>
+                    <h3 style="margin: 0; font-size: 1.15rem; font-weight: 500; color: #202124;">Elige una cuenta</h3>
+                    <span style="font-size: 0.88rem; color: #5f6368;">para continuar en HormigónMix AI</span>
+                </div>
+                
+                <div style="display: flex; flex-direction: column; border: 1px solid #dadce0; border-radius: 8px; overflow: hidden; text-align: left;">
+                    <div class="google-acc-btn" data-username="Ale" data-email="ale.engineering@gmail.com" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #dadce0; transition: background 0.2s;">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #e8f0fe; color: #1a73e8; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.95rem;">A</div>
+                        <div style="display: flex; flex-direction: column; line-height: 1.3;">
+                            <span style="font-weight: 600; font-size: 0.82rem; color: #3c4043;">Ale</span>
+                            <span style="font-size: 0.72rem; color: #5f6368;">ale.engineering@gmail.com</span>
+                        </div>
+                    </div>
+                    <div class="google-acc-btn" data-username="Ingeniero Invitado" data-email="invitado@gmail.com" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; border-bottom: 1px solid #dadce0; transition: background 0.2s;">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #e6f4ea; color: #137333; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.95rem;">I</div>
+                        <div style="display: flex; flex-direction: column; line-height: 1.3;">
+                            <span style="font-weight: 600; font-size: 0.82rem; color: #3c4043;">Ingeniero Invitado</span>
+                            <span style="font-size: 0.72rem; color: #5f6368;">invitado@gmail.com</span>
+                        </div>
+                    </div>
+                    <div class="google-acc-btn-custom" style="display: flex; align-items: center; gap: 12px; padding: 12px 16px; cursor: pointer; transition: background 0.2s;">
+                        <div style="width: 32px; height: 32px; border-radius: 50%; background: #f1f3f4; color: #5f6368; display: flex; align-items: center; justify-content: center; font-size: 1.1rem;">👤</div>
+                        <span style="font-weight: 500; font-size: 0.82rem; color: #1a73e8;">Usar otra cuenta</span>
+                    </div>
+                </div>
+                
+                <button type="button" id="btnGoogleChooserCancel" style="border: none; background: transparent; color: #5f6368; font-size: 0.82rem; font-weight: 500; cursor: pointer; padding: 6px; align-self: flex-end; margin-top: 5px;">Cancelar</button>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    modal.style.display = "flex";
+    
+    const hoverBtns = modal.querySelectorAll(".google-acc-btn, .google-acc-btn-custom");
+    hoverBtns.forEach(btn => {
+        btn.addEventListener("mouseenter", () => btn.style.backgroundColor = "#f8f9fa");
+        btn.addEventListener("mouseleave", () => btn.style.backgroundColor = "transparent");
+    });
+    
+    const accounts = modal.querySelectorAll(".google-acc-btn");
+    accounts.forEach(acc => {
+        acc.addEventListener("click", () => {
+            const username = acc.getAttribute("data-username");
+            const email = acc.getAttribute("data-email");
+            activeUser = email;
+            localStorage.setItem("hormigonmix_active_user", activeUser);
+            
+            const btnAuthModal = document.getElementById("btnAuthModal");
+            const userProfileWidget = document.getElementById("userProfileWidget");
+            const userNameLabel = document.getElementById("userNameLabel");
+            const authModal = document.getElementById("authModal");
+            
+            if (btnAuthModal) btnAuthModal.style.display = "none";
+            if (userProfileWidget) userProfileWidget.style.display = "flex";
+            if (userNameLabel) userNameLabel.innerText = username;
+            if (authModal) authModal.classList.remove("open");
+            LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
+            loadSavedMixes();
+            modal.style.display = "none";
+            alert(`✨ Bienvenido, ${username} (conectado vía Google).`);
+        });
+    });
+    
+    const btnCustom = modal.querySelector(".google-acc-btn-custom");
+    if (btnCustom) {
+        btnCustom.addEventListener("click", () => {
+            const email = prompt("Ingresá tu correo electrónico de Google:");
+            if (email && email.trim()) {
+                activeUser = email.trim();
+                localStorage.setItem("hormigonmix_active_user", activeUser);
+                
+                const btnAuthModal = document.getElementById("btnAuthModal");
+                const userProfileWidget = document.getElementById("userProfileWidget");
+                const userNameLabel = document.getElementById("userNameLabel");
+                const authModal = document.getElementById("authModal");
+                
+                if (btnAuthModal) btnAuthModal.style.display = "none";
+                if (userProfileWidget) userProfileWidget.style.display = "flex";
+                if (userNameLabel) userNameLabel.innerText = activeUser.split("@")[0];
+                if (authModal) authModal.classList.remove("open");
+                LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
+                loadSavedMixes();
+                modal.style.display = "none";
+                alert(`✨ Bienvenido, ${activeUser.split("@")[0]} (conectado vía Google).`);
+            }
+        });
+    }
+    
+    const btnCancel = modal.querySelector("#btnGoogleChooserCancel");
+    if (btnCancel) {
+        btnCancel.addEventListener("click", () => {
+            modal.style.display = "none";
+        });
+    }
+}
 
     // Logout
     if (btnLogout) {
@@ -1025,7 +1136,9 @@ function predictSlumpFromWater(mf, waterM3, waterReduction, factorG, isCrushed =
 document.addEventListener("DOMContentLoaded", () => {
     initLoginSystem();
     // Set default forecast date to today
+    // Set default forecast date and time to today/now
     const dateInput = document.getElementById("inputForecastDate");
+    const timeInput = document.getElementById("inputForecastTime");
     if (dateInput) {
         const today = new Date();
         const yyyy = today.getFullYear();
@@ -1036,7 +1149,60 @@ document.addEventListener("DOMContentLoaded", () => {
         const todayStr = yyyy + '-' + mm + '-' + dd;
         dateInput.value = todayStr;
         dateInput.min = todayStr;
+
+        if (timeInput) {
+            let hh = today.getHours();
+            let min = today.getMinutes();
+            if (hh < 10) hh = '0' + hh;
+            if (min < 10) min = '0' + min;
+            timeInput.value = `${hh}:${min}`;
+        }
         
+        const validateForecastDateTime = () => {
+            const dateVal = dateInput.value;
+            const timeVal = timeInput ? timeInput.value : "00:00";
+            if (!dateVal || !timeVal) return;
+
+            const selectedDateTime = new Date(`${dateVal}T${timeVal}`);
+            const now = new Date();
+            
+            selectedDateTime.setSeconds(0);
+            selectedDateTime.setMilliseconds(0);
+            now.setSeconds(0);
+            now.setMilliseconds(0);
+
+            if (selectedDateTime < now) {
+                alert("⚠️ La fecha y hora de la colada no pueden ser inferiores a la hora actual.");
+                
+                const current = new Date();
+                const curY = current.getFullYear();
+                let curM = current.getMonth() + 1;
+                let curD = current.getDate();
+                if (curD < 10) curD = '0' + curD;
+                if (curM < 10) curM = '0' + curM;
+                
+                let hh = current.getHours();
+                let min = current.getMinutes();
+                if (hh < 10) hh = '0' + hh;
+                if (min < 10) min = '0' + min;
+
+                dateInput.value = `${curY}-${curM}-${curD}`;
+                dateInput.min = `${curY}-${curM}-${curD}`;
+                if (timeInput) timeInput.value = `${hh}:${min}`;
+            }
+
+            // Trigger weather forecast update
+            const coordsVal = document.getElementById("inputGpsCoords").value.trim();
+            const parts = coordsVal.split(",");
+            if (parts.length >= 2) {
+                const lat = parseFloat(parts[0]);
+                const lon = parseFloat(parts[1]);
+                if (!isNaN(lat) && !isNaN(lon)) {
+                    fetchWeatherForCoordinates(lat, lon, false);
+                }
+            }
+        };
+
         // Force date input check on focus to keep it updated if tab was left open overnight
         dateInput.addEventListener("focus", () => {
             const t = new Date();
@@ -1047,34 +1213,13 @@ document.addEventListener("DOMContentLoaded", () => {
             if (m < 10) m = '0' + m;
             const tStr = y + '-' + m + '-' + d;
             dateInput.min = tStr;
-            if (dateInput.value < tStr) {
-                dateInput.value = tStr;
-            }
+            validateForecastDateTime();
         });
 
-        dateInput.addEventListener("change", () => {
-            const t = new Date();
-            const y = t.getFullYear();
-            let m = t.getMonth() + 1;
-            let d = t.getDate();
-            if (d < 10) d = '0' + d;
-            if (m < 10) m = '0' + m;
-            const tStr = y + '-' + m + '-' + d;
-            
-            if (dateInput.value < tStr) {
-                dateInput.value = tStr;
-            }
-            
-            const coordsVal = document.getElementById("inputGpsCoords").value.trim();
-            const parts = coordsVal.split(",");
-            if (parts.length >= 2) {
-                const lat = parseFloat(parts[0]);
-                const lon = parseFloat(parts[1]);
-                if (!isNaN(lat) && !isNaN(lon)) {
-                    fetchWeatherForCoordinates(lat, lon, false);
-                }
-            }
-        });
+        dateInput.addEventListener("change", validateForecastDateTime);
+        if (timeInput) {
+            timeInput.addEventListener("change", validateForecastDateTime);
+        }
     }
 
     setupEventListeners();
@@ -2191,6 +2336,17 @@ async function calculateAndUpdate() {
             if (inputCement) inputCement.value = Math.round(cementBaseM3);
         }
         
+        // Dynamic update of densityRealHelpText and auto pre-fill
+        const theoreticalDensity = cementBaseM3 + sandDryWeight + gravillaDryWeight + (numAggregates === 3 ? gravaDryWeight : 0) + waterTargetM3;
+        const densityHelpTextEl = document.getElementById("densityRealHelpText");
+        if (densityHelpTextEl) {
+            densityHelpTextEl.innerText = `(Teórica: ${Math.round(theoreticalDensity)} kg/m³)`;
+        }
+        const inputDensityReal = document.getElementById("inputDensityReal");
+        if (inputDensityReal && !inputDensityReal.value) {
+            inputDensityReal.value = Math.round(theoreticalDensity);
+        }
+        
         const resCementEl = document.getElementById("resCement");
         if (resCementEl) resCementEl.innerText = Math.round(cementBaseM3 * volM3);
         
@@ -2739,14 +2895,20 @@ async function fetchLocalWeatherAuto() {
         },
         async (err) => {
             console.warn("GPS position failed. Using fallback.", err);
+            let errMsg = "GPS fallido o sin permisos";
+            if (err.code === 1) {
+                errMsg = "Permiso de geolocalización denegado";
+            } else if (err.code === 3) {
+                errMsg = "Tiempo de espera de geolocalización agotado";
+            }
             alertsDiv.innerHTML = `
                 <div style="font-size: 0.75rem; padding: 8px 12px; border-radius: 4px; border-left: 4px solid var(--warning); background-color: rgba(245, 158, 11, 0.08); color: var(--text); line-height: 1.4; margin-bottom: 8px;">
-                    ⚠️ <strong>GPS fallido o sin permisos:</strong> Usando las coordenadas ingresadas manualmente.
+                    ⚠️ <strong>${errMsg}:</strong> Usando las coordenadas ingresadas manualmente.
                 </div>
             `;
             await fetchWeatherForCoordinates(fallbackLat, fallbackLon, true, btn, spinner);
         },
-        { timeout: 4000, enableHighAccuracy: false }
+        { timeout: 15000, enableHighAccuracy: false }
     );
 }
 
@@ -3238,9 +3400,9 @@ function renderWeatherInfoInUI(location, weather) {
             
             <!-- Columna Derecha: Planificador de Curado y Alertas -->
             <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 0.75rem; display: flex; flex-direction: column; gap: 10px;">
-                <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 6px; display: flex; align-items: center; justify-content: space-between;">
-                    <strong style="color: var(--accent); font-size: 0.82rem;">📅 Planificación de Curado</strong>
-                    <button type="button" id="btnRequestNotify" class="btn btn-secondary btn-xs" style="font-size: 0.65rem; padding: 3px 6px;">🔔 Alertas Riego</button>
+                <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
+                    <strong style="color: var(--accent); font-size: 0.85rem;">📅 Planificación de Curado</strong>
+                    <button type="button" id="btnRequestNotify" class="btn btn-primary" style="font-size: 0.78rem; padding: 6px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s;">🔔 Alertas Riego</button>
                 </div>
                 
                 <div>
