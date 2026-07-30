@@ -48,15 +48,15 @@ function getCalculatorStateContext() {
     const densSand = parseFloat(document.getElementById("densSand").value);
     const coefSand = parseFloat(document.getElementById("coefSand").value);
     const moistSand = parseFloat(document.getElementById("moistSand").value);
-    const absSand = parseFloat(document.getElementById("absSand")?.value || 0.7);
-    const densGravilla = parseFloat(document.getElementById("densGravilla")?.value || 1600);
-    const coefGravilla = parseFloat(document.getElementById("coefGravilla")?.value || 0.51);
-    const moistGravilla = parseFloat(document.getElementById("moistGravilla")?.value || 0);
-    const absGravilla = parseFloat(document.getElementById("absGravilla")?.value || 0.5);
-    const densGrava = parseFloat(document.getElementById("densGrava")?.value || 1600);
-    const coefGrava = parseFloat(document.getElementById("coefGrava")?.value || 0.51);
-    const moistGrava = parseFloat(document.getElementById("moistGrava")?.value || 0);
-    const absGrava = parseFloat(document.getElementById("absGrava")?.value || 0.5);
+    const absSand = parseFloat(document.getElementById("absSand").value);
+    const densGravilla = parseFloat(document.getElementById("densGravilla").value);
+    const coefGravilla = parseFloat(document.getElementById("coefGravilla").value);
+    const moistGravilla = parseFloat(document.getElementById("moistGravilla").value);
+    const absGravilla = parseFloat(document.getElementById("absGravilla").value);
+    const densGrava = parseFloat(document.getElementById("densGrava").value);
+    const coefGrava = parseFloat(document.getElementById("coefGrava").value);
+    const moistGrava = parseFloat(document.getElementById("moistGrava").value);
+    const absGrava = parseFloat(document.getElementById("absGrava").value);
 
     // Sieve data (captured as retained weights and calculated passing percentages)
     const sandSieves = [];
@@ -118,8 +118,8 @@ function getCalculatorStateContext() {
             waterCementRatio: parseFloat(document.getElementById("inputCustomWC").value),
             bolomeyA: parseFloat(document.getElementById("inputCustomBolomeyA").value),
             maxSieveD: parseFloat(document.getElementById("inputMaxSieveSize").value),
-            targetSlumpCm: parseFloat(document.getElementById("inputSlumpTarget")?.value || 10),
-            targetAirPercentage: parseFloat(document.getElementById("inputAirPercentage")?.value || 1.5)
+            targetSlumpCm: parseFloat(document.getElementById("inputSlumpTarget").value),
+            targetAirPercentage: parseFloat(document.getElementById("inputAirPercentage").value)
         },
         materialsLabProperties: {
             cement: { bulkDensity: densCement, yieldCoef: coefCement },
