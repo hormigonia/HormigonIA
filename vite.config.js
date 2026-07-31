@@ -10,8 +10,7 @@ export default defineConfig({
       input: {
         main: 'index.html',
         tecnico: 'manual_tecnico.html',
-        usuario: 'manual_usuario.html',
-        principiante: 'manual_principiante.html'
+        usuario: 'manual_usuario.html'
       }
     }
   }

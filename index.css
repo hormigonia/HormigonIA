@@ -1199,7 +1199,16 @@ body.printing-active .app-container {
     display: none !important;
 }
 
-body.printing-active .print-only,
+body.printing-active .print-only {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 10px !important;
+    color: #000 !important;
+    background: #fff !important;
+}
+
 @media print {
     .print-only {
         display: block !important;

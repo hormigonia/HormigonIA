@@ -65,9 +65,6 @@
                         <a href="/manual_usuario.html" target="_blank" class="dropdown-item-manuales">
                             <span>👥</span> Manual de Usuario
                         </a>
-                        <a href="/manual_principiante.html" target="_blank" class="dropdown-item-manuales">
-                            <span>🌱</span> Manual de Principiantes
-                        </a>
                     </div>
                 </div>
 
@@ -80,6 +77,7 @@
         <!-- NAVIGATION TABS -->
         <nav class="app-nav">
             <button class="nav-tab active" data-tab="hormigon">Calculador Hormigón</button>
+            <button class="nav-tab" data-tab="laboratorio-hormigon">Laboratorio de Hormigón</button>
             <button class="nav-tab" data-tab="laboratorio-aridos">Laboratorio de Áridos</button>
             <button class="nav-tab" data-tab="optimizacion-ia">Optimización y Predicción IA</button>
             <button class="nav-tab disabled" data-tab="mamposteria" title="Próximamente">Mampostería (Próximamente)</button>
@@ -204,176 +202,96 @@
                         </div>
                     </section>
                     
-                    <!-- PISO 3: PARÁMETROS DEL PROYECTO Y CONFIGURACIÓN MANUAL (ALINEADOS AL LADO) -->
-                    <div class="floor-params-config">
-                        <!-- Entrada de Datos del Proyecto -->
-                        <section class="panel panel-project">
-                            <div class="panel-header">
-                                <span class="panel-icon">🔧</span>
-                                <h2>Parámetros del Proyecto</h2>
+                    <!-- PISO 3: PARÁMETROS DEL PROYECTO -->
+                    <section class="panel panel-project">
+                        <div class="panel-header">
+                            <span class="panel-icon">🔧</span>
+                            <h2>Parámetros del Proyecto</h2>
+                        </div>
+                        <div class="panel-body">
+                            <!-- Elemento a Hormigonar -->
+                            <div class="form-group">
+                                <label for="selectStructuralElement">Elemento a Hormigonar</label>
+                                <select id="selectStructuralElement" class="form-select">
+                                    <option value="" disabled selected>Seleccione un elemento estructural...</option>
+                                    <option value="fund_pilotes">Fundaciones Indirectas (Pilotes y Pilotines)</option>
+                                    <option value="fund_directas">Fundaciones Directas (Plateas, Zapatas y Vigas de Fund.)</option>
+                                    <option value="estructuras_elev">Estructuras en Elevación (Losas, Vigas y Escaleras)</option>
+                                    <option value="tabiques">Tabiques de Hormigón Armado / Muros Pantalla</option>
+                                    <option value="columnas_alta">Columnas de Alta Carga / Edificaciones en Altura</option>
+                                    <option value="pavimentos">Pavimentos Urbanos y Cordones Cuneta</option>
+                                    <option value="pisos_ind">Pisos Industriales y Playas de Maniobra</option>
+                                    <option value="proyectado">Hormigón Proyectado (Shotcrete / Túneles y Taludes)</option>
+                                    <option value="clima_frio">Clima Frío (Anticongelante - Norma ICPA Cap. 11)</option>
+                                    <option value="clima_calido">Clima Cálido (Grandes Volúmenes - Retardado)</option>
+                                    <option value="puentes">Tableros de Puentes e Infraestructura Expuesta</option>
+                                    <option value="relleno">Bases de Limpieza y Hormigón de Relleno</option>
+                                    <option value="personalizado">Personalizado (Ingresar tamiz máximo D)</option>
+                                </select>
                             </div>
-                            <div class="panel-body">
-                                <!-- Elemento a Hormigonar -->
-                                <div class="form-group">
-                                    <label for="selectStructuralElement">Elemento a Hormigonar</label>
-                                    <select id="selectStructuralElement" class="form-select">
-                                        <option value="" disabled selected>Seleccione un elemento estructural...</option>
-                                        <option value="fund_pilotes">Fundaciones Indirectas (Pilotes y Pilotines)</option>
-                                        <option value="fund_directas">Fundaciones Directas (Plateas, Zapatas y Vigas de Fund.)</option>
-                                        <option value="estructuras_elev">Estructuras en Elevación (Losas, Vigas y Escaleras)</option>
-                                        <option value="tabiques">Tabiques de Hormigón Armado / Muros Pantalla</option>
-                                        <option value="columnas_alta">Columnas de Alta Carga / Edificaciones en Altura</option>
-                                        <option value="pavimentos">Pavimentos Urbanos y Cordones Cuneta</option>
-                                        <option value="pisos_ind">Pisos Industriales y Playas de Maniobra</option>
-                                        <option value="proyectado">Hormigón Proyectado (Shotcrete / Túneles y Taludes)</option>
-                                        <option value="clima_frio">Clima Frío (Anticongelante - Norma ICPA Cap. 11)</option>
-                                        <option value="clima_calido">Clima Cálido (Grandes Volúmenes - Retardado)</option>
-                                        <option value="puentes">Tableros de Puentes e Infraestructura Expuesta</option>
-                                        <option value="relleno">Bases de Limpieza y Hormigón de Relleno</option>
-                                        <option value="personalizado">Personalizado (Ingresar tamiz máximo D)</option>
-                                    </select>
-                                </div>
 
-                                <!-- Clase de Hormigón -->
-                                <div class="form-group">
-                                    <label style="display: block; margin-bottom: 6px;">Clase de Hormigón (Hx)</label>
-                                    <div class="concrete-counter" style="display: flex; align-items: center; justify-content: space-between; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px; max-width: 250px; margin: 0 auto 4px auto;">
-                                        <button type="button" id="btnDecreaseClass" class="btn btn-secondary" style="width: 40px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s;">-</button>
-                                        <span id="displayConcreteClass" style="font-size: 1.15rem; font-weight: 700; color: var(--accent); min-width: 120px; text-align: center;">H21</span>
-                                        <button type="button" id="btnIncreaseClass" class="btn btn-secondary" style="width: 40px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s;">+</button>
-                                    </div>
-                                    <div id="displayConcreteClassStrengthInfo" style="font-size: 0.72rem; text-align: center; color: var(--text-muted); margin-bottom: 12px; line-height: 1.2;">
-                                        Resistencia: f'<sub>c</sub> = 21.0 MPa | f'<sub>cm</sub> = 27.6 MPa
-                                    </div>
-                                    <select id="selectConcreteClass" style="display: none;">
-                                        <option value="H8">H8</option>
-                                        <option value="H15">H15</option>
-                                        <option value="H20">H20</option>
-                                        <option value="H21" selected>H21</option>
-                                        <option value="H25">H25</option>
-                                        <option value="H30">H30</option>
-                                        <option value="H35">H35</option>
-                                        <option value="H38">H38</option>
-                                        <option value="H40">H40</option>
-                                        <option value="H45">H45</option>
-                                        <option value="Personalizado">Personalizado</option>
-                                    </select>
+                            <!-- Clase de Hormigón -->
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 6px;">Clase de Hormigón (Hx)</label>
+                                <div class="concrete-counter" style="display: flex; align-items: center; justify-content: space-between; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px; max-width: 250px; margin: 0 auto 4px auto;">
+                                    <button type="button" id="btnDecreaseClass" class="btn btn-secondary" style="width: 40px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s;">-</button>
+                                    <span id="displayConcreteClass" style="font-size: 1.15rem; font-weight: 700; color: var(--accent); min-width: 120px; text-align: center;">H21</span>
+                                    <button type="button" id="btnIncreaseClass" class="btn btn-secondary" style="width: 40px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s;">+</button>
                                 </div>
-
-                                <!-- Exposición -->
-                                <div class="form-group">
-                                    <label for="selectExposureClass">Exposición Ambiental (CIRSOC 201)</label>
-                                    <select id="selectExposureClass" class="form-select">
-                                        <option value="ninguna" selected>A1 - Sin Exigencia (Interiores Secos)</option>
-                                        <option value="a2">A2 - Exposición Moderada (Humedad/Exteriores)</option>
-                                        <option value="a3">A3 - Exposición Severa (Intemperie/Lluvia)</option>
-                                        <option value="h1">H1 - Humedad Continua (Elementos Sumergidos)</option>
-                                        <option value="c1">C1 - Hielo/Deshielo (Ciclos de congelación sin sales)</option>
-                                        <option value="c2">C2 - Hielo/Deshielo con sales (Ciclos con descongelantes)</option>
-                                        <option value="q1">Q1 - Ataque Químico Leve (Suelos/Agua débilmente agresiva)</option>
-                                        <option value="q2">Q2 - Ataque Químico Moderado (Contacto con sulfatos)</option>
-                                        <option value="q3">Q3 - Ataque Químico Fuerte (Ácidos/Ambientes industriales)</option>
-                                        <option value="m1">M1 - Exposición Marina Aérea (Cercanía a la costa &lt;5km)</option>
-                                        <option value="m2">M2 - Exposición Marina Directa (Mareas y salpicaduras)</option>
-                                    </select>
+                                <div id="displayConcreteClassStrengthInfo" style="font-size: 0.72rem; text-align: center; color: var(--text-muted); margin-bottom: 12px; line-height: 1.2;">
+                                    Resistencia: f'<sub>c</sub> = 21.0 MPa | f'<sub>cm</sub> = 27.6 MPa
                                 </div>
+                                <select id="selectConcreteClass" style="display: none;">
+                                    <option value="H8">H8</option>
+                                    <option value="H15">H15</option>
+                                    <option value="H20">H20</option>
+                                    <option value="H21" selected>H21</option>
+                                    <option value="H25">H25</option>
+                                    <option value="H30">H30</option>
+                                    <option value="H35">H35</option>
+                                    <option value="H38">H38</option>
+                                    <option value="H40">H40</option>
+                                    <option value="H45">H45</option>
+                                    <option value="Personalizado">Personalizado</option>
+                                </select>
+                            </div>
 
-                                <!-- Volumen del Pastón -->
-                                <div class="form-group">
-                                    <label for="inputBatchVolume" style="font-weight: 600; color: var(--text); font-size: 0.95rem;">Volumen del Pastón a Mezclar</label>
-                                    <div class="range-container" style="margin-top: 4px; margin-bottom: 10px;">
-                                        <input type="range" id="inputBatchVolume" min="10" max="1000" step="5" value="80" class="form-range" style="height: 8px;">
-                                        <span class="range-value" style="font-size: 1.1rem; font-weight: 700; color: var(--primary);"><span id="batchVolumeDisplay">80</span> L</span>
-                                    </div>
-                                    <div class="volume-presets" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px;">
-                                        <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="50">50L</button>
-                                        <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="80">80L</button>
-                                        <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="150">150L</button>
-                                        <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="250">250L</button>
-                                        <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="500">500L</button>
-                                        <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="1000">1000L</button>
-                                    </div>
+                            <!-- Exposición -->
+                            <div class="form-group">
+                                <label for="selectExposureClass">Exposición Ambiental (CIRSOC 201)</label>
+                                <select id="selectExposureClass" class="form-select">
+                                    <option value="ninguna" selected>A1 - Sin Exigencia (Interiores Secos)</option>
+                                    <option value="a2">A2 - Exposición Moderada (Humedad/Exteriores)</option>
+                                    <option value="a3">A3 - Exposición Severa (Intemperie/Lluvia)</option>
+                                    <option value="h1">H1 - Humedad Continua (Elementos Sumergidos)</option>
+                                    <option value="c1">C1 - Hielo/Deshielo (Ciclos de congelación sin sales)</option>
+                                    <option value="c2">C2 - Hielo/Deshielo con sales (Ciclos con descongelantes)</option>
+                                    <option value="q1">Q1 - Ataque Químico Leve (Suelos/Agua débilmente agresiva)</option>
+                                    <option value="q2">Q2 - Ataque Químico Moderado (Contacto con sulfatos)</option>
+                                    <option value="q3">Q3 - Ataque Químico Fuerte (Ácidos/Ambientes industriales)</option>
+                                    <option value="m1">M1 - Exposición Marina Aérea (Cercanía a la costa &lt;5km)</option>
+                                    <option value="m2">M2 - Exposición Marina Directa (Mareas y salpicaduras)</option>
+                                </select>
+                            </div>
+
+                            <!-- Volumen del Pastón -->
+                            <div class="form-group">
+                                <label for="inputBatchVolume" style="font-weight: 600; color: var(--text); font-size: 0.95rem;">Volumen del Pastón a Mezclar</label>
+                                <div class="range-container" style="margin-top: 4px; margin-bottom: 10px;">
+                                    <input type="range" id="inputBatchVolume" min="10" max="1000" step="5" value="80" class="form-range" style="height: 8px;">
+                                    <span class="range-value" style="font-size: 1.1rem; font-weight: 700; color: var(--primary);"><span id="batchVolumeDisplay">80</span> L</span>
+                                </div>
+                                <div class="volume-presets" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px;">
+                                    <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="50">50L</button>
+                                    <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="80">80L</button>
+                                    <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="150">150L</button>
+                                    <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="250">250L</button>
+                                    <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="500">500L</button>
+                                    <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="1000">1000L</button>
                                 </div>
                             </div>
-                        </section>
-
-                        <!-- Configuración Manual de Mezcla -->
-                        <section class="panel panel-config" id="customParamsSection">
-                            <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span class="panel-icon">⚙️</span>
-                                    <h2>Configuración Manual de Mezcla</h2>
-                                </div>
-                                <div class="history-controls" style="display: flex; gap: 4px; align-items: center;">
-                                    <button type="button" id="btnUndoConfig" class="btn btn-secondary btn-xs btn-history" title="Deshacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↶</button>
-                                    <button type="button" id="btnRedoConfig" class="btn btn-secondary btn-xs btn-history" title="Rehacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↷</button>
-                                </div>
-                            </div>
-                            <div class="panel-body">
-                                <!-- Método de Diseño -->
-                                <div class="form-group">
-                                    <label for="selectDesignMethod">Método de Diseño de Mezcla / Curva de Agregados</label>
-                                    <select id="selectDesignMethod" class="form-select">
-                                        <option value="bolomey" selected>Bolomey</option>
-                                        <option value="fuller">Fuller</option>
-                                        <option value="delapena">La peña</option>
-                                        <option value="aci">ACI 211.1</option>
-                                        <option value="larrard">Larrard (Compacidad Máxima LPDM)</option>
-                                    </select>
-                                </div>
-                                <!-- Cemento y Resistencia Especificada -->
-                                <div class="form-grid-2" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px;">
-                                    <div class="form-group">
-                                        <label for="selectCementCategory">Categoría de Cemento</label>
-                                        <select id="selectCementCategory" class="form-select">
-                                            <option value="CPC40" selected>CPC40 (Compuesto 40 - K=96)</option>
-                                            <option value="CPN50">CPN50 (Normal 50 - K=120)</option>
-                                            <option value="CPC30">CPC30 (Compuesto 30 - K=75)</option>
-                                            <option value="LC3">LC3 (Arcilla Calcinada - K=85)</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="inputManualStrength">Resistencia f'ce (MPa)</label>
-                                        <input type="number" id="inputManualStrength" value="21" step="1" min="8" max="60" class="form-input">
-                                    </div>
-                                </div>
-
-                                <!-- Cemento, w/c, Bolomey A -->
-                                <div id="rowCustomParams" class="form-grid-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
-                                    <div class="form-group">
-                                        <label for="inputCustomCement">Cto. Base (kg/m³)</label>
-                                        <input type="number" id="inputCustomCement" value="350" step="10" class="form-input">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="inputCustomWC">Relación a/c</label>
-                                        <input type="number" id="inputCustomWC" value="0.45" step="0.01" min="0.25" max="0.9" class="form-input">
-                                    </div>
-                                    <div class="form-group" id="divCustomBolomeyA">
-                                        <label for="inputCustomBolomeyA">Bolomey A</label>
-                                        <input type="number" id="inputCustomBolomeyA" value="13.0" step="0.5" class="form-input">
-                                    </div>
-                                </div>
-
-                                <!-- Tamiz, Aire y Asentamiento Objetivo -->
-                                <div class="form-grid-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
-                                    <div class="form-group">
-                                        <label for="inputMaxSieveSize">Tamaño Máx. D (mm)</label>
-                                        <input type="number" id="inputMaxSieveSize" value="38.0" step="0.5" class="form-input">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="inputAirPercentage">Aire Objetivo (%)</label>
-                                        <input type="number" id="inputAirPercentage" value="1.5" step="0.5" min="1.0" max="10.0" class="form-input">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="inputSlumpTarget">Asentamiento Obj. (cm)</label>
-                                        <input type="number" id="inputSlumpTarget" value="10" step="1" min="2" max="25" class="form-input">
-                                    </div>
-                                </div>
-                                <!-- Alertas de Diseño Manual -->
-                                <div id="manualDesignAlerts" style="display: none; margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;"></div>
-                            </div>
-                        </section>
-                    </div>
+                        </div>
+                    </section>
 
                     <!-- PISO 4: ADITIVOS (DOSIFICACIÓN DE ADITIVOS E INFORMACIÓN DE ADITIVOS) -->
                     <section class="panel panel-additives" id="additivesPanel">
@@ -412,134 +330,7 @@
                         </div>
                     </section>
 
-                    <!-- PISO 5: LABORATORIO DE HORMIGÓN Y GRÁFICO (ALINEADOS VERTICALMENTE) -->
-                    <div class="floor-lab-chart">
-                        <!-- Panel de Laboratorio de Hormigón -->
-                        <section class="panel panel-laboratory" id="laboratorySection">
-                            <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <span class="panel-icon">🔬</span>
-                                    <h2>Laboratorio de Hormigón</h2>
-                                </div>
-                                <div class="history-controls" style="display: flex; gap: 4px; align-items: center;">
-                                    <button type="button" id="btnUndoLab" class="btn btn-secondary btn-xs btn-history" title="Deshacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↶</button>
-                                    <button type="button" id="btnRedoLab" class="btn btn-secondary btn-xs btn-history" title="Rehacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↷</button>
-                                </div>
-                            </div>
-                            <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
-                                <!-- Propiedades Físicas -->
-                                <div class="form-group">
-                                    <label style="font-weight: 600; color: var(--text);">🧪 Propiedades Físicas de los Componentes</label>
-                                    <div class="materials-table-wrapper" style="margin-top: 6px;">
-                                        <table class="data-table small-table" style="font-size: 0.75rem;">
-                                            <thead>
-                                                <tr>
-                                                    <th>Material</th>
-                                                    <th>Dens. (kg/m³)</th>
-                                                    <th>Coef. Ap</th>
-                                                    <th>Hum. (L/m³ / %)</th>
-                                                    <th>Abs. (%)</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr>
-                                                    <td><strong>Cemento</strong></td>
-                                                    <td><input type="number" id="densCement" value="1400" step="50" class="table-input"></td>
-                                                    <td><input type="number" id="coefCement" value="0.47" step="0.01" class="table-input"></td>
-                                                    <td class="text-muted">N/A</td>
-                                                    <td class="text-muted">N/A</td>
-                                                </tr>
-                                                <tr>
-                                                    <td><strong>Arena</strong></td>
-                                                    <td><input type="number" id="densSand" value="1650" step="50" class="table-input"></td>
-                                                    <td><input type="number" id="coefSand" value="0.63" step="0.01" class="table-input"></td>
-                                                    <td><input type="number" id="moistSand" value="80" step="5" class="table-input"></td>
-                                                    <td><input type="number" id="absSand" value="0.6" step="0.1" class="table-input"></td>
-                                                </tr>
-                                                <tr id="trLabGravilla">
-                                                    <td><strong id="lblLabGravilla">Gravilla</strong></td>
-                                                    <td><input type="number" id="densGravilla" value="1600" step="50" class="table-input"></td>
-                                                    <td><input type="number" id="coefGravilla" value="0.51" step="0.01" class="table-input"></td>
-                                                    <td><input type="number" id="moistGravilla" value="50" step="5" class="table-input"></td>
-                                                    <td><input type="number" id="absGravilla" value="0.5" step="0.1" class="table-input"></td>
-                                                </tr>
-                                                <tr id="trLabGrava">
-                                                    <td><strong>Grava</strong></td>
-                                                    <td><input type="number" id="densGrava" value="1600" step="50" class="table-input"></td>
-                                                    <td><input type="number" id="coefGrava" value="0.51" step="0.01" class="table-input"></td>
-                                                    <td><input type="number" id="moistGrava" value="50" step="5" class="table-input"></td>
-                                                    <td><input type="number" id="absGrava" value="0.5" step="0.1" class="table-input"></td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
 
-                                <!-- Tamizado Granulométrico -->
-                                <div class="sieve-input-section" style="margin-top: 5px;">
-                                    <div class="section-title-with-actions" style="margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
-                                        <label style="font-weight: 600; color: var(--text);">📊 Tamizado de Áridos (Peso Retenido)</label>
-                                        <div style="display: flex; align-items: center; gap: 6px;">
-                                            <select id="selectNumAggregates" class="form-select btn-xs" style="height: 24px; padding: 2px 6px; font-size: 0.72rem; width: auto; background-color: var(--bg-panel); font-weight: bold; border-color: var(--accent); margin-right: 4px;">
-                                                <option value="3" selected>3 Áridos</option>
-                                                <option value="2">2 Áridos</option>
-                                            </select>
-                                            <select id="selectSieveSeries" class="form-select btn-xs" style="height: 24px; padding: 2px 6px; font-size: 0.72rem; width: auto; background-color: var(--bg-panel);">
-                                                <option value="ASTM" selected>ASTM (No./in)</option>
-                                                <option value="IRAM">IRAM (Métrico)</option>
-                                                <option value="UNE">UNE (Norma Esp.)</option>
-                                                <option value="ISO">ISO (Norma Int.)</option>
-                                                <option value="ACI">ACI (Americana)</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                    <div class="sieve-table-wrapper">
-                                        <table class="data-table" id="tableSieves" style="font-size: 0.72rem;">
-                                            <thead>
-                                                 <tr>
-                                                     <th>Tamiz</th>
-                                                     <th>Arena (g)</th>
-                                                     <th id="thCoarse1">Gravilla (g)</th>
-                                                     <th id="thCoarse2">Grava (g)</th>
-                                                 </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr data-sieve="37.5"><td><strong>37.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="20" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="25.0"><td><strong>25.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="230" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="19.0"><td><strong>19.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="9.5"><td><strong>9.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="100" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="250" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="4.75"><td><strong>4.75 (N°4)</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="100" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="2.36"><td><strong>2.36 (N°8)</strong></td><td><input type="number" value="120" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="50" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="1.18"><td><strong>1.18 (N°16)</strong></td><td><input type="number" value="180" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="150" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="0.6"><td><strong>0.6 (N°30)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="50" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="0.3"><td><strong>0.3 (N°50)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="0.15"><td><strong>0.15 (N°100)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="0.0"><td><strong>Fondo (Pan)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <div class="form-group" style="margin-top: 5px;">
-                                        <span style="font-size: 0.68rem; color: var(--text-muted); display: block; line-height: 1.4;">
-                                            Muestras totales: Arena: <strong id="totalSandSample">1000</strong>g | Gravilla: <strong id="totalGravillaSample">1000</strong>g | Grava: <strong id="totalGravaSample">1000</strong>g
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </section>
-
-                        <!-- Sieve Chart Panel (Alineado al lado de Laboratorio) -->
-                        <section class="panel panel-chart">
-                            <div class="panel-header">
-                                <span class="panel-icon">📈</span>
-                                <h2 id="chartTitleText">Curva Granulométrica (Bolomey vs. Real)</h2>
-                            </div>
-                            <div class="panel-body chart-panel-body">
-                                <div class="chart-container" style="position: relative; height: 380px; width: 100%;">
-                                    <canvas id="sieveChart"></canvas>
-                                </div>
-                            </div>
-                        </section>
-                    </div>
 
                     <!-- PISO 5: CONTROL DE CALIDAD Y OPTIMIZACIÓN REOLÓGICA (ROUSSEL, ARRHENIUS Y PASTÓN IDEAL) -->
                     <section class="panel panel-quality-control-unified" id="qualityControlPanelUnified" style="margin-top: 15px;">
@@ -813,6 +604,217 @@
                     
 
                     </div>
+            </div>
+
+            <!-- TAB CONTENT: LABORATORIO HORMIGON -->
+            <div id="tab-laboratorio-hormigon" class="tab-content">
+                <div class="workspace-grid" style="margin-top: 20px;">
+                    <!-- Configuración Manual de Mezcla -->
+                    <section class="panel panel-config" id="customParamsSection">
+                        <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="panel-icon">⚙️</span>
+                                <h2>Configuración Manual de Mezcla</h2>
+                            </div>
+                            <div class="history-controls" style="display: flex; gap: 4px; align-items: center;">
+                                <button type="button" id="btnUndoConfig" class="btn btn-secondary btn-xs btn-history" title="Deshacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↶</button>
+                                <button type="button" id="btnRedoConfig" class="btn btn-secondary btn-xs btn-history" title="Rehacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↷</button>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <!-- Método de Diseño -->
+                            <div class="form-group">
+                                <label for="selectDesignMethod">Método de Diseño de Mezcla / Curva de Agregados</label>
+                                <select id="selectDesignMethod" class="form-select">
+                                    <option value="bolomey" selected>Bolomey</option>
+                                    <option value="fuller">Fuller</option>
+                                    <option value="delapena">La peña</option>
+                                    <option value="aci">ACI 211.1</option>
+                                    <option value="larrard">Larrard (Compacidad Máxima LPDM)</option>
+                                </select>
+                            </div>
+                            <!-- Cemento y Resistencia Especificada -->
+                            <div class="form-grid-2" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px;">
+                                <div class="form-group">
+                                    <label for="selectCementCategory">Categoría de Cemento</label>
+                                    <select id="selectCementCategory" class="form-select">
+                                        <option value="CPC40" selected>CPC40 (Compuesto 40 - K=96)</option>
+                                        <option value="CPN50">CPN50 (Normal 50 - K=120)</option>
+                                        <option value="CPC30">CPC30 (Compuesto 30 - K=75)</option>
+                                        <option value="LC3">LC3 (Arcilla Calcinada - K=85)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputManualStrength">Resistencia f'ce (MPa)</label>
+                                    <input type="number" id="inputManualStrength" value="21" step="1" min="8" max="60" class="form-input">
+                                </div>
+                            </div>
+
+                            <!-- Cemento, w/c, Bolomey A -->
+                            <div id="rowCustomParams" class="form-grid-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                                <div class="form-group">
+                                    <label for="inputCustomCement">Cto. Base (kg/m³)</label>
+                                    <input type="number" id="inputCustomCement" value="350" step="10" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputCustomWC">Relación a/c</label>
+                                    <input type="number" id="inputCustomWC" value="0.45" step="0.01" min="0.25" max="0.9" class="form-input">
+                                </div>
+                                <div class="form-group" id="divCustomBolomeyA">
+                                    <label for="inputCustomBolomeyA">Bolomey A</label>
+                                    <input type="number" id="inputCustomBolomeyA" value="13.0" step="0.5" class="form-input">
+                                </div>
+                            </div>
+
+                            <!-- Tamiz, Aire y Asentamiento Objetivo -->
+                            <div class="form-grid-3" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
+                                <div class="form-group">
+                                    <label for="inputMaxSieveSize">Tamaño Máx. D (mm)</label>
+                                    <input type="number" id="inputMaxSieveSize" value="38.0" step="0.5" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputAirPercentage">Aire Objetivo (%)</label>
+                                    <input type="number" id="inputAirPercentage" value="1.5" step="0.5" min="1.0" max="10.0" class="form-input">
+                                </div>
+                                <div class="form-group">
+                                    <label for="inputSlumpTarget">Asentamiento Obj. (cm)</label>
+                                    <input type="number" id="inputSlumpTarget" value="10" step="1" min="2" max="25" class="form-input">
+                                </div>
+                            </div>
+                            <!-- Alertas de Diseño Manual -->
+                            <div id="manualDesignAlerts" style="display: none; margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;"></div>
+                        </div>
+                    </section>
+
+                    <!-- Columnas: Laboratorio y Gráfico side-by-side -->
+                    <div class="floor-params-config">
+                        <!-- Panel de Laboratorio de Hormigón -->
+                        <section class="panel panel-laboratory" id="laboratorySection">
+                            <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="panel-icon">🔬</span>
+                                    <h2>Laboratorio de Hormigón</h2>
+                                </div>
+                                <div class="history-controls" style="display: flex; gap: 4px; align-items: center;">
+                                    <button type="button" id="btnUndoLab" class="btn btn-secondary btn-xs btn-history" title="Deshacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↶</button>
+                                    <button type="button" id="btnRedoLab" class="btn btn-secondary btn-xs btn-history" title="Rehacer" style="padding: 2px 6px; font-size: 0.7rem; cursor: pointer;">↷</button>
+                                </div>
+                            </div>
+                            <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
+                                <!-- Propiedades Físicas -->
+                                <div class="form-group">
+                                    <label style="font-weight: 600; color: var(--text);">🧪 Propiedades Físicas de los Componentes</label>
+                                    <div class="materials-table-wrapper" style="margin-top: 6px;">
+                                        <table class="data-table small-table" style="font-size: 0.75rem;">
+                                            <thead>
+                                                <tr>
+                                                    <th>Material</th>
+                                                    <th>Dens. (kg/m³)</th>
+                                                    <th>Coef. Ap</th>
+                                                    <th>Hum. (L/m³ / %)</th>
+                                                    <th>Abs. (%)</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Cemento</strong></td>
+                                                    <td><input type="number" id="densCement" value="1400" step="50" class="table-input"></td>
+                                                    <td><input type="number" id="coefCement" value="0.47" step="0.01" class="table-input"></td>
+                                                    <td class="text-muted">N/A</td>
+                                                    <td class="text-muted">N/A</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Arena</strong></td>
+                                                    <td><input type="number" id="densSand" value="1650" step="50" class="table-input"></td>
+                                                    <td><input type="number" id="coefSand" value="0.63" step="0.01" class="table-input"></td>
+                                                    <td><input type="number" id="moistSand" value="80" step="5" class="table-input"></td>
+                                                    <td><input type="number" id="absSand" value="0.6" step="0.1" class="table-input"></td>
+                                                </tr>
+                                                <tr id="trLabGravilla">
+                                                    <td><strong id="lblLabGravilla">Gravilla</strong></td>
+                                                    <td><input type="number" id="densGravilla" value="1600" step="50" class="table-input"></td>
+                                                    <td><input type="number" id="coefGravilla" value="0.51" step="0.01" class="table-input"></td>
+                                                    <td><input type="number" id="moistGravilla" value="50" step="5" class="table-input"></td>
+                                                    <td><input type="number" id="absGravilla" value="0.5" step="0.1" class="table-input"></td>
+                                                </tr>
+                                                <tr id="trLabGrava">
+                                                    <td><strong>Grava</strong></td>
+                                                    <td><input type="number" id="densGrava" value="1600" step="50" class="table-input"></td>
+                                                    <td><input type="number" id="coefGrava" value="0.51" step="0.01" class="table-input"></td>
+                                                    <td><input type="number" id="moistGrava" value="50" step="5" class="table-input"></td>
+                                                    <td><input type="number" id="absGrava" value="0.5" step="0.1" class="table-input"></td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+
+                                <!-- Tamizado Granulométrico -->
+                                <div class="sieve-input-section" style="margin-top: 5px;">
+                                    <div class="section-title-with-actions" style="margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; gap: 8px;">
+                                        <label style="font-weight: 600; color: var(--text);">📊 Tamizado de Áridos (Peso Retenido)</label>
+                                        <div style="display: flex; align-items: center; gap: 6px;">
+                                            <select id="selectNumAggregates" class="form-select btn-xs" style="height: 24px; padding: 2px 6px; font-size: 0.72rem; width: auto; background-color: var(--bg-panel); font-weight: bold; border-color: var(--accent); margin-right: 4px;">
+                                                <option value="3" selected>3 Áridos</option>
+                                                <option value="2">2 Áridos</option>
+                                            </select>
+                                            <select id="selectSieveSeries" class="form-select btn-xs" style="height: 24px; padding: 2px 6px; font-size: 0.72rem; width: auto; background-color: var(--bg-panel);">
+                                                <option value="ASTM" selected>ASTM (No./in)</option>
+                                                <option value="IRAM">IRAM (Métrico)</option>
+                                                <option value="UNE">UNE (Norma Esp.)</option>
+                                                <option value="ISO">ISO (Norma Int.)</option>
+                                                <option value="ACI">ACI (Americana)</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="sieve-table-wrapper">
+                                        <table class="data-table" id="tableSieves" style="font-size: 0.72rem;">
+                                            <thead>
+                                                 <tr>
+                                                     <th>Tamiz</th>
+                                                     <th>Arena (g)</th>
+                                                     <th id="thCoarse1">Gravilla (g)</th>
+                                                     <th id="thCoarse2">Grava (g)</th>
+                                                 </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr data-sieve="37.5"><td><strong>37.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="20" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="25.0"><td><strong>25.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="230" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="19.0"><td><strong>19.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="9.5"><td><strong>9.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="100" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="250" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="4.75"><td><strong>4.75 (N°4)</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="100" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="2.36"><td><strong>2.36 (N°8)</strong></td><td><input type="number" value="120" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="50" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="1.18"><td><strong>1.18 (N°16)</strong></td><td><input type="number" value="180" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="150" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="0.6"><td><strong>0.6 (N°30)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="50" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="0.3"><td><strong>0.3 (N°50)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="0.15"><td><strong>0.15 (N°100)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="0.0"><td><strong>Fondo (Pan)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="form-group" style="margin-top: 5px;">
+                                        <span style="font-size: 0.68rem; color: var(--text-muted); display: block; line-height: 1.4;">
+                                            Muestras totales: Arena: <strong id="totalSandSample">1000</strong>g | Gravilla: <strong id="totalGravillaSample">1000</strong>g | Grava: <strong id="totalGravaSample">1000</strong>g
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </section>
+
+                        <!-- Sieve Chart Panel (Alineado al lado de Laboratorio) -->
+                        <section class="panel panel-chart">
+                            <div class="panel-header">
+                                <span class="panel-icon">📈</span>
+                                <h2 id="chartTitleText">Curva Granulométrica (Bolomey vs. Real)</h2>
+                            </div>
+                            <div class="panel-body chart-panel-body">
+                                <div class="chart-container" style="position: relative; height: 380px; width: 100%;">
+                                    <canvas id="sieveChart"></canvas>
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
             </div>
 
             <!-- TAB CONTENT: LABORATORIO ARIDOS -->
@@ -1502,7 +1504,7 @@
         </div>
     </div>
     
-    <script src="/ai.js?v=1.0.1"></script>
+    <script src="/ai.js?v=1.0.2"></script>
     <script src="/app_v1.js?v=1.0.6"></script>
     <!-- PRINTABLE CALCULATION MEMORY (HIDDEN ON SCREEN) -->
     <div id="printCalcMemory" class="print-only"></div>

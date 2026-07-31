@@ -427,10 +427,9 @@
             <li class="menu-item active" data-section="sec-intro">📚 1. Resumen General</li>
             <li class="menu-item" data-section="sec-dosif">📐 2. Dosificación y Bolomey</li>
             <li class="menu-item" data-section="sec-humedad">💧 3. Humedad de Áridos</li>
-            <li class="menu-item" data-section="sec-baldes">🪣 4. Calibración de Baldes</li>
-            <li class="menu-item" data-section="sec-reologia">🧪 5. Reología y Asentamiento</li>
-            <li class="menu-item" data-section="sec-ia">🤖 6. Asistente IA (Gemini)</li>
-            <li class="menu-item" data-section="sec-sync">☁️ 7. Base de Datos Supabase</li>
+            <li class="menu-item" data-section="sec-reologia">🧪 4. Reología y Asentamiento</li>
+            <li class="menu-item" data-section="sec-ia">🤖 5. Asistente IA (Gemini)</li>
+            <li class="menu-item" data-section="sec-sync">☁️ 6. Base de Datos Supabase</li>
         </ul>
 
         <div class="sidebar-footer">
@@ -442,6 +441,9 @@
     <!-- MAIN CONTENT AREA -->
     <main class="content-area">
         <div class="print-header-actions">
+            <a href="index.html" class="btn-action" style="text-decoration: none; margin-right: auto;">
+                ⬅️ Volver al Calculador
+            </a>
             <button onclick="printSelectedSection()" class="btn-action">
                 🖨️ Imprimir Módulo Activo
             </button>
@@ -558,29 +560,7 @@
             $$W_{amasado, final} = \left[ \frac{(W_{objetivo} \cdot V_{paston}) - W_{libre, sand} - W_{libre, stone}}{1.1} \right] \cdot G$$
         </section>
 
-        <!-- SECTION: BALDES -->
-        <section id="sec-baldes" class="manual-section">
-            <h1>Módulo de Calibración Volumétrica por Baldes de Obra</h1>
-            <p>Permite traducir las masas corregidas (en kg) a unidades prácticas de volumen (baldes) mediante densidades aparentes calibradas en campo.</p>
 
-            <h2>1. Volumen Efectivo del Balde</h2>
-            <p>El volumen del balde patrón ($V_{balde}$, en litros) se calibra pesando el balde vacío y luego lleno de agua potable (densidad $\approx 1.0\text{ kg/L}$):</p>
-            
-            $$V_{balde} = M_{lleno\_agua} - M_{vacio}$$
-
-            <h2>2. Densidad Aparente Suelta Húmeda</h2>
-            <p>La densidad aparente suelta de los agregados en las condiciones reales de obra se calcula verter el material húmedo de forma libre en el balde calibrado y pesándolo:</p>
-            
-            $$\rho_{bulk, arena} = \frac{M_{lleno\_arena} - M_{vacio}}{V_{balde} / 1000}\text{ (kg/m}^3\text{)}$$
-            $$\rho_{bulk, piedra} = \frac{M_{lleno\_piedra} - M_{vacio}}{V_{balde} / 1000}\text{ (kg/m}^3\text{)}$$
-
-            <h2>3. Conversión a Dosificación en Volumen</h2>
-            <p>La cantidad de baldes de cada componente requerida por pastón se calcula dividiendo el peso húmedo correspondiente por el peso contenido en un balde calibrado:</p>
-            
-            $$\text{Baldes de Arena: } N_{arena} = \frac{S_h}{\rho_{bulk, arena} \cdot (V_{balde}/1000)}$$
-            $$\text{Baldes de Piedra: } N_{piedra} = \frac{P_h}{\rho_{bulk, piedra} \cdot (V_{balde}/1000)}$$
-            $$\text{Baldes de Agua: } N_{agua} = \frac{W_{amasado, final}}{V_{balde}}$$
-        </section>
 
         <!-- SECTION: REOLOGIA -->
         <section id="sec-reologia" class="manual-section">

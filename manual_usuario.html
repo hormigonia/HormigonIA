@@ -406,10 +406,9 @@
             <li class="menu-item" data-section="sec-dosif">📐 2. Diseñar la Mezcla Base</li>
             <li class="menu-item" data-section="sec-aridos">🌾 3. Laboratorio de Áridos</li>
             <li class="menu-item" data-section="sec-humedad">💧 4. Ajustar por Humedad</li>
-            <li class="menu-item" data-section="sec-baldes">🪣 5. Dosificar en Baldes</li>
-            <li class="menu-item" data-section="sec-reologia">🧪 6. Control en Obra (Cono)</li>
-            <li class="menu-item" data-section="sec-sync">☁️ 7. Guardar y Sincronizar</li>
-            <li class="menu-item" data-section="sec-ia">🤖 8. Consultar al Asistente IA</li>
+            <li class="menu-item" data-section="sec-reologia">🧪 5. Control en Obra (Cono)</li>
+            <li class="menu-item" data-section="sec-sync">☁️ 6. Guardar y Sincronizar</li>
+            <li class="menu-item" data-section="sec-ia">🤖 7. Consultar al Asistente IA</li>
         </ul>
 
         <div class="sidebar-footer">
@@ -421,6 +420,9 @@
     <!-- MAIN CONTENT AREA -->
     <main class="content-area">
         <div class="print-header-actions">
+            <a href="index.html" class="btn-action" style="text-decoration: none; margin-right: auto;">
+                ⬅️ Volver al Calculador
+            </a>
             <button onclick="printSelectedSection()" class="btn-action">
                 🖨️ Imprimir Módulo Activo
             </button>
@@ -435,12 +437,12 @@
             <p style="font-size: 1.1rem; color: var(--text-title); margin-top: 10px;">Guía de Operación Práctica Paso a Paso</p>
             
             <h2>1. ¿Qué es HormigonIA?</h2>
-            <p>HormigonIA es tu asistente digital de precisión para el diseño y control de mezclas de hormigón. El programa te acompaña desde la carga de los ensayos de áridos en el laboratorio hasta la dosificación en obra con baldes y las correcciones de asentamiento frente a cambios climáticos y demoras de transporte.</p>
+            <p>HormigonIA es tu asistente digital de precisión para el diseño y control de mezclas de hormigón. El programa te acompaña desde la carga de los ensayos de áridos en el laboratorio hasta la dosificación en obra por peso y las correcciones de asentamiento frente a cambios climáticos y demoras de transporte.</p>
 
             <h2>2. Estructura de la Pantalla Principal</h2>
             <p>La aplicación cuenta con tres pestañas principales navegables desde la barra superior:</p>
             <ul>
-                <li><strong>Calculador Hormigón:</strong> Es el centro de mando. Aquí configuras los parámetros de diseño, realizas la corrección por humedad y obtienes las recetas listas para pesar o medir en baldes.</li>
+                <li><strong>Calculador Hormigón:</strong> Es el centro de mando. Aquí configuras los parámetros de diseño, realizas la corrección por humedad y obtienes las recetas listas para pesar en obra.</li>
                 <li><strong>Laboratorio de Áridos:</strong> Pestaña dedicada a la carga de los ensayos de granulometría (pesos retenidos en tamices) y visualización gráfica del ajuste con las curvas límites de Bolomey.</li>
                 <li><strong>Optimización y Predicción IA:</strong> Módulo de reología en estado fresco, donde cargas la medición del Cono de Abrams para recalcular correcciones y re-escalar la dosificación a volumen real.</li>
             </ul>
@@ -463,7 +465,7 @@
                 <ul>
                     <li><strong>Elemento a Hormigonar:</strong> Selecciona el destino (Cimiento, Viga, Columna, Losa o Pavimento). Esto inicializa valores de consistencia sugeridos.</li>
                     <li><strong>Resistencia f'ce:</strong> Resistencia especificada en los planos (ej: H-21 o 21 MPa).</li>
-                    <li><strong>Desviación Estándar (MPa):</strong> Indica el nivel de control (planta dosificadora excelente $\approx 3$ MPa, obra con mezcladora pequeña y dosificación en baldes sin control de humedad $\approx 6$ MPa).</li>
+                    <li><strong>Desviación Estándar (MPa):</strong> Indica el nivel de control (planta dosificadora excelente $\approx 3$ MPa, obra con mezcladora pequeña y dosificación por peso sin control de humedad $\approx 6$ MPa).</li>
                     <li><strong>Asentamiento Objetivo (cm):</strong> Consistencia deseada para colocar en el molde (ej: 8 cm para losas, 15 cm para columnas de alta densidad de armadura).</li>
                 </ul>
             </div>
@@ -541,29 +543,7 @@
             </div>
         </section>
 
-        <!-- SECTION: BALDES -->
-        <section id="sec-baldes" class="manual-section">
-            <h1>Dosificar en Baldes de Obra</h1>
-            <p>En obras donde no se cuenta con balanza digital, el módulo de calibración convierte los kilogramos a baldes de albañilería comunes (de 20 L) sin perder precisión científica.</p>
 
-            <div class="step-card">
-                <span class="step-badge">Paso 1</span>
-                <h3>Calibrar el Balde de Obra</h3>
-                <p>Toma un balde de pintura limpio de 20 litros. Colócalo vacío en la balanza y pésalo. Llénalo con agua limpia hasta el borde y vuelve a pesarlo. La diferencia de peso (en kg) es el volumen exacto de tu balde (ej: 19.2 litros).</p>
-            </div>
-
-            <div class="step-card">
-                <span class="step-badge">Paso 2</span>
-                <h3>Pesar un Balde con Árido Húmedo</h3>
-                <p>Llena el balde con arena de la pila (en el estado de humedad que tenga) dejándola caer libremente sin compactar. Pésalo y anota el valor. Haz lo mismo llenando el balde con piedra de la pila.</p>
-            </div>
-
-            <div class="step-card">
-                <span class="step-badge">Paso 3</span>
-                <h3>Leer la Receta en Baldes</h3>
-                <p>Ingresa estos pesos en la sección <strong>"Calibración de Baldes de Obra"</strong>. En el panel de resultados, verás cuántos baldes y fracciones (ej: "2 baldes y medio de arena", "3/4 balde de agua") debes verter al trompo por cada pastón.</p>
-            </div>
-        </section>
 
         <!-- SECTION: REOLOGIA -->
         <section id="sec-reologia" class="manual-section">
