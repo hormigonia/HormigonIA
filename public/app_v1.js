@@ -1253,6 +1253,11 @@ document.addEventListener("DOMContentLoaded", () => {
             if (activeContent) {
                 activeContent.classList.add("active");
             }
+            
+            // Redraw chart if entering Laboratorio de Hormigón
+            if (tabName === "laboratorio-hormigon") {
+                calculateAndUpdate();
+            }
         });
     });
 
