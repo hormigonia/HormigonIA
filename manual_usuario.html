@@ -404,11 +404,12 @@
         <ul class="sidebar-menu">
             <li class="menu-item active" data-section="sec-intro">📚 1. Guía de Inicio Rápido</li>
             <li class="menu-item" data-section="sec-dosif">📐 2. Diseñar la Mezcla Base</li>
-            <li class="menu-item" data-section="sec-aridos">🌾 3. Laboratorio de Áridos</li>
-            <li class="menu-item" data-section="sec-humedad">💧 4. Ajustar por Humedad</li>
-            <li class="menu-item" data-section="sec-reologia">🧪 5. Control en Obra (Cono)</li>
-            <li class="menu-item" data-section="sec-sync">☁️ 6. Guardar y Sincronizar</li>
-            <li class="menu-item" data-section="sec-ia">🤖 7. Consultar al Asistente IA</li>
+            <li class="menu-item" data-section="sec-lab-hormigon">🔬 3. Laboratorio de Hormigón</li>
+            <li class="menu-item" data-section="sec-aridos">🌾 4. Laboratorio de Áridos</li>
+            <li class="menu-item" data-section="sec-humedad">💧 5. Ajustar por Humedad</li>
+            <li class="menu-item" data-section="sec-reologia">🧪 6. Control en Obra (Cono)</li>
+            <li class="menu-item" data-section="sec-sync">☁️ 7. Guardar y Sincronizar</li>
+            <li class="menu-item" data-section="sec-ia">🤖 8. Consultar al Asistente IA</li>
         </ul>
 
         <div class="sidebar-footer">
@@ -440,11 +441,12 @@
             <p>HormigonIA es tu asistente digital de precisión para el diseño y control de mezclas de hormigón. El programa te acompaña desde la carga de los ensayos de áridos en el laboratorio hasta la dosificación en obra por peso y las correcciones de asentamiento frente a cambios climáticos y demoras de transporte.</p>
 
             <h2>2. Estructura de la Pantalla Principal</h2>
-            <p>La aplicación cuenta con tres pestañas principales navegables desde la barra superior:</p>
+            <p>La aplicación cuenta con cuatro pestañas principales navegables desde la barra superior:</p>
             <ul>
-                <li><strong>Calculador Hormigón:</strong> Es el centro de mando. Aquí configuras los parámetros de diseño, realizas la corrección por humedad y obtienes las recetas listas para pesar en obra.</li>
-                <li><strong>Laboratorio de Áridos:</strong> Pestaña dedicada a la carga de los ensayos de granulometría (pesos retenidos en tamices) y visualización gráfica del ajuste con las curvas límites de Bolomey.</li>
-                <li><strong>Optimización y Predicción IA:</strong> Módulo de reología en estado fresco, donde cargas la medición del Cono de Abrams para recalcular correcciones y re-escalar la dosificación a volumen real.</li>
+                <li><strong>Calculador Hormigón:</strong> Centro de mando. Configuras parámetros de diseño base, volumen de hormigón a elaborar, aditivos y visualizas la dosificación húmeda por peso, junto con el asentamiento predicho y el medido en obra.</li>
+                <li><strong>Laboratorio de Hormigón:</strong> Permite caracterizar los componentes (densidades, coeficientes de aporte) y realizar ajustes manuales finos del cemento base, la relación a/c y el aire. Aquí también se muestran propiedades calculadas avanzadas (MF, MPT, MFP) y el gráfico de ajuste granulométrico.</li>
+                <li><strong>Laboratorio de Áridos:</strong> Pestaña dedicada a la carga de los pesos retenidos del tamizado de las pilas de materiales en seco.</li>
+                <li><strong>Optimización y Predicción IA:</strong> Módulo de reología en estado fresco, donde cargas la medición del Cono de Abrams para recalcular correcciones y realizar simulaciones climáticas avanzadas.</li>
             </ul>
 
             <div class="alert">
@@ -463,10 +465,10 @@
                 <h3>Definir Parámetros del Proyecto</h3>
                 <p>En el panel izquierdo de la pestaña principal ("Parámetros del Proyecto"), ingresa:</p>
                 <ul>
-                    <li><strong>Elemento a Hormigonar:</strong> Selecciona el destino (Cimiento, Viga, Columna, Losa o Pavimento). Esto inicializa valores de consistencia sugeridos.</li>
-                    <li><strong>Resistencia f'ce:</strong> Resistencia especificada en los planos (ej: H-21 o 21 MPa).</li>
-                    <li><strong>Desviación Estándar (MPa):</strong> Indica el nivel de control (planta dosificadora excelente $\approx 3$ MPa, obra con mezcladora pequeña y dosificación por peso sin control de humedad $\approx 6$ MPa).</li>
-                    <li><strong>Asentamiento Objetivo (cm):</strong> Consistencia deseada para colocar en el molde (ej: 8 cm para losas, 15 cm para columnas de alta densidad de armadura).</li>
+                    <li><strong>Elemento a Hormigonar:</strong> Selecciona el destino (Cimiento, Viga, Columna, Losa o Pavimento). Esto inicializa valores de consistencia y tamaño máximo de árido sugeridos, y solicita permisos de ubicación/notificaciones.</li>
+                    <li><strong>Resistencia de Diseño (f'<sub>c</sub>):</strong> Ingresa directamente el valor numérico en MPa (ej. 21, 30, 45). Se acabaron las categorías rígidas Hx. El sistema validará que no ingreses un valor menor al mínimo exigido por durabilidad para el elemento estructural o la exposición elegidos.</li>
+                    <li><strong>Resistencia Teórica Lograda:</strong> A la derecha del campo numérico y en la receta final, el sistema muestra en tiempo real la resistencia que alcanzaría la mezcla actual. Si modificas a/c o cemento en el laboratorio, este valor se adaptará al instante para advertirte si la mezcla cumple con lo requerido.</li>
+                    <li><strong>Asentamiento Objetivo (cm):</strong> Consistencia deseada para colocar en el molde (ej: 8 cm para losas, 15 cm para columnas densas).</li>
                 </ul>
             </div>
 
@@ -480,6 +482,44 @@
                 <span class="step-badge">Paso 3</span>
                 <h3>Proporcionar el Agregado Combinado</h3>
                 <p>Establece la relación volumétrica de Arena y Piedras. En mezclas típicas se utiliza entre un 40% y 50% de arena en volumen. El sistema ajustará la curva y la informará visualmente.</p>
+            </div>
+        </section>
+
+        <!-- SECTION: LABORATORIO HORMIGON -->
+        <section id="sec-lab-hormigon" class="manual-section">
+            <h1>Laboratorio de Hormigón</h1>
+            <p>Este módulo sirve para la caracterización física detallada de los materiales constituyentes y el ajuste manual de las proporciones del esqueleto granular.</p>
+
+            <div class="step-card">
+                <span class="step-badge">Paso 1</span>
+                <h3>Modificar Configuración Manual</h3>
+                <p>Navega a la pestaña <strong>"Laboratorio de Hormigón"</strong>. En el panel "Configuración Manual de Mezcla", puedes sobreescribir el diseño base sugerido por la resistencia de diseño:</p>
+                <ul>
+                    <li><strong>Categoría de Cemento:</strong> Elige CPC40, CPN50, CPC30 o LC3 según el aglomerante disponible.</li>
+                    <li><strong>Cemento Base, Relación a/c y Parámetro A de Bolomey:</strong> Edita estos valores para ajustar de manera artesanal la trabajabilidad y la curva teórica.</li>
+                    <li><strong>Tamaño Máximo D y Aire Objetivo:</strong> Define la restricción de tamaño de piedra y volumen de aire esperado.</li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <span class="step-badge">Paso 2</span>
+                <h3>Cargar Propiedades Físicas</h3>
+                <p>En la tabla "Propiedades Físicas de los Componentes", carga los datos específicos de tu cantera o cementera:</p>
+                <ul>
+                    <li><strong>Densidades:</strong> Densidad real seca o nominal del cemento y agregados.</li>
+                    <li><strong>Coeficiente de Aporte:</strong> Fracción volumétrica sólida efectiva para empaquetamiento.</li>
+                </ul>
+            </div>
+
+            <div class="step-card">
+                <span class="step-badge">Paso 3</span>
+                <h3>Analizar las Propiedades Físicas Calculadas</h3>
+                <p>En el panel "Propiedades Físicas Calculadas", el sistema informará los siguientes parámetros en tiempo real:</p>
+                <ul>
+                    <li><strong>Módulo de Finura Combinado (MF):</strong> Indica el promedio de finura del esqueleto seco total.</li>
+                    <li><strong>Desviación Total Granulométrica:</strong> El desvío acumulado en porcentaje frente a la parábola ideal de Bolomey.</li>
+                    <li><strong>Espesor Pasta (MPT) y Porosidad Matriz (MFP):</strong> Parámetros fundamentales según el modelo de compacidad de Larrard para estimar la porosidad endurecida y la fluidez.</li>
+                </ul>
             </div>
         </section>
 
@@ -532,7 +572,7 @@
                 <ul>
                     <li>Ingresa la Humedad de la Arena y la Humedad de la Piedra.</li>
                     <li>Ingresa la Absorción de la Arena y de la Piedra (generalmente constante del laboratorio, ronda el 0.5% al 1.5%).</li>
-                    <li>Establece el <strong>"Volumen del Pastón"</strong> en litros. Si vas a preparar en obra en un trompo, indica el volumen real de mezclado (ej: 80 L).</li>
+                    <li>Establece el <strong>"Volumen de hormigón"</strong> deseado. Puedes elegir una maquinada estándar (80 L, 120 L, 200 L, 300 L, 400 L) o ingresar volumen a medida en metros cúbicos ($m^3$) hasta 12 $m^3$.</li>
                 </ul>
             </div>
 
@@ -579,6 +619,18 @@
                 <span class="step-badge">Paso 4</span>
                 <h3>Validar y Re-escalar a 1 m³</h3>
                 <p>Una vez aplicada la corrección física en tu pastón de prueba, pesa y mide la densidad real del hormigón usando un recipiente calibrado y pulsa **"Validar y Re-escalar a 1 m³"**. El sistema recalculará la receta industrial definitiva ajustando el rendimiento al 100%.</p>
+            </div>
+
+            <div class="step-card">
+                <span class="step-badge">Paso 5</span>
+                <h3>Iniciar Cuenta Regresiva de Curado y Producción</h3>
+                <p>Al iniciar la elaboración y vertido de la mezcla en obra, pulsa el botón <strong>"🚀 Iniciar Producción"</strong> dentro del módulo unificado de Control de Calidad y Curado (ubicado debajo de la Receta de Dosificación). Esto activará:</p>
+                <ul>
+                    <li><strong>Cuenta regresiva en tiempo real:</strong> Muestra el tiempo restante recomendado en días, horas, minutos y segundos.</li>
+                    <li><strong>Barra de Progreso Visual:</strong> Indica el avance porcentual del curado húmedo.</li>
+                    <li><strong>Persistencia de Estado:</strong> La cuenta regresiva continúa funcionando en segundo plano gracias al almacenamiento local del navegador, incluso si cierras la pestaña o reinicias el dispositivo.</li>
+                    <li><strong>Notificaciones de Escritorio:</strong> Si activaste las alertas de riego, recibirás recordatorios en el escritorio con la frecuencia calculada y un aviso final cuando concluya el curado.</li>
+                </ul>
             </div>
         </section>
 

@@ -126,46 +126,7 @@
                         </div>
                     </section>
 
-                    <!-- PISO 1: UBICACIÓN DE OBRA Y PRONÓSTICO DE CURADO (GPS) -->
-                    <section class="panel panel-weather" id="gpsWeatherSection">
-                        <div class="panel-header">
-                            <span class="panel-icon">🌦️</span>
-                            <h2>Ubicación de Obra y Pronóstico de Curado (GPS)</h2>
-                        </div>
-                        <div class="panel-body">
-                            <!-- Coordenadas Google Maps & GPS fallback -->
-                            <div style="display: flex; gap: 15px; justify-content: center; align-items: center; margin-bottom: 15px; flex-wrap: wrap;">
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <label for="inputGpsCoords" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Coordenadas (Lat, Lon):</label>
-                                    <input type="text" id="inputGpsCoords" value="-34.6037, -58.3816" class="form-input" placeholder="Pegar desde Google Maps" style="min-width: 200px; height: 34px; padding: 6px 12px; font-size: 0.88rem; text-align: center; border-radius: 6px;">
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <label for="inputForecastDate" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Fecha:</label>
-                                    <input type="date" id="inputForecastDate" class="form-input" style="height: 34px; padding: 6px 12px; font-size: 0.88rem; border-radius: 6px; background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); cursor: pointer;">
-                                </div>
-                                <div style="display: flex; align-items: center; gap: 8px;">
-                                    <label for="inputForecastTime" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Hora:</label>
-                                    <input type="time" id="inputForecastTime" value="09:00" class="form-input" style="height: 34px; padding: 6px 12px; font-size: 0.88rem; border-radius: 6px; background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); cursor: pointer;">
-                                </div>
-                                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-                                    <button type="button" id="btnGetGpsWeatherManual" class="btn btn-secondary" style="height: 34px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85rem; border-radius: 6px; padding: 8px 16px;">
-                                        <span>🔍 Consultar Coordenadas</span>
-                                        <span id="manualGpsLoadingSpinner" class="hidden">🔄</span>
-                                    </button>
-                                    <button type="button" id="btnGetGpsWeatherAuto" class="btn btn-primary" style="height: 34px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85rem; border-radius: 6px; padding: 8px 16px;">
-                                        <span>📍 Ubicación Actual (GPS)</span>
-                                        <span id="autoGpsLoadingSpinner" class="hidden">🔄</span>
-                                    </button>
-                                </div>
-                            </div>
-                            <div id="gpsLocationDetails" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; display: none; background-color: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
-                                <!-- Detailed weather and scrollable forecast will render here -->
-                            </div>
-                            <div id="gpsWeatherAlerts" style="display: flex; flex-direction: column; gap: 6px; margin-top: 15px;">
-                                <!-- Live weather exposure and 72-hour forecast warnings will be rendered here -->
-                            </div>
-                        </div>
-                    </section>
+
 
                     <!-- PISO 2: ASISTENTE DE IA (CHAT) -->
                     <section class="panel panel-chat">
@@ -230,29 +191,27 @@
                                 </select>
                             </div>
 
-                            <!-- Clase de Hormigón -->
+                            <!-- Resistencia de diseño (f'c) -->
                             <div class="form-group">
-                                <label style="display: block; margin-bottom: 6px;">Clase de Hormigón (Hx)</label>
-                                <div class="concrete-counter" style="display: flex; align-items: center; justify-content: space-between; background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 6px; padding: 4px; max-width: 250px; margin: 0 auto 4px auto;">
-                                    <button type="button" id="btnDecreaseClass" class="btn btn-secondary" style="width: 40px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s;">-</button>
-                                    <span id="displayConcreteClass" style="font-size: 1.15rem; font-weight: 700; color: var(--accent); min-width: 120px; text-align: center;">H21</span>
-                                    <button type="button" id="btnIncreaseClass" class="btn btn-secondary" style="width: 40px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; transition: all 0.2s;">+</button>
+                                <label for="inputTargetStrength">Resistencia de diseño (f'<sub>c</sub>) [MPa]</label>
+                                <div style="display: flex; gap: 10px; align-items: center;">
+                                    <input type="number" id="inputTargetStrength" value="21" min="8" max="60" step="1" class="form-input" style="font-size: 1.15rem; font-weight: bold; text-align: center; height: 36px; width: 100px;">
+                                    <div style="font-size: 0.75rem; color: var(--text-muted); line-height: 1.35; flex: 1;">
+                                        Resistencia Teórica Lograda: <br>
+                                        f'<sub>c</sub> = <strong style="color: var(--accent); font-size: 0.92rem;"><span id="valTheoreticalStrengthFc">21.0</span> MPa</strong> | f'<sub>cm</sub> = <strong style="color: var(--accent); font-size: 0.92rem;"><span id="valTheoreticalStrengthFcm">27.6</span> MPa</strong>
+                                    </div>
                                 </div>
-                                <div id="displayConcreteClassStrengthInfo" style="font-size: 0.72rem; text-align: center; color: var(--text-muted); margin-bottom: 12px; line-height: 1.2;">
-                                    Resistencia: f'<sub>c</sub> = 21.0 MPa | f'<sub>cm</sub> = 27.6 MPa
-                                </div>
-                                <select id="selectConcreteClass" style="display: none;">
-                                    <option value="H8">H8</option>
-                                    <option value="H15">H15</option>
-                                    <option value="H20">H20</option>
-                                    <option value="H21" selected>H21</option>
-                                    <option value="H25">H25</option>
-                                    <option value="H30">H30</option>
-                                    <option value="H35">H35</option>
-                                    <option value="H38">H38</option>
-                                    <option value="H40">H40</option>
-                                    <option value="H45">H45</option>
-                                    <option value="Personalizado">Personalizado</option>
+                            </div>
+
+                            <!-- Método de Diseño -->
+                            <div class="form-group">
+                                <label for="selectDesignMethod">Método de Diseño de Mezcla</label>
+                                <select id="selectDesignMethod" class="form-select">
+                                    <option value="bolomey" selected>Bolomey</option>
+                                    <option value="fuller">Fuller</option>
+                                    <option value="delapena">La peña</option>
+                                    <option value="aci">ACI 211.1</option>
+                                    <option value="larrard">Larrard (Compacidad Máxima LPDM)</option>
                                 </select>
                             </div>
 
@@ -274,21 +233,52 @@
                                 </select>
                             </div>
 
-                            <!-- Volumen del Pastón -->
+                            <!-- Volumen de hormigón -->
                             <div class="form-group">
-                                <label for="inputBatchVolume" style="font-weight: 600; color: var(--text); font-size: 0.95rem;">Volumen del Pastón a Mezclar</label>
-                                <div class="range-container" style="margin-top: 4px; margin-bottom: 10px;">
-                                    <input type="range" id="inputBatchVolume" min="10" max="1000" step="5" value="80" class="form-range" style="height: 8px;">
-                                    <span class="range-value" style="font-size: 1.1rem; font-weight: 700; color: var(--primary);"><span id="batchVolumeDisplay">80</span> L</span>
-                                </div>
-                                <div class="volume-presets" style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 4px;">
-                                    <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="50">50L</button>
-                                    <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="80">80L</button>
-                                    <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="150">150L</button>
-                                    <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="250">250L</button>
-                                    <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="500">500L</button>
-                                    <button type="button" class="btn btn-secondary btn-xs btn-preset-vol" data-vol="1000">1000L</button>
-                                </div>
+                                <label for="inputBatchVolume" style="font-weight: 600; color: var(--text); font-size: 0.95rem;">Volumen de hormigón</label>
+                                <select id="inputBatchVolume" class="form-select">
+                                    <optgroup label="Maquinadas (Litros)">
+                                        <option value="80" selected>Maquinada: 80 L</option>
+                                        <option value="120">Maquinada: 120 L</option>
+                                        <option value="200">Maquinada: 200 L</option>
+                                        <option value="300">Maquinada: 300 L</option>
+                                        <option value="400">Maquinada: 400 L</option>
+                                    </optgroup>
+                                    <optgroup label="Volumen a Medida (m³)">
+                                        <option value="100">0.1 m³</option>
+                                        <option value="200">0.2 m³</option>
+                                        <option value="300">0.3 m³</option>
+                                        <option value="400">0.4 m³</option>
+                                        <option value="500">0.5 m³</option>
+                                        <option value="600">0.6 m³</option>
+                                        <option value="700">0.7 m³</option>
+                                        <option value="800">0.8 m³</option>
+                                        <option value="900">0.9 m³</option>
+                                        <option value="1000">1.0 m³</option>
+                                        <option value="1500">1.5 m³</option>
+                                        <option value="2000">2.0 m³</option>
+                                        <option value="2500">2.5 m³</option>
+                                        <option value="3000">3.0 m³</option>
+                                        <option value="3500">3.5 m³</option>
+                                        <option value="4000">4.0 m³</option>
+                                        <option value="4500">4.5 m³</option>
+                                        <option value="5000">5.0 m³</option>
+                                        <option value="5500">5.5 m³</option>
+                                        <option value="6000">6.0 m³</option>
+                                        <option value="6500">6.5 m³</option>
+                                        <option value="7000">7.0 m³</option>
+                                        <option value="7500">7.5 m³</option>
+                                        <option value="8000">8.0 m³</option>
+                                        <option value="8500">8.5 m³</option>
+                                        <option value="9000">9.0 m³</option>
+                                        <option value="9500">9.5 m³</option>
+                                        <option value="10000">10.0 m³</option>
+                                        <option value="10500">10.5 m³</option>
+                                        <option value="11000">11.0 m³</option>
+                                        <option value="11500">11.5 m³</option>
+                                        <option value="12000">12.0 m³</option>
+                                    </optgroup>
+                                </select>
                             </div>
                         </div>
                     </section>
@@ -330,149 +320,40 @@
                         </div>
                     </section>
 
-
-
-                    <!-- PISO 5: CONTROL DE CALIDAD Y OPTIMIZACIÓN REOLÓGICA (ROUSSEL, ARRHENIUS Y PASTÓN IDEAL) -->
-                    <section class="panel panel-quality-control-unified" id="qualityControlPanelUnified" style="margin-top: 15px;">
+                    <!-- PISO 4.5: PROPIEDADES Y CONSISTENCIA -->
+                    <section class="panel panel-properties-consistency" id="propertiesConsistencyPanel" style="margin-top: 15px;">
                         <div class="panel-header">
-                            <span class="panel-icon">🔬</span>
-                            <h2>Control de Calidad y Optimización Reológica</h2>
+                            <span class="panel-icon">⚖️</span>
+                            <h2>Propiedades y Consistencia</h2>
                         </div>
-                        <div class="panel-body panel-quality-body">
-                            
-                            <!-- Columna Izquierda: Ingreso de Resultados de Ensayos Realizados -->
-                            <div style="background-color: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
-                                <h3 style="font-size: 0.88rem; font-weight: 600; color: var(--accent); margin-bottom: 2px;">🧪 Ensayos del Pastón (Laboratorio / Obra)</h3>
-                                
-                                <div class="form-group" style="background-color: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 4px; border-left: 3px solid var(--accent); display: flex; flex-direction: column; justify-content: center; height: 32px;">
-                                    <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7;">Asentamiento Obj. Definido:</span>
-                                    <strong style="font-size: 0.85rem; color: var(--accent);"><span id="displaySlumpTargetCm">10</span> cm (<span id="displaySlumpTargetMm">100</span> mm)</strong>
-                                </div>
-
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                    <div class="form-group">
-                                        <label for="inputSlumpMeasured">Asentamiento Medido (cm)</label>
-                                        <input type="number" id="inputSlumpMeasured" value="8" step="0.5" min="0" max="25" class="form-input" style="height: 30px; font-size: 0.8rem;">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="inputTimeElapsed">Tiempo t1 (minutos)</label>
-                                        <input type="number" id="inputTimeElapsed" value="15" step="1" class="form-input" style="height: 30px; font-size: 0.8rem;">
-                                    </div>
-                                </div>
-
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                                    <div class="form-group">
-                                        <label for="inputTempConcrete">Temp. Mezcla Tc (°C)</label>
-                                        <input type="number" id="inputTempConcrete" value="22" step="0.5" class="form-input" style="height: 30px; font-size: 0.8rem;">
-                                    </div>
-                                    <div class="form-group">
-                                         <label for="inputDensityReal" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                                             <span>Densidad Real (kg/m³)</span>
-                                             <span id="densityRealHelpText" style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal; margin-left: 4px;">(Teórica: --)</span>
-                                         </label>
-                                         <input type="number" id="inputDensityReal" placeholder="Ingresar valor medido" class="form-input" style="height: 30px; font-size: 0.8rem;">
-                                    </div>
-                                </div>
-
-                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: 2px;">
-                                    <div class="form-group">
-                                        <label for="inputQualityStrength7d">Resistencia 7d (MPa)</label>
-                                        <input type="number" id="inputQualityStrength7d" placeholder="Ej: 16.5" step="0.1" class="form-input" style="height: 30px; font-size: 0.8rem;">
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="inputQualityStrength28d">Resistencia 28d (MPa)</label>
-                                        <input type="number" id="inputQualityStrength28d" placeholder="Vacío = estimar" step="0.1" class="form-input" style="height: 30px; font-size: 0.8rem;">
-                                    </div>
-                                </div>
+                        <div class="panel-body">
+                            <div class="indicator-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                                <span class="indicator-label" style="font-weight: 500;">Asentamiento Predicho:</span>
+                                <span class="indicator-value-group" style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="indicator-value" id="resSlump" style="font-size: 1.1rem; font-weight: 700; color: var(--primary);">0.0</span> <span class="unit" style="font-size: 0.85rem; color: var(--text-muted);">cm</span>
+                                    <span class="badge" id="resConsistencyBadge" style="background-color: var(--primary-light); color: var(--primary); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: 600;">Seca</span>
+                                </span>
                             </div>
-                            
-                            <!-- Columna Derecha: Pestañas de Acción e Historial -->
-                            <div style="display: flex; flex-direction: column; gap: 8px;">
-                                <!-- Encabezado de Pestañas -->
-                                <div class="tab-header" style="display: flex; gap: 4px; border-bottom: 1px solid var(--border-color); padding-bottom: 2px;">
-                                    <button type="button" id="tabBtnRheology" class="tab-btn active" style="padding: 6px 12px; font-size: 0.78rem; font-weight: bold; background: none; border: none; border-bottom: 2px solid var(--accent); color: var(--accent); cursor: pointer;">🧪 Ajuste Reológico (Fresco)</button>
-                                    <button type="button" id="tabBtnStrength" class="tab-btn" style="padding: 6px 12px; font-size: 0.78rem; font-weight: bold; background: none; border: none; border-bottom: 2px solid transparent; color: var(--text-muted); cursor: pointer;">📈 Reformulación de Resistencia (Pastón Ideal)</button>
-                                </div>
-                                
-                                <!-- Contenedor de Contenido de Pestañas -->
-                                <div class="tab-content-container" style="flex: 1; min-height: 250px; display: flex; flex-direction: column;">
-                                    
-                                    <!-- Contenido Pestaña 1: Ajuste Reológico -->
-                                    <div id="tabContentRheology" class="tab-content" style="display: flex; flex-direction: column; gap: 8px;">
-                                        <p style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.35; margin: 2px 0;">
-                                            Simula la pérdida de asentamiento (Roussel + Arrhenius) y calcula dosificaciones correctivas para mezclas secas o fluidas a escala de laboratorio de 80 L.
-                                        </p>
-                                        
-                                        <div style="display: flex; gap: 8px; margin-top: 4px;">
-                                            <button type="button" id="btnCalcularReologia" class="btn btn-primary" style="flex: 1; height: 32px; font-size: 0.8rem; font-weight: bold; background-color: var(--accent); border-color: var(--accent); color: #000; cursor: pointer;">Calcular Ajuste Reológico</button>
-                                            <button type="button" id="btnValidarMezcla" class="btn btn-secondary" style="flex: 1; height: 32px; font-size: 0.8rem; display: none; cursor: pointer;">Validar y Re-escalar a 1 m³</button>
-                                        </div>
-                                        
-                                        <!-- Resultados de Reología -->
-                                        <div id="rheologyResultCard" style="display: none; background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; font-size: 0.75rem; line-height: 1.4;">
-                                            <div id="rheologyStatus" style="font-weight: bold; font-size: 0.8rem; margin-bottom: 6px;"></div>
-                                            <div id="rheologyCorrectionInfo" style="margin-bottom: 8px;"></div>
-                                            
-                                            <!-- Tabla de Slump Loss -->
-                                            <div style="border-top: 1px dashed var(--border-color); padding-top: 8px;">
-                                                <strong style="color: var(--accent); display: block; margin-bottom: 4px; font-size: 0.75rem;">📈 Proyección de Pérdida de Asentamiento (Slump Loss)</strong>
-                                                <div class="table-responsive" style="max-height: 100px; overflow-y: auto;">
-                                                    <table class="data-table small-table" style="font-size: 0.68rem; text-align: center; width: 100%;">
-                                                        <thead>
-                                                            <tr>
-                                                                <th>Tiempo</th>
-                                                                <th>Edad Eq. 20°C</th>
-                                                                <th>Fluencia</th>
-                                                                <th>Asentamiento</th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody id="rheologyTimelineBody"></tbody>
-                                                    </table>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Contenido Pestaña 2: Reformulación de Resistencia -->
-                                    <div id="tabContentStrength" class="tab-content" style="display: none; flex-direction: column; gap: 8px;">
-                                        <p style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.35; margin: 2px 0;">
-                                            Ajusta de forma iterativa el cemento y la relación a/c en base al desvío de resistencia mecánica a 7/28 días (CIRSOC 201 / ACI 211.1).
-                                        </p>
-                                        
-                                        <button type="button" id="btnReformulateMix" class="btn btn-primary" style="height: 32px; font-size: 0.8rem; font-weight: bold; background-color: var(--accent); border-color: var(--accent); color: #000; cursor: pointer; margin-top: 4px;">🧪 Reformular por Resistencia (Pastón Ideal)</button>
-                                        
-                                        <!-- Historial de Iteraciones -->
-                                        <div style="background-color: rgba(255, 255, 255, 0.01); padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
-                                            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 2px;">
-                                                <strong style="font-size: 0.75rem; color: var(--accent);">📈 Historial de Iteraciones y Ajustes</strong>
-                                                <span style="font-size: 0.7rem; color: var(--text-muted);">Iteración Actual: #<span id="displayQualityIteration">0</span></span>
-                                            </div>
-                                            <div class="iterations-history-table-wrapper" style="overflow: auto; max-height: 130px;">
-                                                <table class="data-table small-table" style="font-size: 0.68rem; width: 100%; text-align: center;">
-                                                    <thead>
-                                                        <tr>
-                                                            <th>Iter.</th>
-                                                            <th>Agua (L)</th>
-                                                            <th>Cto. (kg)</th>
-                                                            <th>a/c</th>
-                                                            <th>Asent. (cm)</th>
-                                                            <th>f'c 28d (MPa)</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="qualityIterationsHistoryBody">
-                                                        <tr>
-                                                            <td colspan="6" style="color: var(--text-muted); font-style: italic; padding: 10px;">No se han realizado reformulaciones para este diseño.</td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                </div>
+                            <div class="slump-meter-bar" style="position: relative; height: 18px; border-radius: 9px; background: linear-gradient(to right, #64748b, #3b82f6, #10b981, #f59e0b, #ef4444); display: flex; overflow: hidden; margin-bottom: 15px;">
+                                <div class="slump-indicator-pin" id="slumpPin" style="position: absolute; top: -3px; width: 4px; height: 24px; background-color: #ffffff; border: 1px solid #000000; border-radius: 2px; transition: left 0.3s ease; left: 0%;"></div>
+                                <div class="slump-zone zone-seca" title="Seca (0-2 cm)" style="flex: 1; text-align: center; font-size: 0.65rem; color: #ffffff; line-height: 18px; font-weight: 500;">Seca</div>
+                                <div class="slump-zone zone-plastica" title="Plástica (3-5 cm)" style="flex: 1.5; text-align: center; font-size: 0.65rem; color: #ffffff; line-height: 18px; font-weight: 500;">Plást.</div>
+                                <div class="slump-zone zone-blanda" title="Blanda (6-9 cm)" style="flex: 2; text-align: center; font-size: 0.65rem; color: #ffffff; line-height: 18px; font-weight: 500;">Bland.</div>
+                                <div class="slump-zone zone-fluida" title="Fluida (10-15 cm)" style="flex: 3; text-align: center; font-size: 0.65rem; color: #ffffff; line-height: 18px; font-weight: 500;">Fluid.</div>
+                                <div class="slump-zone zone-liquida" title="Líquida (>15 cm)" style="flex: 4; text-align: center; font-size: 0.65rem; color: #ffffff; line-height: 18px; font-weight: 500;">Líq.</div>
                             </div>
-                            
+
+                            <div class="form-group" style="border-top: 1px dashed var(--border-color); padding-top: 12px; margin-top: 10px;">
+                                <label for="inputCalculatorSlumpMeasured" style="font-weight: 600; color: var(--text); font-size: 0.95rem;">Asentamiento medido en obra (Cono de Abrams)</label>
+                                <div style="display: flex; align-items: center; gap: 10px; margin-top: 4px;">
+                                    <input type="number" id="inputCalculatorSlumpMeasured" value="8" step="0.5" min="0" max="25" class="form-input" style="max-width: 120px;">
+                                    <span style="font-size: 0.9rem; color: var(--text-muted);">cm</span>
+                                </div>
+                                <small style="color: var(--text-muted); font-size: 0.75rem; display: block; margin-top: 4px;">Se sincroniza automáticamente con el módulo de control de calidad y ajuste reológico.</small>
+                            </div>
                         </div>
+                    </section>
+
                     </section>
 
                     <!-- PISO 6: RECETA DE DOSIFICACIÓN (ABAJO DE TODO) -->
@@ -485,13 +366,13 @@
                                 <!-- Volume indicator -->
                                 <div class="results-meta">
                                     <div class="meta-label">Receta de pastón para:</div>
-                                    <div class="meta-value"><span class="val-highlight" id="resVolumeDisplay">80</span> Litros</div>
+                                    <div class="meta-value" id="resVolumeDisplay">80 L</div>
                                 </div>
 
                                 <!-- Target strength details -->
                                 <div class="results-meta" style="margin-top: -5px; font-size: 0.8rem; background-color: rgba(255,255,255,0.01);">
-                                    <div class="meta-label">Resistencia Media de Diseño (f'<sub>cm</sub>):</div>
-                                    <div class="meta-value" style="color: var(--accent);"><span id="resStrengthFcm">36.6</span> MPa</div>
+                                    <div class="meta-label">Resistencia Teórica Lograda (f'<sub>c</sub> / f'<sub>cm</sub>):</div>
+                                    <div class="meta-value" style="color: var(--accent);"><span id="resStrengthFc">21.0</span> / <span id="resStrengthFcm">27.6</span> MPa</div>
                                 </div>
 
                                 <!-- Core Recipe Cards -->
@@ -557,52 +438,196 @@
                                         <!-- Dynamic additive cards will be rendered here -->
                                     </div>
                                 </div>
-
-                                <!-- Quality & Properties Indicators -->
-                                <div class="quality-indicators-section">
-                                    <h3>Propiedades y Consistencia</h3>
-                                    
-                                    <div class="indicator-row">
-                                        <span class="indicator-label">Asentamiento Predicho:</span>
-                                        <span class="indicator-value-group">
-                                            <span class="indicator-value" id="resSlump">0.0</span> <span class="unit">cm</span>
-                                            <span class="badge" id="resConsistencyBadge">Seca</span>
-                                        </span>
-                                    </div>
-                                    <div class="slump-meter-bar">
-                                        <div class="slump-indicator-pin" id="slumpPin"></div>
-                                        <div class="slump-zone zone-seca" title="Seca (0-2 cm)">Seca</div>
-                                        <div class="slump-zone zone-plastica" title="Plástica (3-5 cm)">Plást.</div>
-                                        <div class="slump-zone zone-blanda" title="Blanda (6-9 cm)">Bland.</div>
-                                        <div class="slump-zone zone-fluida" title="Fluida (10-15 cm)">Fluid.</div>
-                                        <div class="slump-zone zone-liquida" title="Líquida (>15 cm)">Líq.</div>
-                                    </div>
-
-                                    <div class="indicator-grid-2">
-                                         <div class="indicator-box">
-                                             <span class="box-label">Módulo de Finura (MF)</span>
-                                             <span class="box-value" id="resMF">0.00</span>
-                                         </div>
-                                         <div class="indicator-box">
-                                             <span class="box-label">Desviación Total Granul.</span>
-                                             <span class="box-value" id="resTotalDiff">0.0</span>%
-                                         </div>
-                                     </div>
-                                     <div class="indicator-grid-2" style="margin-top: 8px;">
-                                         <div class="indicator-box" title="Maximum Paste Thickness (MPT): Espesor medio de la película de pasta sobre los agregados según Larrard.">
-                                             <span class="box-label">Espesor Pasta (MPT)</span>
-                                             <span class="box-value" id="resLarrardMPT">0.000</span> <span class="unit">mm</span>
-                                         </div>
-                                         <div class="indicator-box" title="Matrix Final Porosity (MFP): Estimación teórica de la porosidad en estado endurecido según Larrard.">
-                                             <span class="box-label">Porosidad Matriz (MFP)</span>
-                                             <span class="box-value" id="resLarrardMFP">0.0</span> <span class="unit">%</span>
-                                         </div>
-                                     </div>
-                                </div>
                             </div>
                         </section>
-                    
 
+                        <!-- PISO 7: CONTROL DE CALIDAD, AJUSTE REOLÓGICO Y CURADO (UNIFICADO Y ACORDEÓN) -->
+                        <section class="panel panel-quality-control-unified" id="qualityControlPanelUnified" style="margin-top: 15px;">
+                            <div class="panel-header" id="btnToggleQCAccordion" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer; user-select: none;">
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <span class="panel-icon">🔬</span>
+                                    <h2>Control de Calidad, Ajuste Reológico y Curado</h2>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 10px;">
+                                    <span id="activeCuringStatusBadge" class="badge hidden" style="background-color: var(--success); color: #fff; font-size: 0.7rem; padding: 2px 6px; border-radius: 4px;">Curado Activo</span>
+                                    <span id="qcAccordionArrow" style="font-size: 1.1rem; transition: transform 0.2s;">🔽</span>
+                                </div>
+                            </div>
+                            <div class="panel-body" id="qcAccordionBody" style="display: none; flex-direction: column; gap: 15px; width: 100%;">
+                                
+                                <!-- SECCIÓN 1: UBICACIÓN Y PRONÓSTICO DE CURADO (GPS) -->
+                                <div style="background-color: rgba(255, 255, 255, 0.01); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; width: 100%;">
+                                    <h3 style="font-size: 0.88rem; font-weight: 600; color: var(--primary); margin-bottom: 2px;">🌦️ Ubicación de Obra y Pronóstico de Curado</h3>
+                                    <div style="display: flex; gap: 15px; justify-content: center; align-items: center; flex-wrap: wrap;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <label for="inputGpsCoords" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Coordenadas (Lat, Lon):</label>
+                                            <input type="text" id="inputGpsCoords" value="-34.6037, -58.3816" class="form-input" placeholder="Pegar desde Google Maps" style="min-width: 200px; height: 34px; padding: 6px 12px; font-size: 0.88rem; text-align: center; border-radius: 6px;">
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <label for="inputForecastDate" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Fecha:</label>
+                                            <input type="date" id="inputForecastDate" class="form-input" style="height: 34px; padding: 6px 12px; font-size: 0.88rem; border-radius: 6px; background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); cursor: pointer;">
+                                        </div>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <label for="inputForecastTime" style="font-size: 0.9rem; color: var(--text-muted); font-weight: 500;">Hora:</label>
+                                            <input type="time" id="inputForecastTime" value="09:00" class="form-input" style="height: 34px; padding: 6px 12px; font-size: 0.88rem; border-radius: 6px; background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); cursor: pointer;">
+                                        </div>
+                                        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                                            <button type="button" id="btnGetGpsWeatherManual" class="btn btn-secondary" style="height: 34px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85rem; border-radius: 6px; padding: 8px 16px;">
+                                                <span>🔍 Consultar Coordenadas</span>
+                                                <span id="manualGpsLoadingSpinner" class="hidden">🔄</span>
+                                            </button>
+                                            <button type="button" id="btnGetGpsWeatherAuto" class="btn btn-primary" style="height: 34px; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 0.85rem; border-radius: 6px; padding: 8px 16px;">
+                                                <span>📍 Ubicación Actual (GPS)</span>
+                                                <span id="autoGpsLoadingSpinner" class="hidden">🔄</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="gpsLocationDetails" style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.4; display: none; background-color: rgba(255,255,255,0.02); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <!-- Detailed weather and scrollable forecast will render here -->
+                                    </div>
+                                    <div id="gpsWeatherAlerts" style="display: flex; flex-direction: column; gap: 6px; margin-top: 5px;">
+                                        <!-- Live weather exposure and 72-hour forecast warnings will be rendered here -->
+                                    </div>
+                                </div>
+
+                                <!-- SECCIÓN 2: CONTROL DE CALIDAD Y OPTIMIZACIÓN REOLÓGICA (DOBLE COLUMNA ORIGINAL) -->
+                                <div class="panel-body panel-quality-body" style="padding: 0; display: grid; grid-template-columns: 1fr 1.2fr; gap: 15px; width: 100%;">
+                                    <!-- Columna Izquierda: Ingreso de Resultados de Ensayos Realizados -->
+                                    <div style="background-color: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
+                                        <h3 style="font-size: 0.88rem; font-weight: 600; color: var(--accent); margin-bottom: 2px;">🧪 Ensayos del Pastón (Laboratorio / Obra)</h3>
+                                        
+                                        <div class="form-group" style="background-color: rgba(255,255,255,0.03); padding: 6px 10px; border-radius: 4px; border-left: 3px solid var(--accent); display: flex; flex-direction: column; justify-content: center; height: 32px;">
+                                            <span style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7;">Asentamiento Obj. Definido:</span>
+                                            <strong style="font-size: 0.85rem; color: var(--accent);"><span id="displaySlumpTargetCm">10</span> cm (<span id="displaySlumpTargetMm">100</span> mm)</strong>
+                                        </div>
+
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                            <div class="form-group">
+                                                <label for="inputSlumpMeasured">Asentamiento Medido (cm)</label>
+                                                <input type="number" id="inputSlumpMeasured" value="8" step="0.5" min="0" max="25" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputTimeElapsed">Tiempo t1 (minutos)</label>
+                                                <input type="number" id="inputTimeElapsed" value="15" step="1" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                            </div>
+                                        </div>
+
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                                            <div class="form-group">
+                                                <label for="inputTempConcrete">Temp. Mezcla Tc (°C)</label>
+                                                <input type="number" id="inputTempConcrete" value="22" step="0.5" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                            </div>
+                                            <div class="form-group">
+                                                 <label for="inputDensityReal" style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                                                     <span>Densidad Real (kg/m³)</span>
+                                                     <span id="densityRealHelpText" style="font-size: 0.65rem; color: var(--text-muted); font-weight: normal; margin-left: 4px;">(Teórica: --)</span>
+                                                 </label>
+                                                 <input type="number" id="inputDensityReal" placeholder="Ingresar valor medido" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                            </div>
+                                        </div>
+
+                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; border-top: 1px dashed var(--border-color); padding-top: 8px; margin-top: 2px;">
+                                            <div class="form-group">
+                                                <label for="inputQualityStrength7d">Resistencia 7d (MPa)</label>
+                                                <input type="number" id="inputQualityStrength7d" placeholder="Ej: 16.5" step="0.1" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="inputQualityStrength28d">Resistencia 28d (MPa)</label>
+                                                <input type="number" id="inputQualityStrength28d" placeholder="Vacío = estimar" step="0.1" class="form-input" style="height: 30px; font-size: 0.8rem;">
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Columna Derecha: Pestañas de Acción e Historial -->
+                                    <div style="display: flex; flex-direction: column; gap: 8px; background-color: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <!-- Encabezado de Pestañas -->
+                                        <div class="tab-header" style="display: flex; gap: 4px; border-bottom: 1px solid var(--border-color); padding-bottom: 2px;">
+                                            <button type="button" id="tabBtnRheology" class="tab-btn active" style="padding: 6px 12px; font-size: 0.78rem; font-weight: bold; background: none; border: none; border-bottom: 2px solid var(--accent); color: var(--accent); cursor: pointer;">🧪 Ajuste Reológico (Fresco)</button>
+                                            <button type="button" id="tabBtnStrength" class="tab-btn" style="padding: 6px 12px; font-size: 0.78rem; font-weight: bold; background: none; border: none; color: var(--text-muted); cursor: pointer;">📈 Reformulación de Resistencia</button>
+                                        </div>
+                                        
+                                        <!-- Contenedor de Contenido de Pestañas -->
+                                        <div class="tab-content-container" style="flex: 1; min-height: 250px; display: flex; flex-direction: column; gap: 10px;">
+                                            
+                                            <!-- Contenido Pestaña 1: Ajuste Reológico -->
+                                            <div id="tabContentRheology" class="tab-content" style="display: flex; flex-direction: column; gap: 8px;">
+                                                <p style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.35; margin: 2px 0;">
+                                                    Simula la pérdida de asentamiento (Roussel + Arrhenius) y calcula dosificaciones correctivas para mezclas secas o fluidas.
+                                                </p>
+                                                
+                                                <div style="display: flex; gap: 8px; margin-top: 4px;">
+                                                    <button type="button" id="btnCalcularReologia" class="btn btn-primary" style="flex: 1; height: 32px; font-size: 0.8rem; font-weight: bold; background-color: var(--accent); border-color: var(--accent); color: #000; cursor: pointer;">Calcular Ajuste Reológico</button>
+                                                    <button type="button" id="btnValidarMezcla" class="btn btn-secondary" style="flex: 1; height: 32px; font-size: 0.8rem; display: none; cursor: pointer;">Validar y Re-escalar</button>
+                                                </div>
+                                                
+                                                <!-- Resultados de Reología -->
+                                                <div id="rheologyResultCard" style="display: none; background-color: rgba(255,255,255,0.02); border: 1px solid var(--border-color); padding: 10px; border-radius: 8px; font-size: 0.75rem; line-height: 1.4;">
+                                                    <div id="rheologyStatus" style="font-weight: bold; font-size: 0.8rem; margin-bottom: 6px;"></div>
+                                                    <div id="rheologyCorrectionInfo" style="margin-bottom: 8px;"></div>
+                                                    
+                                                    <!-- Tabla de Slump Loss -->
+                                                    <div style="border-top: 1px dashed var(--border-color); padding-top: 8px;">
+                                                        <strong style="color: var(--accent); display: block; margin-bottom: 4px; font-size: 0.75rem;">📈 Proyección de Pérdida de Asentamiento (Slump Loss)</strong>
+                                                        <div class="table-responsive" style="max-height: 100px; overflow-y: auto;">
+                                                            <table class="data-table small-table" style="font-size: 0.68rem; text-align: center; width: 100%;">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>Tiempo</th>
+                                                                        <th>Edad Eq. 20°C</th>
+                                                                        <th>Fluencia</th>
+                                                                        <th>Asentamiento</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody id="rheologyTimelineBody"></tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Contenido Pestaña 2: Reformulación de Resistencia -->
+                                            <div id="tabContentStrength" class="tab-content" style="display: none; flex-direction: column; gap: 8px;">
+                                                <p style="font-size: 0.7rem; color: var(--text-muted); line-height: 1.35; margin: 2px 0;">
+                                                    Ajusta de forma iterativa el cemento y la relación a/c en base al desvío de resistencia mecánica a 7/28 días.
+                                                </p>
+                                                
+                                                <button type="button" id="btnReformulateMix" class="btn btn-primary" style="height: 32px; font-size: 0.8rem; font-weight: bold; background-color: var(--accent); border-color: var(--accent); color: #000; cursor: pointer; margin-top: 4px;">🧪 Reformular por Resistencia</button>
+                                                
+                                                <!-- Historial de Iteraciones -->
+                                                <div style="background-color: rgba(255, 255, 255, 0.01); padding: 8px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 4px; margin-top: 6px;">
+                                                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border-color); padding-bottom: 2px;">
+                                                        <strong style="font-size: 0.75rem; color: var(--accent);">📈 Historial de Iteraciones y Ajustes</strong>
+                                                        <span style="font-size: 0.7rem; color: var(--text-muted);">Iteración Actual: #<span id="displayQualityIteration">0</span></span>
+                                                    </div>
+                                                    <div class="iterations-history-table-wrapper" style="overflow: auto; max-height: 130px;">
+                                                        <table class="data-table small-table" style="font-size: 0.68rem; width: 100%; text-align: center;">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Iter.</th>
+                                                                    <th>Agua (L)</th>
+                                                                    <th>Cto. (kg)</th>
+                                                                    <th>a/c</th>
+                                                                    <th>Asent. (cm)</th>
+                                                                    <th>f'c 28d (MPa)</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody id="qualityIterationsHistoryBody">
+                                                                <tr>
+                                                                    <td colspan="6" style="color: var(--text-muted); font-style: italic; padding: 10px;">No se han realizado reformulaciones para este diseño.</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </section>
+                    
                     </div>
             </div>
 
@@ -622,32 +647,15 @@
                             </div>
                         </div>
                         <div class="panel-body">
-                            <!-- Método de Diseño -->
-                            <div class="form-group">
-                                <label for="selectDesignMethod">Método de Diseño de Mezcla / Curva de Agregados</label>
-                                <select id="selectDesignMethod" class="form-select">
-                                    <option value="bolomey" selected>Bolomey</option>
-                                    <option value="fuller">Fuller</option>
-                                    <option value="delapena">La peña</option>
-                                    <option value="aci">ACI 211.1</option>
-                                    <option value="larrard">Larrard (Compacidad Máxima LPDM)</option>
-                                </select>
-                            </div>
                             <!-- Cemento y Resistencia Especificada -->
-                            <div class="form-grid-2" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 8px;">
-                                <div class="form-group">
-                                    <label for="selectCementCategory">Categoría de Cemento</label>
-                                    <select id="selectCementCategory" class="form-select">
-                                        <option value="CPC40" selected>CPC40 (Compuesto 40 - K=96)</option>
-                                        <option value="CPN50">CPN50 (Normal 50 - K=120)</option>
-                                        <option value="CPC30">CPC30 (Compuesto 30 - K=75)</option>
-                                        <option value="LC3">LC3 (Arcilla Calcinada - K=85)</option>
-                                    </select>
-                                </div>
-                                <div class="form-group">
-                                    <label for="inputManualStrength">Resistencia f'ce (MPa)</label>
-                                    <input type="number" id="inputManualStrength" value="21" step="1" min="8" max="60" class="form-input">
-                                </div>
+                            <div class="form-group">
+                                <label for="selectCementCategory">Categoría de Cemento</label>
+                                <select id="selectCementCategory" class="form-select">
+                                    <option value="CPC40" selected>CPC40 (Compuesto 40 - K=96)</option>
+                                    <option value="CPN50">CPN50 (Normal 50 - K=120)</option>
+                                    <option value="CPC30">CPC30 (Compuesto 30 - K=75)</option>
+                                    <option value="LC3">LC3 (Arcilla Calcinada - K=85)</option>
+                                </select>
                             </div>
 
                             <!-- Cemento, w/c, Bolomey A -->
@@ -683,6 +691,36 @@
                             </div>
                             <!-- Alertas de Diseño Manual -->
                             <div id="manualDesignAlerts" style="display: none; margin-top: 10px; border-top: 1px dashed var(--border-color); padding-top: 10px;"></div>
+                        </div>
+                    </section>
+
+                    <!-- Panel: Propiedades Físicas Calculadas -->
+                    <section class="panel panel-properties-calculated" id="propertiesCalculatedPanel" style="margin-bottom: 15px;">
+                        <div class="panel-header">
+                            <span class="panel-icon">📊</span>
+                            <h2>Propiedades Físicas Calculadas</h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="indicator-grid-2">
+                                 <div class="indicator-box">
+                                     <span class="box-label">Módulo de Finura (MF)</span>
+                                     <span class="box-value" id="resMF">0.00</span>
+                                 </div>
+                                 <div class="indicator-box">
+                                     <span class="box-label">Desviación Total Granul.</span>
+                                     <span class="box-value" id="resTotalDiff">0.0</span>%
+                                 </div>
+                             </div>
+                             <div class="indicator-grid-2" style="margin-top: 8px;">
+                                 <div class="indicator-box" title="Maximum Paste Thickness (MPT): Espesor medio de la película de pasta sobre los agregados según Larrard.">
+                                     <span class="box-label">Espesor Pasta (MPT)</span>
+                                     <span class="box-value" id="resLarrardMPT">0.000</span> <span class="unit">mm</span>
+                                 </div>
+                                 <div class="indicator-box" title="Matrix Final Porosity (MFP): Estimación teórica de la porosidad en estado endurecido según Larrard.">
+                                     <span class="box-label">Porosidad Matriz (MFP)</span>
+                                     <span class="box-value" id="resLarrardMFP">0.0</span>%
+                                 </div>
+                             </div>
                         </div>
                     </section>
 

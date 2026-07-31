@@ -14,6 +14,24 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
 
+    <!-- Mermaid CDN for diagram rendering -->
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            mermaid.initialize({
+                startOnLoad: true,
+                theme: 'dark',
+                securityLevel: 'loose',
+                themeVariables: {
+                    background: '#1e293b',
+                    primaryColor: '#3b82f6',
+                    primaryTextColor: '#fff',
+                    lineColor: '#334155'
+                }
+            });
+        });
+    </script>
+
     <style>
         :root {
             --bg-color: #0b0f19;
@@ -472,18 +490,23 @@
             <h1>Módulo de Dosificación Racional y Leyes de Mezcla</h1>
             <p>Este módulo calcula las proporciones teóricas de agua, cemento y agregados por metro cúbico utilizando el método racional clásico ajustado con la curva límite de Bolomey.</p>
 
-            <h2>1. Resistencia de Diseño (Compresión)</h2>
-            <p>La resistencia media requerida en el laboratorio ($f'_{cm}$ o $f'_{cr}$) se calcula a partir de la resistencia especificada en el proyecto ($f'_c$) y la desviación estándar de la planta de hormigón ($s$):</p>
+            <h2>1. Resistencia de Diseño (f'c) y Resistencia Media de Dosificación (f'cm)</h2>
+            <p>La resistencia especificada en el proyecto ($f'_c$) se ingresa libremente como un valor numérico editable (en MPa), eliminando las clases rígidas Hx. Para calcular el dosaje base, la resistencia media requerida en el laboratorio ($f'_{cm}$) se deduce sumando el margen de seguridad probabilístico:</p>
             
-            $$\text{Para control excelente (planta automatizada): } f'_{cm} = f'_c + 1.34s + 5.0\text{ (MPa)}$$
-            $$\text{Para control estándar (laboratorio/obra común): } f'_{cm} = f'_c + 1.48s\text{ (MPa)}$$
+            $$f'_{cm} = f'_c + 1.65 \cdot S\text{ (MPa)}$$
+            <p>Donde la desviación estándar por defecto es $S = 4.0\text{ MPa}$ para control estándar de obra.</p>
 
-            <h2>2. Relación Agua/Cemento (Ley de Abrams)</h2>
-            <p>La relación $w/c$ teórica se determina a partir del tipo de cemento (CP30, CP40, CP50) y la resistencia objetivo aplicando la curva de regresión exponencial de Abrams:</p>
+            <h2>2. Relación Agua/Cemento (Ley de Abrams) e Inversión Teórica</h2>
+            <p>La relación $w/c$ teórica se determina a partir de la categoría de cemento (CPC40, CPN50, CPC30, LC3) y la resistencia media deseada aplicando la Ley de Abrams modificada por aire atrapado:</p>
             
-            $$w/c = \frac{\ln(A / f'_{cm})}{B}$$
+            $$f'_{cm} = f'_{cm, cemento} \cdot 1.20 \cdot Corr_{aire}$$
+            <p>Donde $Corr_{aire}$ representa la corrección por porcentaje de aire atrapado ($Air\%$):</p>
+            $$Corr_{aire} = \max\left(0.40, 1 - 0.05 \cdot \max(0, Air\% - 1.5)\right)$$
+            
+            <p>Despejando analíticamente la relación agua/cemento óptima a partir de la constante $K$ del cemento:</p>
+            $$w/c = \frac{\ln\left(\frac{K}{f'_{cm, cemento}}\right)}{\ln(8.5)} \quad \text{donde } f'_{cm, cemento} = \frac{f'_{cm}}{1.20 \cdot Corr_{aire}}$$
 
-            <p>Donde los parámetros empíricos de resistencia $A$ y $B$ para cada categoría de cemento son:</p>
+            <p>Las constantes de calidad de cemento $K$ adoptadas son:</p>
             <table>
                 <thead>
                     <tr>
@@ -531,6 +554,182 @@
             <p>Una vez calculada la dosis de agua libre ($W$) y de cemento ($C = W / (w/c)$), el volumen restante de la mezcla se completa con los agregados para asegurar un volumen de pastón unitario de exactly $1\text{ m}^3$ ($1000\text{ L}$), incorporando el contenido de aire atrapado ($Air\%$):</p>
             
             $$V_{agregados} = 1000 \cdot \left(1 - \frac{Air\%}{100}\right) - \left(\frac{C}{\rho_{cemento}} + \frac{W}{\rho_{agua}} + V_{aditivos}\right)$$
+
+            <h2>5. Esquemas de Flujo y Sincronización</h2>
+            <p>Para optimizar la ergonomía en obra y el rendimiento de procesamiento en dispositivos de pantalla reducida (móviles), se estructuró la aplicación de manera modular:
+            Los parámetros analíticos de dosificación granulométrica y compacidad física (Módulo de Finura MF, Desviación Granulométrica combinada, Espesor de Pasta MPT y Porosidad de la Matriz MFP bajo el modelo de Larrard) se trasladaron a la pestaña <strong>Laboratorio de Hormigón</strong>. En la pantalla de la calculadora de hormigón principal se conserva el indicador de asentamiento predicho y se introduce una entrada sincronizada para el cono medido en obra.</p>
+            
+            <h3>A. Control de Resistencia de Diseño y Cálculo Teórico</h3>
+            <p>El siguiente esquema de flujo ilustra la interacción técnica entre la resistencia de diseño ingresada, los mínimos reglamentarios y el recálculo teórico en base a las modificaciones del laboratorio:</p>
+            <div class="mermaid" style="background-color: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                flowchart TD
+                    classDef input fill:#2a4365,stroke:#3182ce,stroke-width:2px,color:#fff;
+                    classDef logic fill:#2d3748,stroke:#4a5568,stroke-width:1px,color:#fff;
+                    classDef calc fill:#1a202c,stroke:#805ad5,stroke-width:2px,color:#fff;
+                    classDef output fill:#22543d,stroke:#38a169,stroke-width:2px,color:#fff;
+
+                    InStrength[Modificación de Resistencia de Diseño f'c]:::input
+                    InManual[Ajuste Manual en Laboratorio w/c, Cemento, etc.]:::input
+                    InConstraint[Cambio de Elemento o Exposición Ambiental]:::input
+
+                    CheckMin{¿Es f'c menor al mínimo admisible?}:::logic
+                    ClampMin[Limitar f'c al mínimo reglamentario]:::logic
+                    
+                    AutoAdjust[autoAdjustCustomParamsFromStrength
+                    1. f'cm = f'c + 6.6 MPa
+                    2. w/c = ln K/f'cm_cem / ln 8.5
+                    3. Cemento = Agua / w/c
+                    4. Sincronizar inputs manuales]:::logic
+
+                    CalcEngine[calculateAndUpdate
+                    1. Ejecuta modelo de empaquetamiento
+                    2. Calcula pesos secos y húmedos del pastón]:::calc
+
+                    CalcTheoretical[calculateTheoreticalStrength
+                    1. f'cm lograda = K / 8.5^w/c * 1.2 * CorrAire
+                    2. f'c lograda = f'cm lograda - 6.6 MPa]:::calc
+
+                    UpdateUI[Actualizar UI e Impresión:
+                    - f'c / f'cm teóricas junto al input
+                    - f'c / f'cm teóricas en resultados
+                    - Cantidades del pastón kg y L
+                    - Alertas de consistencia y diseño]:::output
+
+                    InConstraint --> CheckMin
+                    CheckMin -- Sí --> ClampMin
+                    CheckMin -- No --> AutoAdjust
+                    ClampMin --> AutoAdjust
+                    InStrength --> AutoAdjust
+                    AutoAdjust --> CalcEngine
+                    InManual --> CalcEngine
+                    CalcEngine --> CalcTheoretical
+                    CalcTheoretical --> UpdateUI
+            </div>
+
+            <h3>B. Control del Volumen de Hormigón</h3>
+            <p>El siguiente esquema detalla el proceso de selección de maquinadas, metros cúbicos y el manejo adaptativo de carga de mezclas históricas:</p>
+            <div class="mermaid" style="background-color: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                flowchart TD
+                    classDef input fill:#2a4365,stroke:#3182ce,stroke-width:2px,color:#fff;
+                    classDef logic fill:#2d3748,stroke:#4a5568,stroke-width:1px,color:#fff;
+                    classDef calc fill:#1a202c,stroke:#805ad5,stroke-width:2px,color:#fff;
+                    classDef output fill:#22543d,stroke:#38a169,stroke-width:2px,color:#fff;
+
+                    UserSelect[Selección de Volumen en Dropdown]:::input
+                    LoadMix[Carga de Mezcla Guardada state.batchVolume]:::input
+                    
+                    CheckExist{¿Existe el volumen en las opciones?}:::logic
+                    CreateCustom[Crear opción custom: X L Cargado]:::logic
+                    SetSelectValue[Establecer select.value = volumen]:::logic
+                    
+                    TriggerChange[Evento change o recálculo directo]:::logic
+                    
+                    CalcEngine[calculateAndUpdate
+                    1. batchVolumeL = select.value
+                    2. volM3 = batchVolumeL / 1000]:::calc
+                    
+                    UpdateResLabel[Actualizar etiqueta #resVolumeDisplay]:::calc
+                    
+                    CalcWeights[Multiplicar receta base por volM3:
+                    - Cemento, Agua, Aditivos y Áridos]:::calc
+                    
+                    UpdateUI[Actualizar tarjetas de receta e impresión]:::output
+
+                    UserSelect --> TriggerChange
+                    LoadMix --> CheckExist
+                    CheckExist -- No --> CreateCustom --> SetSelectValue
+                    CheckExist -- Sí --> SetSelectValue
+                    SetSelectValue --> TriggerChange
+                    TriggerChange --> CalcEngine
+                    CalcEngine --> UpdateResLabel
+                    CalcEngine --> CalcWeights
+                    CalcWeights --> UpdateUI
+                    UpdateResLabel --> UpdateUI
+            <h3>C. Sincronización de Consistencia y Ajuste Reológico</h3>
+            <p>Para simplificar el flujo de trabajo del operador en obra, el asentamiento medido en gramos o centímetros se replica bidireccionalmente entre el panel de consistencia de la calculadora principal y el panel de control de calidad de reología. El siguiente esquema ilustra el flujo de sincronización y cómo se alimenta el motor de corrección de dosificación por desvíos:</p>
+            <div class="mermaid" style="background-color: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                flowchart TD
+                    classDef input fill:#2a4365,stroke:#3182ce,stroke-width:2px,color:#fff;
+                    classDef logic fill:#2d3748,stroke:#4a5568,stroke-width:1px,color:#fff;
+                    classDef calc fill:#1a202c,stroke:#805ad5,stroke-width:2px,color:#fff;
+                    classDef output fill:#22543d,stroke:#38a169,stroke-width:2px,color:#fff;
+
+                    UserCalc[Entrada en Calculador: inputCalculatorSlumpMeasured]:::input
+                    UserQC[Entrada en Reología: inputSlumpMeasured]:::input
+                    ProgChange[Cambio Programático: Reset o Carga de Mezcla]:::input
+                    
+                    SyncRoutine[Rutina de Sincronización de Eventos syncSlump]:::logic
+                    FallbackSync[Respaldo de Sincronización en calculateAndUpdate]:::logic
+                    
+                    SyncValues[Ambas entradas unificadas con valor idéntico]:::logic
+                    
+                    OpRun[Ejecución de Ajuste:
+                    - reformulateMixForIdealPaston
+                    - runRheologyAdjustment]:::calc
+                    
+                    CalcCore[Cálculo de dosificación correctiva:
+                    - Aditivos SP y Agua W de corrección
+                    - Rescaling del volumen real]:::calc
+                    
+                    UpdateRecipe[Actualizar Receta Corregida e Historial]:::output
+
+                    UserCalc -->|input o change| SyncRoutine
+                    UserQC -->|input o change| SyncRoutine
+                    ProgChange --> FallbackSync
+                    
+                    SyncRoutine --> SyncValues
+                    FallbackSync --> SyncValues
+                    
+                    SyncValues --> OpRun
+                    OpRun --> CalcCore
+                    CalcCore --> UpdateRecipe
+            </div>
+
+            <h3>D. Cronómetro de Curado Persistente en Tiempo Real</h3>
+            <p>El siguiente esquema de máquina de estados detalla el flujo de inicialización, persistencia en <code>localStorage</code> y la lógica de ejecución del cronómetro de curado húmedo:</p>
+            <div class="mermaid" style="background-color: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin: 15px 0;">
+                flowchart TD
+                    classDef input fill:#2a4365,stroke:#3182ce,stroke-width:2px,color:#fff;
+                    classDef logic fill:#2d3748,stroke:#4a5568,stroke-width:1px,color:#fff;
+                    classDef calc fill:#1a202c,stroke:#805ad5,stroke-width:2px,color:#fff;
+                    classDef output fill:#22543d,stroke:#38a169,stroke-width:2px,color:#fff;
+
+                    InitApp[Carga de Aplicación DOMContentLoaded]:::input
+                    ReadStorage{¿Existen curingStartTime y curingDurationMs en localStorage?}:::logic
+                    
+                    BtnStart[Usuario Pulsa: Iniciar Producción]:::input
+                    SaveStorage[Guardar curingStartTime = Date.now y curingDurationMs en localStorage]:::logic
+                    
+                    StartLoop[Iniciar bucle setInterval de 1 segundo]:::calc
+                    CalcDiff[Calcular elapsed = Date.now - curingStartTime]:::calc
+                    CalcRem[Calcular remaining = curingDurationMs - elapsed]:::calc
+                    
+                    CheckFinished{¿remaining <= 0?}:::logic
+                    
+                    UpdateProgress[Actualizar reloj Xd Yh Zm Ss y barra de progreso %]:::output
+                    
+                    FinishCuring[1. Detener Intervalo
+                    2. Limpiar localStorage
+                    3. Mostrar Curado Completado
+                    4. Disparar Notificación de Escritorio]:::output
+                    
+                    UserStop[Usuario Pulsa: Detener/Reiniciar Curado]:::input
+                    ClearState[1. Detener Intervalo
+                    2. Limpiar localStorage
+                    3. Ocultar contenedor de cuenta regresiva]:::output
+
+                    InitApp --> ReadStorage
+                    ReadStorage -- Sí --> StartLoop
+                    ReadStorage -- No --> WaitStart[Esperar acción del usuario]:::logic
+                    
+                    BtnStart --> SaveStorage --> StartLoop
+                    StartLoop --> CalcDiff --> CalcRem --> CheckFinished
+                    
+                    CheckFinished -- No --> UpdateProgress -->|Esperar 1 seg| StartLoop
+                    CheckFinished -- Sí --> FinishCuring
+                    
+                    UserStop --> ClearState
+            </div>
         </section>
 
         <!-- SECTION: HUMEDAD -->
@@ -605,6 +804,30 @@
             
             $$V_{real} = \frac{\sum M_{componentes\ corregidos}}{\rho_{real}}$$
             $$\gamma = \frac{1.0}{V_{real}} \implies Componente_{1m3, final} = Componente_{paston, corregido} \cdot \gamma$$
+
+            <h2>6. Cronómetro de Curado Persistente en Tiempo Real</h2>
+            <p>Para garantizar el seguimiento continuo del período de curado húmedo sugerido, el sistema integra un cronómetro regresivo que opera bajo las siguientes directrices técnicas:</p>
+            <ul>
+                <li><strong>Cálculo de Duración Teórica:</strong>
+                    $$Duración_{curado} = \text{curingDays} \cdot 24 \cdot 3600 \cdot 1000\ (\text{ms})$$
+                    La variable <code>curingDays</code> se recalcula dinámicamente en base a la temperatura promedio del pronóstico del clima a 72 horas para asegurar la adecuada hidratación del cemento.
+                </li>
+                <li><strong>Persistencia de Estado Local (Local Storage):</strong>
+                    Al presionar "Iniciar Producción", se registran dos variables clave en <code>localStorage</code>:
+                    <ol>
+                        <li><code>curingStartTime</code>: Timestamp en milisegundos del instante exacto de inicio (<code>Date.now()</code>).</li>
+                        <li><code>curingDurationMs</code>: La duración total calculada en milisegundos.</li>
+                    </ol>
+                    Al recargar o abrir nuevamente la aplicación, un hook de inicialización evalúa la existencia de estas claves y reanuda de manera reactiva el bucle de actualización del contador (<code>setInterval</code> de 1 segundo) sin perder el progreso.
+                </li>
+                <li><strong>Visualización de Progreso:</strong>
+                    La barra de progreso se actualiza dinámicamente computando la fracción transcurrida:
+                    $$\text{Progreso (\%)} = \min\left(100,\ \frac{\text{Date.now()} - \text{curingStartTime}}{\text{curingDurationMs}} \cdot 100\right)$$
+                </li>
+                <li><strong>Desencadenador de Notificaciones de Escritorio (Push API):</strong>
+                    Si el navegador otorga permisos, se invoca la API nativa de notificaciones al iniciar la elaboración y al concluir la cuenta regresiva, informando al operador sobre la culminación del período crítico de curado.
+                </li>
+            </ul>
         </section>
 
         <!-- SECTION: IA -->
