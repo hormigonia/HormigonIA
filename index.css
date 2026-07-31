@@ -216,6 +216,29 @@ body {
     }
 }
 
+.panel-quality-body {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 15px;
+    align-items: start;
+}
+
+@media (max-width: 900px) {
+    .panel-quality-body {
+        grid-template-columns: 1fr;
+    }
+}
+
+.panel-quality-control-unified {
+    grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+    .panel-quality-control-unified {
+        grid-column: span 1;
+    }
+}
+
 .left-stack {
     display: flex;
     flex-direction: column;
@@ -1079,10 +1102,7 @@ label {
     .volume-presets {
         grid-template-columns: repeat(3, 1fr) !important;
         gap: 6px !important;
-    }
-    .panel-quality-control-unified .panel-body {
-        grid-template-columns: 1fr !important;
-    }
+
 }
 
 /* PRINT MEDIA (FOR PDF REPORT GENERATION) */
