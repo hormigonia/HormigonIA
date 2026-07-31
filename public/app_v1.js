@@ -1,4 +1,113 @@
 let currentUserSession = null;
+let curingInterval = null;
+
+function initCuringCountdown() {
+    const startTimeStr = localStorage.getItem("curingStartTime");
+    const durationStr = localStorage.getItem("curingDurationMs");
+    if (!startTimeStr || !durationStr) return;
+
+    const startTime = parseInt(startTimeStr);
+    const duration = parseInt(durationStr);
+    
+    // Set active badge at top levels if they are in DOM
+    const activeBadge = document.getElementById("activeCuringStatusBadge");
+    if (activeBadge) activeBadge.classList.remove("hidden");
+
+    startCountdownLoop(startTime, duration);
+}
+
+function startCountdownLoop(startTime, duration) {
+    if (curingInterval) clearInterval(curingInterval);
+
+    function update() {
+        const timerDisplay = document.getElementById("curingTimerDisplay");
+        const progressBar = document.getElementById("curingProgressBar");
+        const container = document.getElementById("curingCountdownContainer");
+        const btn = document.getElementById("btnStartProduction");
+        const activeBadge = document.getElementById("activeCuringStatusBadge");
+
+        const elapsed = Date.now() - startTime;
+        const remaining = duration - elapsed;
+
+        if (container) container.classList.remove("hidden");
+        if (btn) {
+            btn.innerText = "🛑 Reiniciar Curado";
+            btn.classList.remove("btn-success");
+            btn.classList.add("btn-secondary");
+        }
+        if (activeBadge) activeBadge.classList.remove("hidden");
+
+        if (remaining <= 0) {
+            clearInterval(curingInterval);
+            curingInterval = null;
+            if (timerDisplay) timerDisplay.innerText = "¡Curado Completado! ✅";
+            if (progressBar) progressBar.style.width = "100%";
+            if (activeBadge) {
+                activeBadge.innerText = "Curado Finalizado";
+                activeBadge.style.backgroundColor = "var(--primary)";
+            }
+            localStorage.removeItem("curingStartTime");
+            localStorage.removeItem("curingDurationMs");
+            
+            if ("Notification" in window && Notification.permission === "granted") {
+                new Notification("HormigónMix AI - Curing Completo", {
+                    body: "El período sugerido de curado húmedo ha concluido con éxito.",
+                    icon: "favicon.ico"
+                });
+            }
+        } else {
+            const secs = Math.floor(remaining / 1000);
+            const days = Math.floor(secs / (24 * 3600));
+            const hours = Math.floor((secs % (24 * 3600)) / 3600);
+            const mins = Math.floor((secs % 3600) / 60);
+            const remainingSecs = secs % 60;
+
+            if (timerDisplay) {
+                timerDisplay.innerText = `${days}d ${hours}h ${mins}m ${remainingSecs}s`;
+            }
+            if (progressBar) {
+                const pct = Math.min(100, (elapsed / duration) * 100);
+                progressBar.style.width = `${pct}%`;
+            }
+        }
+    }
+
+    update();
+    curingInterval = setInterval(update, 1000);
+}
+
+function handleStartProductionClick(e) {
+    const btn = e.currentTarget;
+    if (localStorage.getItem("curingStartTime")) {
+        if (confirm("¿Estás seguro de que deseas detener y reiniciar la cuenta regresiva del curado?")) {
+            if (curingInterval) clearInterval(curingInterval);
+            curingInterval = null;
+            localStorage.removeItem("curingStartTime");
+            localStorage.removeItem("curingDurationMs");
+            const container = document.getElementById("curingCountdownContainer");
+            if (container) container.classList.add("hidden");
+            const activeBadge = document.getElementById("activeCuringStatusBadge");
+            if (activeBadge) activeBadge.classList.add("hidden");
+            btn.innerText = "🚀 Iniciar Producción";
+            btn.classList.remove("btn-secondary");
+            btn.classList.add("btn-success");
+        }
+    } else {
+        const days = parseFloat(btn.dataset.days) || 7.0;
+        const durationMs = days * 24 * 3600 * 1000;
+        const startTime = Date.now();
+        localStorage.setItem("curingStartTime", startTime);
+        localStorage.setItem("curingDurationMs", durationMs);
+        startCountdownLoop(startTime, durationMs);
+        
+        if ("Notification" in window && Notification.permission === "granted") {
+            new Notification("HormigónMix AI - Curado Iniciado", {
+                body: `Se ha iniciado el cronómetro de curado de ${days} días.`,
+                icon: "favicon.ico"
+            });
+        }
+    }
+}
 
 function showServerErrorOverlay() {
     const els = ["resCement", "resWater", "resSand", "resSandRatio", "resGravilla", "resGravillaRatio", "resGrava", "resGravaRatio", "resLarrardMPT", "resLarrardMFP", "resSlump", "resMF", "resTotalDiff"];
@@ -502,7 +611,7 @@ const historyManager = {
                 customBolomeyA: document.getElementById("inputCustomBolomeyA").value,
                 maxSieveSize: document.getElementById("inputMaxSieveSize").value,
                 airPercentage: document.getElementById("inputAirPercentage").value,
-                manualStrength: document.getElementById("inputManualStrength").value,
+                manualStrength: document.getElementById("inputTargetStrength") ? document.getElementById("inputTargetStrength").value : "21",
                 cementCategory: document.getElementById("selectCementCategory").value
             };
         },
@@ -513,7 +622,8 @@ const historyManager = {
             document.getElementById("inputCustomBolomeyA").value = state.customBolomeyA;
             document.getElementById("inputMaxSieveSize").value = state.maxSieveSize;
             document.getElementById("inputAirPercentage").value = state.airPercentage;
-            document.getElementById("inputManualStrength").value = state.manualStrength;
+            const targetStrEl = document.getElementById("inputTargetStrength");
+            if (targetStrEl) targetStrEl.value = state.manualStrength;
             document.getElementById("selectCementCategory").value = state.cementCategory;
         }
     },
@@ -1263,52 +1373,55 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initialize Laboratorio de Áridos
     initAridosLab();
-    
+
+    // Collapsible Accordion for Control de Calidad, Ajuste Reológico y Curado
+    const btnToggleQCAccordion = document.getElementById("btnToggleQCAccordion");
+    const qcAccordionBody = document.getElementById("qcAccordionBody");
+    const qcAccordionArrow = document.getElementById("qcAccordionArrow");
+    if (btnToggleQCAccordion && qcAccordionBody) {
+        btnToggleQCAccordion.addEventListener("click", () => {
+            if (qcAccordionBody.style.display === "none" || qcAccordionBody.style.display === "") {
+                qcAccordionBody.style.display = "flex";
+                if (qcAccordionArrow) qcAccordionArrow.innerText = "🔼";
+            } else {
+                qcAccordionBody.style.display = "none";
+                if (qcAccordionArrow) qcAccordionArrow.innerText = "🔽";
+            }
+        });
+    }
+
+    // Initialize curing countdown from localStorage if active
+    initCuringCountdown();
+
     calculateAndUpdate();
 });
 
 // Event Listeners Setup
 function setupEventListeners() {
-    // Concrete Class Selector
-    document.getElementById("selectConcreteClass").addEventListener("change", (e) => {
-        const val = e.target.value;
+    // Target Strength Input
+    const inputTargetStrength = document.getElementById("inputTargetStrength");
+    if (inputTargetStrength) {
+        inputTargetStrength.addEventListener("input", (e) => {
+            const val = parseFloat(e.target.value);
+            if (isNaN(val)) return;
+            autoAdjustCustomParamsFromStrength();
+            calculateAndUpdate();
+        });
         
-        // Bidirectional sync index
-        const idx = CLASS_SEQUENCE.indexOf(val);
-        if (idx !== -1) {
-            currentClassIndex = idx;
-            updateCounterUI();
-        }
-        
-        autoAdjustCustomParamsFromStrength();
-        calculateAndUpdate();
-    });
-
-    // Hx Counter buttons
-    document.getElementById("btnIncreaseClass").addEventListener("click", () => {
-        if (currentClassIndex < CLASS_SEQUENCE.length - 1) {
-            currentClassIndex++;
-            const newVal = CLASS_SEQUENCE[currentClassIndex];
-            const select = document.getElementById("selectConcreteClass");
-            select.value = newVal;
-            select.dispatchEvent(new Event("change"));
-        }
-    });
-
-    document.getElementById("btnDecreaseClass").addEventListener("click", () => {
-        const elementVal = document.getElementById("selectStructuralElement").value;
-        const settings = ELEMENT_SETTINGS[elementVal];
-        const minClass = settings ? settings.minClass : "H8";
-        const minIdx = CLASS_SEQUENCE.indexOf(minClass);
-        
-        if (currentClassIndex > minIdx) {
-            currentClassIndex--;
-            const newVal = CLASS_SEQUENCE[currentClassIndex];
-            const select = document.getElementById("selectConcreteClass");
-            select.value = newVal;
-            select.dispatchEvent(new Event("change"));
-        }
-    });
+        inputTargetStrength.addEventListener("change", (e) => {
+            let val = parseFloat(e.target.value);
+            if (isNaN(val)) return;
+            
+            const minStrength = getMinConcreteClassStrength();
+            if (val < minStrength) {
+                e.target.value = minStrength;
+            } else if (val > 60) {
+                e.target.value = 60;
+            }
+            autoAdjustCustomParamsFromStrength();
+            calculateAndUpdate();
+        });
+    }
 
     // Combined Project Constraints Solver (Element & Exposure)
     const applyProjectConstraints = () => {
@@ -1321,25 +1434,12 @@ function setupEventListeners() {
         if (!elemSettings || !expSettings) return;
         
         const sieveInput = document.getElementById("inputMaxSieveSize");
-        const classDropdown = document.getElementById("selectConcreteClass");
-        
         // 1. Update sieve size (from structural element)
         sieveInput.value = elemSettings.maxSieve;
         
-        // 2. Enforce minimum concrete class (maximum of element and exposure)
+        // 2. Enforce minimum concrete strength (maximum of element and exposure)
         const overallMinClass = getMinConcreteClass();
         updateConcreteClassDropdown(overallMinClass);
-        
-        const currentClass = classDropdown.value;
-        const currentStrength = CLASS_STRENGTHS[currentClass] || 0;
-        const minStrength = CLASS_STRENGTHS[overallMinClass] || 0;
-        
-        if (currentClass !== "Personalizado" && currentStrength < minStrength) {
-            classDropdown.value = overallMinClass;
-            classDropdown.dispatchEvent(new Event("change"));
-        } else {
-            updateCounterUI();
-        }
         
         // 3. Clear and repopulate additives (union of element and exposure recommendations)
         additives = [];
@@ -1382,6 +1482,32 @@ function setupEventListeners() {
 
     document.getElementById("selectStructuralElement").addEventListener("change", () => {
         applyProjectConstraints();
+        
+        const elementVal = document.getElementById("selectStructuralElement").value;
+        if (elementVal) {
+            // Request Notification Permission
+            if ("Notification" in window) {
+                if (Notification.permission === "default") {
+                    Notification.requestPermission().then(permission => {
+                        console.log("Permiso de notificación:", permission);
+                        if (permission === "granted") {
+                            new Notification("HormigónMix AI", {
+                                body: "Notificaciones activadas para alertas de curado y clima.",
+                                icon: "favicon.ico"
+                            });
+                        }
+                        // Trigger Geolocation and weather forecast
+                        fetchLocalWeatherAuto();
+                    });
+                } else {
+                    // Permission already granted or denied, trigger location directly
+                    fetchLocalWeatherAuto();
+                }
+            } else {
+                // Notifications not supported, trigger location
+                fetchLocalWeatherAuto();
+            }
+        }
     });
     document.getElementById("selectExposureClass").addEventListener("change", () => {
         applyProjectConstraints();
@@ -1393,49 +1519,39 @@ function setupEventListeners() {
         } else {
             currentChartMode = 'sieves';
         }
-        const concreteClass = document.getElementById("selectConcreteClass").value;
-        if (concreteClass !== "Personalizado") {
-            autoAdjustCustomParamsFromStrength();
-        }
+        autoAdjustCustomParamsFromStrength();
         calculateAndUpdate();
     });
 
     // Cement category change
     document.getElementById("selectCementCategory").addEventListener("change", () => {
-        const concreteClass = document.getElementById("selectConcreteClass").value;
-        if (concreteClass !== "Personalizado") {
-            autoAdjustCustomParamsFromStrength();
-        }
-        calculateAndUpdate();
-    });
-
-    // Manual specified strength change
-    document.getElementById("inputManualStrength").addEventListener("input", () => {
         autoAdjustCustomParamsFromStrength();
         calculateAndUpdate();
     });
 
 
 
-    // Volume slider
-    document.getElementById("inputBatchVolume").addEventListener("input", (e) => {
-        document.getElementById("batchVolumeDisplay").innerText = e.target.value;
-        document.getElementById("resVolumeDisplay").innerText = e.target.value;
-        calculateAndUpdate();
-    });
-
-    // Volume slider presets
-    document.querySelectorAll(".btn-preset-vol").forEach(btn => {
-        btn.addEventListener("click", (e) => {
-            const vol = e.currentTarget.dataset.vol;
-            const slider = document.getElementById("inputBatchVolume");
-            slider.value = vol;
-            
-            document.getElementById("batchVolumeDisplay").innerText = vol;
-            document.getElementById("resVolumeDisplay").innerText = vol;
+    // Volume Select Change
+    const inputBatchVolume = document.getElementById("inputBatchVolume");
+    if (inputBatchVolume) {
+        inputBatchVolume.addEventListener("change", () => {
             calculateAndUpdate();
         });
-    });
+    }
+
+    // Sync Measured Slump Inputs
+    const calcSlumpMeasured = document.getElementById("inputCalculatorSlumpMeasured");
+    const qcSlumpMeasured = document.getElementById("inputSlumpMeasured");
+    if (calcSlumpMeasured && qcSlumpMeasured) {
+        const syncSlump = (val) => {
+            calcSlumpMeasured.value = val;
+            qcSlumpMeasured.value = val;
+        };
+        calcSlumpMeasured.addEventListener("input", (e) => syncSlump(e.target.value));
+        calcSlumpMeasured.addEventListener("change", (e) => syncSlump(e.target.value));
+        qcSlumpMeasured.addEventListener("input", (e) => syncSlump(e.target.value));
+        qcSlumpMeasured.addEventListener("change", (e) => syncSlump(e.target.value));
+    }
 
 
 
@@ -1449,24 +1565,17 @@ function setupEventListeners() {
     if (btnGetGpsWeatherAuto) {
         btnGetGpsWeatherAuto.addEventListener("click", fetchLocalWeatherAuto);
     }
-    // Custom parameters input changes promote to Personalizado
+    // Custom parameters input changes update calculations
     const promoteToCustom = () => {
-        const classSelect = document.getElementById("selectConcreteClass");
-        if (classSelect.value !== "Personalizado") {
-            classSelect.value = "Personalizado";
-            
-            const idx = CLASS_SEQUENCE.indexOf("Personalizado");
-            if (idx !== -1) {
-                currentClassIndex = idx;
-                updateCounterUI();
-            }
-        }
         calculateAndUpdate();
     };
 
-    ["inputCustomCement", "inputCustomWC", "inputCustomBolomeyA", "inputMaxSieveSize", "inputAirPercentage", "inputManualStrength", "selectCementCategory", "inputSlumpTarget"].forEach(id => {
-        document.getElementById(id).addEventListener("input", promoteToCustom);
-        document.getElementById(id).addEventListener("change", promoteToCustom);
+    ["inputCustomCement", "inputCustomWC", "inputCustomBolomeyA", "inputMaxSieveSize", "inputAirPercentage", "selectCementCategory", "inputSlumpTarget"].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener("input", promoteToCustom);
+            el.addEventListener("change", promoteToCustom);
+        }
     });
 
     // Bucket calibration inputs REMOVED
@@ -1615,29 +1724,16 @@ function setupEventListeners() {
 }
 
 function updateConcreteClassDropdown(minClass) {
-    const dropdown = document.getElementById("selectConcreteClass");
-    const minStrength = CLASS_STRENGTHS[minClass] || 0;
+    const inputTarget = document.getElementById("inputTargetStrength");
+    if (!inputTarget) return;
     
-    for (let i = 0; i < dropdown.options.length; i++) {
-        const option = dropdown.options[i];
-        const val = option.value;
-        
-        if (val === "Personalizado") {
-            option.disabled = false;
-            option.text = "Personalizado";
-            continue;
-        }
-        
-        const strength = CLASS_STRENGTHS[val] || 0;
-        if (strength < minStrength) {
-            option.disabled = true;
-            if (!option.text.includes("(No permitido")) {
-                option.text = `${val} (No permitido - Mín ${minClass})`;
-            }
-        } else {
-            option.disabled = false;
-            option.text = val;
-        }
+    const minStrength = CLASS_STRENGTHS[minClass] || 8;
+    inputTarget.min = minStrength;
+    
+    const currentVal = parseInt(inputTarget.value) || 21;
+    if (currentVal < minStrength) {
+        inputTarget.value = minStrength;
+        autoAdjustCustomParamsFromStrength();
     }
 }
 
@@ -1657,38 +1753,21 @@ function getMinConcreteClass() {
     return (elemIdx > expIdx) ? elemMin : expMin;
 }
 
+function getMinConcreteClassStrength() {
+    const minClass = getMinConcreteClass();
+    return CLASS_STRENGTHS[minClass] || 8;
+}
+
 function getStrengthValuesForClass(cClass) {
-    let fce = CLASS_STRENGTHS[cClass] || 21;
-    if (cClass === "Personalizado") {
-        fce = parseFloat(document.getElementById("inputManualStrength").value) || 21;
-    }
+    const targetInput = document.getElementById("inputTargetStrength");
+    const fce = targetInput ? (parseFloat(targetInput.value) || 21) : 21;
     const S = 4.0;
     const fcm = fce + 1.65 * S;
     return { fce, fcm };
 }
 
 function updateCounterUI() {
-    const displayVal = CLASS_SEQUENCE[currentClassIndex];
-    const displaySpan = document.getElementById("displayConcreteClass");
-    
-    if (displayVal === "Personalizado") {
-        displaySpan.innerText = currentCustomName ? currentCustomName : "M-Personalizada";
-    } else {
-        displaySpan.innerText = displayVal;
-    }
-    
-    const strengthInfo = document.getElementById("displayConcreteClassStrengthInfo");
-    if (strengthInfo) {
-        const { fce, fcm } = getStrengthValuesForClass(displayVal);
-        strengthInfo.innerHTML = `Resistencia: f'<sub>c</sub> = <strong>${fce.toFixed(1)} MPa</strong> | f'<sub>cm</sub> = <strong>${fcm.toFixed(1)} MPa</strong>`;
-    }
-    
-    // Disable minus if we are at the minimum class of the selected structural element or exposure class
-    const minClass = getMinConcreteClass();
-    const minIdx = CLASS_SEQUENCE.indexOf(minClass);
-    
-    document.getElementById("btnDecreaseClass").disabled = (currentClassIndex <= minIdx);
-    document.getElementById("btnIncreaseClass").disabled = (currentClassIndex >= CLASS_SEQUENCE.length - 1);
+    // No-op to prevent broken callers
 }
 
 
@@ -2056,76 +2135,90 @@ function getACICoarseAggregateVolume(maxSieve, sandFM) {
     return v;
 }
 
+function calculateTheoreticalStrength() {
+    const cementCategory = document.getElementById("selectCementCategory")?.value || "CPC40";
+    const CEMENT_K = { CPC40: 96, CPN50: 120, CPC30: 75, LC3: 85 };
+    const K = CEMENT_K[cementCategory] || 96;
+    
+    const wc = parseFloat(document.getElementById("inputCustomWC")?.value) || 0.45;
+    const airPct = parseFloat(document.getElementById("inputAirPercentage")?.value) || 1.5;
+    const airCorrection = Math.max(0.40, 1 - 0.05 * Math.max(0, airPct - 1.5));
+    
+    const fcm_cemento = K / Math.pow(8.5, wc);
+    const fcm_achieved = fcm_cemento * 1.20 * airCorrection;
+    const fce_achieved = Math.max(0, fcm_achieved - 6.6);
+    
+    return { fce: fce_achieved, fcm: fcm_achieved };
+}
+
 function autoAdjustCustomParamsFromStrength() {
-    const concreteClass = document.getElementById("selectConcreteClass").value;
-    if (concreteClass === "Personalizado") {
-        const fce = parseFloat(document.getElementById("inputManualStrength").value) || 21;
-        const S = 4.0;
-        const fcm = Math.max(1.0, fce + 1.65 * S);
-        
-        const cementCategory = document.getElementById("selectCementCategory").value;
-        const CEMENT_K = { CPC40: 96, CPN50: 120, CPC30: 75, LC3: 85 };
-        const K = CEMENT_K[cementCategory] || 96;
-        
-        // Air content check
-        let airPct = parseFloat(document.getElementById("inputAirPercentage").value) || 1.5;
-        const airCorrection = Math.max(0.40, 1 - 0.05 * Math.max(0, airPct - 1.5));
-        
-        // Abrams' formula inversion: wc_abrams = ln(K / fcm_cemento) / ln(8.5)
-        const fcm_cemento = Math.max(1.0, fcm / (1.20 * airCorrection));
-        let wc_abrams = Math.log(K / fcm_cemento) / Math.log(8.5);
-        wc_abrams = Math.max(0.30, Math.min(0.85, wc_abrams));
-        
-        const exposureVal = document.getElementById("selectExposureClass").value;
-        const expSettings = EXPOSURE_CONSTRAINTS[exposureVal];
-        const maxAllowedWC = expSettings ? expSettings.maxWC : 0.85;
-        
-        let targetWC = Math.min(wc_abrams, maxAllowedWC);
-        
-        // Now calculate estimated water demand to find minimum cement
-        const maxSieveSizeD = Math.max(1.0, parseFloat(document.getElementById("inputMaxSieveSize").value) || 38.0);
-        
-        // Determine estimated slump based on structural element
-        let slumpCm = 8.0;
-        const elementVal = document.getElementById("selectStructuralElement").value;
-        if (elementVal === "pavimentos" || elementVal === "pisos_ind") slumpCm = 4.0;
-        else if (elementVal === "proyectado") slumpCm = 2.0;
-        else if (elementVal === "tabiques" || elementVal === "columnas_alta") slumpCm = 12.0;
-        
-        let waterTargetM3 = 185;
-        if (maxSieveSizeD <= 9.5) waterTargetM3 = 210;
-        else if (maxSieveSizeD <= 19.0) waterTargetM3 = 195;
-        else if (maxSieveSizeD <= 25.0) waterTargetM3 = 190;
-        else if (maxSieveSizeD <= 38.0) waterTargetM3 = 180;
-        
-        if (slumpCm > 8.0) waterTargetM3 += 10;
-        else if (slumpCm < 5.0) waterTargetM3 -= 10;
-        
-        // Account for plasticizers reduction (consistent with design water)
-        let waterReduction = 1.0;
-        additives.forEach(add => {
-            const spec = PREDEFINED_ADDITIVES[add.typeKey] || PREDEFINED_ADDITIVES["personalizado"];
-            if (spec.type === "plasticizer" && add.dosage > 0) {
-                const clampedDosage = Math.max(spec.minDosage, Math.min(spec.maxDosage, add.dosage));
-                const reductionPct = spec.getReduction(clampedDosage);
-                waterReduction = waterReduction * (1 - (reductionPct / 100));
-            }
-        });
-        waterReduction = Math.max(0.60, Math.min(1.0, waterReduction));
-        const designWaterM3 = waterTargetM3 * waterReduction;
-        
-        let cementBaseM3 = designWaterM3 / targetWC;
-        // Clamp to regulatory structural concrete minimum (300 kg/m³) except H8 strength (<10 MPa)
-        const minCement = (fce < 10) ? 220 : 300;
-        cementBaseM3 = Math.max(minCement, Math.round(cementBaseM3));
-        
-        // Recalculate target WC for consistency if cement was clamped
-        targetWC = designWaterM3 / cementBaseM3;
-        
-        // Sync values to UI inputs
-        document.getElementById("inputCustomWC").value = targetWC.toFixed(2);
-        document.getElementById("inputCustomCement").value = cementBaseM3;
-    }
+    const targetInput = document.getElementById("inputTargetStrength");
+    const fce = targetInput ? (parseFloat(targetInput.value) || 21) : 21;
+    const S = 4.0;
+    const fcm = Math.max(1.0, fce + 1.65 * S);
+    
+    const cementCategory = document.getElementById("selectCementCategory").value;
+    const CEMENT_K = { CPC40: 96, CPN50: 120, CPC30: 75, LC3: 85 };
+    const K = CEMENT_K[cementCategory] || 96;
+    
+    // Air content check
+    let airPct = parseFloat(document.getElementById("inputAirPercentage").value) || 1.5;
+    const airCorrection = Math.max(0.40, 1 - 0.05 * Math.max(0, airPct - 1.5));
+    
+    // Abrams' formula inversion: wc_abrams = ln(K / fcm_cemento) / ln(8.5)
+    const fcm_cemento = Math.max(1.0, fcm / (1.20 * airCorrection));
+    let wc_abrams = Math.log(K / fcm_cemento) / Math.log(8.5);
+    wc_abrams = Math.max(0.30, Math.min(0.85, wc_abrams));
+    
+    const exposureVal = document.getElementById("selectExposureClass").value;
+    const expSettings = EXPOSURE_CONSTRAINTS[exposureVal];
+    const maxAllowedWC = expSettings ? expSettings.maxWC : 0.85;
+    
+    let targetWC = Math.min(wc_abrams, maxAllowedWC);
+    
+    // Now calculate estimated water demand to find minimum cement
+    const maxSieveSizeD = Math.max(1.0, parseFloat(document.getElementById("inputMaxSieveSize").value) || 38.0);
+    
+    // Determine estimated slump based on structural element
+    let slumpCm = 8.0;
+    const elementVal = document.getElementById("selectStructuralElement").value;
+    if (elementVal === "pavimentos" || elementVal === "pisos_ind") slumpCm = 4.0;
+    else if (elementVal === "proyectado") slumpCm = 2.0;
+    else if (elementVal === "tabiques" || elementVal === "columnas_alta") slumpCm = 12.0;
+    
+    let waterTargetM3 = 185;
+    if (maxSieveSizeD <= 9.5) waterTargetM3 = 210;
+    else if (maxSieveSizeD <= 19.0) waterTargetM3 = 195;
+    else if (maxSieveSizeD <= 25.0) waterTargetM3 = 190;
+    else if (maxSieveSizeD <= 38.0) waterTargetM3 = 180;
+    
+    if (slumpCm > 8.0) waterTargetM3 += 10;
+    else if (slumpCm < 5.0) waterTargetM3 -= 10;
+    
+    // Account for plasticizers reduction (consistent with design water)
+    let waterReduction = 1.0;
+    additives.forEach(add => {
+        const spec = PREDEFINED_ADDITIVES[add.typeKey] || PREDEFINED_ADDITIVES["personalizado"];
+        if (spec.type === "plasticizer" && add.dosage > 0) {
+            const clampedDosage = Math.max(spec.minDosage, Math.min(spec.maxDosage, add.dosage));
+            const reductionPct = spec.getReduction(clampedDosage);
+            waterReduction = waterReduction * (1 - (reductionPct / 100));
+        }
+    });
+    waterReduction = Math.max(0.60, Math.min(1.0, waterReduction));
+    const designWaterM3 = waterTargetM3 * waterReduction;
+    
+    let cementBaseM3 = designWaterM3 / targetWC;
+    // Clamp to regulatory structural concrete minimum (300 kg/m³) except H8 strength (<10 MPa)
+    const minCement = (fce < 10) ? 220 : 300;
+    cementBaseM3 = Math.max(minCement, Math.round(cementBaseM3));
+    
+    // Recalculate target WC for consistency if cement was clamped
+    targetWC = designWaterM3 / cementBaseM3;
+    
+    // Sync values to UI inputs
+    document.getElementById("inputCustomWC").value = targetWC.toFixed(2);
+    document.getElementById("inputCustomCement").value = cementBaseM3;
 }
 
 // CORE MATHEMATICS ENGINE - ICPA & LARRARD LPDM
@@ -2151,9 +2244,30 @@ async function calculateAndUpdate() {
     const maxSieveSizeD = parseFloat(document.getElementById("inputMaxSieveSize")?.value || 19.0);
     const bolomeyA = parseFloat(document.getElementById("inputCustomBolomeyA")?.value || 12.0);
     
-    const concreteClass = document.getElementById("selectConcreteClass")?.value || "H25";
-    const batchVolumeL = Math.max(1.0, parseFloat(document.getElementById("inputBatchVolume").value) || 80);
+    const concreteClass = "H" + (document.getElementById("inputTargetStrength")?.value || "21");
+    const inputBatchVolumeEl = document.getElementById("inputBatchVolume");
+    const batchVolumeL = Math.max(1.0, parseFloat(inputBatchVolumeEl?.value) || 80);
     const volM3 = batchVolumeL / 1000;
+    
+    // Update dynamic volume display in results card
+    const resVolumeDisplay = document.getElementById("resVolumeDisplay");
+    if (resVolumeDisplay && inputBatchVolumeEl) {
+        const selectedOpt = inputBatchVolumeEl.options[inputBatchVolumeEl.selectedIndex];
+        if (selectedOpt) {
+            resVolumeDisplay.innerText = selectedOpt.text.replace("Maquinada: ", "");
+        } else {
+            resVolumeDisplay.innerText = batchVolumeL >= 1000 ? `${(batchVolumeL / 1000).toFixed(1)} m³` : `${batchVolumeL} L`;
+        }
+    }
+    
+    // Sync slump inputs in case of programmatic updates
+    const calcSlumpMeasured = document.getElementById("inputCalculatorSlumpMeasured");
+    const qcSlumpMeasured = document.getElementById("inputSlumpMeasured");
+    if (calcSlumpMeasured && qcSlumpMeasured) {
+        if (qcSlumpMeasured.value !== calcSlumpMeasured.value) {
+            calcSlumpMeasured.value = qcSlumpMeasured.value;
+        }
+    }
     const targetWC = parseFloat(document.getElementById("inputCustomWC")?.value || 0.50);
     const airPct = parseFloat(document.getElementById("inputAirPercentage")?.value || 1.5);
     
@@ -2337,12 +2451,17 @@ async function calculateAndUpdate() {
         const admixtureRecipes = data.admixtureRecipes;
         lastCalculatedPackingPoints = data.packingPoints;
         
-        if (concreteClass !== "Personalizado") {
-            const inputWC = document.getElementById("inputCustomWC");
-            if (inputWC) inputWC.value = data.targetWC.toFixed(2);
-            const inputCement = document.getElementById("inputCustomCement");
-            if (inputCement) inputCement.value = Math.round(cementBaseM3);
-        }
+        // Calculate and display theoretical strength achieved
+        const theoreticalStr = calculateTheoreticalStrength();
+        const lblFc = document.getElementById("valTheoreticalStrengthFc");
+        const lblFcm = document.getElementById("valTheoreticalStrengthFcm");
+        if (lblFc) lblFc.innerText = theoreticalStr.fce.toFixed(1);
+        if (lblFcm) lblFcm.innerText = theoreticalStr.fcm.toFixed(1);
+        
+        const resFc = document.getElementById("resStrengthFc");
+        const resFcm = document.getElementById("resStrengthFcm");
+        if (resFc) resFc.innerText = theoreticalStr.fce.toFixed(1);
+        if (resFcm) resFcm.innerText = theoreticalStr.fcm.toFixed(1);
         
         // Dynamic update of densityRealHelpText and auto pre-fill
         const theoreticalDensity = cementBaseM3 + sandDryWeight + gravillaDryWeight + (numAggregates === 3 ? gravaDryWeight : 0) + waterTargetM3;
@@ -2481,7 +2600,7 @@ async function calculateAndUpdate() {
             manualAlertsDiv.innerHTML = "";
             manualAlertsDiv.style.display = "none";
             
-            if (concreteClass === "Personalizado") {
+            if (true) {
                 const alerts = [];
                 const minReqCement = 300;
                 if (cementBaseM3 < minReqCement) {
@@ -2491,7 +2610,7 @@ async function calculateAndUpdate() {
                 const cementCategory = document.getElementById("selectCementCategory").value;
                 const CEMENT_K = { CPC40: 96, CPN50: 120, CPC30: 75, LC3: 85 };
                 const K = CEMENT_K[cementCategory] || 96;
-                const fce = parseFloat(document.getElementById("inputManualStrength").value) || 21;
+                const fce = parseFloat(document.getElementById("inputTargetStrength").value) || 21;
                 const fcm_calc = fce + 6.6;
                 const maxSafeWC = Math.max(0.30, Math.min(0.85, Math.log(K / (fcm_calc / 1.20)) / Math.log(8.5)));
                 
@@ -2833,6 +2952,55 @@ function updateChart(combined, sand, gravilla, grava, fullerIdeal, bolomeyIdeal,
     }
 }
 
+function autoSelectDesignMethodByLocation(address, lat, lon) {
+    const designMethodSelect = document.getElementById("selectDesignMethod");
+    if (!designMethodSelect) return;
+
+    let countryCode = "";
+    if (address && address.country_code) {
+        countryCode = address.country_code.toLowerCase();
+    }
+
+    let method = "bolomey"; // Default fallback
+
+    if (countryCode) {
+        if (countryCode === "es" || countryCode === "cu") {
+            method = "delapena"; // La Peña standard in Spain and Cuba
+        } else if (["ar", "cl", "co", "mx", "us", "br", "pe", "ec", "ve", "bo", "py", "uy", "ca", "gt", "hn", "sv", "ni", "cr", "pa", "do", "pr"].includes(countryCode)) {
+            method = "aci"; // ACI 211.1 standard in Americas
+        } else if (["fr", "de", "it", "gb", "be", "nl", "ch", "at"].includes(countryCode)) {
+            method = "larrard"; // Larrard standard in France/Europe
+        } else {
+            method = "bolomey"; // Bolomey default
+        }
+    } else {
+        // Fallback using coordinates
+        if (lat >= 19 && lat <= 24 && lon >= -85 && lon <= -74) {
+            method = "delapena"; // Cuba (La Peña)
+        } else if (lon < -30 && lon > -180) {
+            method = "aci"; // Americas
+        } else if (lat > 35 && lat < 44 && lon > -10 && lon < 5) {
+            method = "delapena"; // Spain (La Peña)
+        } else if (lat > 40 && lat < 55 && lon > -5 && lon < 15) {
+            method = "larrard"; // Europe/France/Germany (Larrard)
+        }
+    }
+
+    console.log(`Auto-selected design method based on location (${countryCode || 'coords'}):`, method);
+    
+    designMethodSelect.value = method;
+    
+    // Sync chart mode if needed
+    if (method === "larrard") {
+        currentChartMode = 'larrard';
+    } else {
+        currentChartMode = 'sieves';
+    }
+    
+    autoAdjustCustomParamsFromStrength();
+    calculateAndUpdate();
+}
+
 async function fetchLocalWeatherManual() {
     const btn = document.getElementById("btnGetGpsWeatherManual");
     const spinner = document.getElementById("manualGpsLoadingSpinner");
@@ -2955,6 +3123,9 @@ async function fetchWeatherForCoordinates(lat, lon, isFallback, btnElement, spin
         } catch (err) {
             console.warn("OSM Nominatim reverse geocoding failed or timed out. Bypassing.", err);
         }
+        
+        // Auto-select design method based on location country or coordinates
+        autoSelectDesignMethodByLocation(address, lat, lon);
         
         // Get selected date and hour, check if it's in the future
         const dateInput = document.getElementById("inputForecastDate");
@@ -3455,6 +3626,23 @@ function renderWeatherInfoInUI(location, weather) {
                     }
                     return alertHtml;
                 })()}
+
+                <!-- Countdown and Curing Start Section -->
+                <div style="border-top: 1px dashed var(--border-color); padding-top: 10px; margin-top: 5px; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <strong style="color: var(--accent);">⏳ Control de Producción</strong>
+                        <button type="button" id="btnStartProduction" class="btn btn-success" data-days="${curingDays}" style="font-size: 0.78rem; padding: 6px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; background-color: var(--success); border-color: var(--success); color: #fff; transition: all 0.2s;">🚀 Iniciar Producción</button>
+                    </div>
+                    <div id="curingCountdownContainer" class="hidden" style="background-color: rgba(16, 185, 129, 0.05); border: 1px solid var(--success); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
+                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
+                            <span>Tiempo de Curado Restante:</span>
+                            <span id="curingTimerDisplay" style="font-weight: 700; color: var(--success); font-family: monospace; font-size: 0.8rem;">--d --h --m --s</span>
+                        </div>
+                        <div style="width: 100%; height: 6px; background-color: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                            <div id="curingProgressBar" style="width: 0%; height: 100%; background-color: var(--success); transition: width 1s linear;"></div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     `;
@@ -3479,6 +3667,22 @@ function renderWeatherInfoInUI(location, weather) {
                 }
             });
         });
+    }
+
+    // Hook start production button click
+    const btnStartProduction = document.getElementById("btnStartProduction");
+    if (btnStartProduction) {
+        if (localStorage.getItem("curingStartTime")) {
+            btnStartProduction.innerText = "🛑 Reiniciar Curado";
+            btnStartProduction.classList.remove("btn-success");
+            btnStartProduction.classList.add("btn-secondary");
+            
+            // Resume countdown loop visually
+            const startTime = parseInt(localStorage.getItem("curingStartTime"));
+            const duration = parseInt(localStorage.getItem("curingDurationMs"));
+            startCountdownLoop(startTime, duration);
+        }
+        btnStartProduction.addEventListener("click", handleStartProductionClick);
     }
 }
 
@@ -3651,8 +3855,32 @@ function renderSavedMixesTable() {
 function restoreFullState(state) {
     document.getElementById("selectStructuralElement").value = state.structuralElement;
     document.getElementById("selectExposureClass").value = state.exposureClass;
-    document.getElementById("selectConcreteClass").value = state.concreteClass;
-    document.getElementById("inputBatchVolume").value = state.batchVolume;
+    const targetStrengthInput = document.getElementById("inputTargetStrength");
+    if (targetStrengthInput) {
+        let val = state.concreteClass;
+        if (typeof val === "string" && val.startsWith("H")) {
+            val = CLASS_STRENGTHS[val] || 21;
+        }
+        targetStrengthInput.value = parseInt(val) || 21;
+    }
+    const batchVolInput = document.getElementById("inputBatchVolume");
+    if (batchVolInput) {
+        let exists = false;
+        for (let i = 0; i < batchVolInput.options.length; i++) {
+            if (parseFloat(batchVolInput.options[i].value) === parseFloat(state.batchVolume)) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) {
+            const newOpt = document.createElement("option");
+            const volL = parseFloat(state.batchVolume);
+            newOpt.value = volL;
+            newOpt.text = volL >= 1000 ? `${(volL / 1000).toFixed(1)} m³ (Cargado)` : `${volL} L (Cargado)`;
+            batchVolInput.add(newOpt);
+        }
+        batchVolInput.value = state.batchVolume;
+    }
     currentClassIndex = state.currentClassIndex;
     
     historyManager.config.restoreState(state.config);
@@ -3736,7 +3964,7 @@ async function saveCurrentMix() {
     const state = {
         structuralElement: document.getElementById("selectStructuralElement").value,
         exposureClass: document.getElementById("selectExposureClass").value,
-        concreteClass: document.getElementById("selectConcreteClass").value,
+        concreteClass: `H${document.getElementById("inputTargetStrength")?.value || 21}`,
         batchVolume: document.getElementById("inputBatchVolume").value,
         currentClassIndex: currentClassIndex,
         config: historyManager.config.getState(),
@@ -3746,7 +3974,7 @@ async function saveCurrentMix() {
         mixIterationHistory: mixIterationHistory
     };
     
-    const concreteClass = document.getElementById("selectConcreteClass").value;
+    const concreteClass = `H${document.getElementById("inputTargetStrength")?.value || 21}`;
     
     const newMix = {
         name: name,
@@ -3817,13 +4045,12 @@ function resetAppFields() {
     if (confirm("¿Estás seguro de que deseas reiniciar los campos del proyecto? Se restablecerán todos los parámetros excepto los del laboratorio.")) {
         document.getElementById("selectStructuralElement").value = "";
         document.getElementById("selectExposureClass").value = "ninguna";
-        document.getElementById("selectConcreteClass").value = "H21";
+        document.getElementById("inputTargetStrength").value = "21";
         currentClassIndex = 3;
         document.getElementById("inputBatchVolume").value = "80";
         
         document.getElementById("selectDesignMethod").value = "bolomey";
         document.getElementById("selectCementCategory").value = "CPC40";
-        document.getElementById("inputManualStrength").value = "21";
         document.getElementById("inputCustomCement").value = "350";
         document.getElementById("inputCustomWC").value = "0.45";
         document.getElementById("inputCustomBolomeyA").value = "13.0";
@@ -3869,6 +4096,8 @@ function resetAppFields() {
                 historyManager.additives.lastState = historyManager.additives.getState();
         
         document.getElementById("inputSlumpMeasured").value = "";
+        const calcSlumpMeasured = document.getElementById("inputCalculatorSlumpMeasured");
+        if (calcSlumpMeasured) calcSlumpMeasured.value = "";
         document.getElementById("inputQualityStrength7d").value = "";
         document.getElementById("inputQualityStrength28d").value = "";
         currentMixIteration = 0;
@@ -3885,7 +4114,7 @@ function updatePrintCalcMemory() {
     const calcDiv = document.getElementById("printCalcMemory");
     if (!calcDiv) return;
     
-    const concreteClass = document.getElementById("selectConcreteClass").value;
+    const concreteClass = "H" + (document.getElementById("inputTargetStrength")?.value || "21");
     const exposureVal = document.getElementById("selectExposureClass").value;
     const elementVal = document.getElementById("selectStructuralElement").value;
     const designMethod = document.getElementById("selectDesignMethod").value;
@@ -4703,7 +4932,7 @@ function reformulateMixForIdealPaston() {
         input28d.value = strength28d.toFixed(1);
     }
 
-    const concreteClass = document.getElementById("selectConcreteClass").value;
+    const concreteClass = "H" + (document.getElementById("inputTargetStrength")?.value || "21");
     const batchVol = parseFloat(document.getElementById("inputBatchVolume").value) || 80;
     const volM3 = batchVol / 1000;
 
@@ -4715,12 +4944,7 @@ function reformulateMixForIdealPaston() {
     const slumpTarget = parseFloat(document.getElementById("inputSlumpTarget").value) || 10.0;
 
     // Obtener la resistencia característica objetivo (f'c) y calcular f'cm
-    let fce_target = 21;
-    if (concreteClass !== "Personalizado") {
-        fce_target = getStrengthValuesForClass(concreteClass).fce;
-    } else {
-        fce_target = parseFloat(document.getElementById("inputManualStrength").value) || 21;
-    }
+    const fce_target = parseFloat(document.getElementById("inputTargetStrength")?.value) || 21;
     const fcm_target = fce_target + 8.5; // Resistencia media de diseño objetivo
 
     // 2. Algoritmo de Ajuste por Desviaciones (ACI 211.1 / CIRSOC 201)
@@ -4742,10 +4966,10 @@ function reformulateMixForIdealPaston() {
 
     // Ajuste del cemento base
     let cementNew = Math.round(waterNew / wcNew);
-    const minCement = (concreteClass === "H8") ? 220 : 300;
+    const minCement = (fce_target < 10) ? 220 : 300;
     cementNew = Math.max(minCement, cementNew);
     
-    // Recalcular w/c final con el cemento redondeado
+    // Recalculate w/c final con el cemento redondeado
     wcNew = waterNew / cementNew;
 
     // 3. Incrementar iteración y aplicar cambios
@@ -4763,18 +4987,16 @@ function reformulateMixForIdealPaston() {
         strengthTarget: fcm_target
     });
 
-    // Cambiar la clase de hormigón a Personalizado para forzar el uso de estos parámetros recalculados
-    document.getElementById("selectConcreteClass").value = "Personalizado";
-    currentClassIndex = CLASS_SEQUENCE.indexOf("Personalizado");
-    
     // Escribir los nuevos parámetros de mezcla ideal en la UI
     document.getElementById("inputCustomCement").value = cementNew;
     document.getElementById("inputCustomWC").value = wcNew.toFixed(2);
-    document.getElementById("inputManualStrength").value = Math.round(strength28d); // actualiza f'c al valor obtenido
+    const targetInput = document.getElementById("inputTargetStrength");
+    if (targetInput) {
+        targetInput.value = Math.round(strength28d);
+    }
 
     // Renderizar la tabla de historial de iteraciones y actualizar el pastón
     renderIterationHistoryTable();
-    updateCounterUI();
     calculateAndUpdate();
     
     alert(`Reformulación ejecutada con éxito. Iteración #${currentMixIteration} aplicada como diseño activo.`);
@@ -4952,15 +5174,10 @@ async function validateAndRescaleFormula() {
         });
         if (!res.ok) throw new Error("Error en api/reologia/recalcular");
         const data = await res.json();
-        
-        document.getElementById("selectConcreteClass").value = "Personalizado";
-        currentClassIndex = CLASS_SEQUENCE.indexOf("Personalizado");
-        
         document.getElementById("inputCustomCement").value = Math.round(data.cementBaseM3);
         const newWC = data.waterTargetM3 / data.cementBaseM3;
         document.getElementById("inputCustomWC").value = newWC.toFixed(2);
         
-        updateCounterUI();
         calculateAndUpdate();
         
         alert(`Mezcla validada y re-escalada a 1 m³ con éxito.\nNuevo cemento base: ${Math.round(data.cementBaseM3)} kg/m³\nNueva relación a/c: ${newWC.toFixed(2)}\nVolumen producido: ${data.realVolumeProducedL.toFixed(1)} L.`);

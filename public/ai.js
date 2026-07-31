@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Capture entire UI State as JSON Context for the AI
 function getCalculatorStateContext() {
-    const activeClass = document.getElementById("selectConcreteClass").value;
+    const activeClass = "H" + (document.getElementById("inputTargetStrength")?.value || "21");
     const batchVolumeL = parseFloat(document.getElementById("inputBatchVolume").value) || 80;
     
     const densCement = parseFloat(document.getElementById("densCement").value);
@@ -296,14 +296,24 @@ function processAIUpdates(text) {
 function applyUIUpdates(updates) {
     let triggeredChange = false;
 
+    // Map obsolete selectConcreteClass and inputManualStrength to inputTargetStrength
+    if (updates.inputManualStrength !== undefined) {
+        updates.inputTargetStrength = updates.inputManualStrength;
+    } else if (updates.selectConcreteClass !== undefined && updates.selectConcreteClass !== "Personalizado") {
+        const match = String(updates.selectConcreteClass).match(/\d+/);
+        if (match) {
+            updates.inputTargetStrength = parseInt(match[0]);
+        }
+    }
+
     // Simple mappings for direct inputs
     const simpleInputs = [
-        "selectConcreteClass", "inputBatchVolume", "inputCustomCement", 
+        "inputTargetStrength", "inputBatchVolume", "inputCustomCement", 
         "inputCustomWC", "inputCustomBolomeyA", "inputMaxSieveSize",
         "densSand", "moistSand", "absSand", "densGravilla", "moistGravilla",
         "absGravilla", "densGrava", "moistGrava", "absGrava", "densCement",
         "coefCement", "coefSand", "coefGravilla", "coefGrava",
-        "selectExposureClass", "selectCementCategory", "inputManualStrength",
+        "selectExposureClass", "selectCementCategory",
         "selectSieveSeries", "inputSlumpTarget", "inputAirPercentage"
     ];
 
@@ -314,8 +324,8 @@ function applyUIUpdates(updates) {
                 el.value = updates[id];
                 // Trigger events
                 if (id === "inputBatchVolume") {
-                    document.getElementById("batchVolumeDisplay").innerText = updates[id];
-                    document.getElementById("resVolumeDisplay").innerText = updates[id];
+                    const batchVolDisplay = document.getElementById("batchVolumeDisplay");
+                    if (batchVolDisplay) batchVolDisplay.innerText = updates[id];
                 }
                 if (id === "selectSieveSeries") {
                     if (typeof updateSieveTableLabels === "function") {
@@ -327,19 +337,7 @@ function applyUIUpdates(updates) {
         }
     });
 
-    // Special handling for concrete class cascading
-    if (updates.selectConcreteClass !== undefined) {
-        const select = document.getElementById("selectConcreteClass");
-        select.value = updates.selectConcreteClass;
-        const customSection = document.getElementById("customParamsSection");
-        
-        if (updates.selectConcreteClass === "Personalizado") {
-            customSection.classList.remove("collapsed");
-        } else {
-            customSection.classList.add("collapsed");
-        }
-        triggeredChange = true;
-    }
+
 
     // Special handling for dynamic additives list
     if (updates.additives && Array.isArray(updates.additives)) {
