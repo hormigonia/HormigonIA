@@ -4275,12 +4275,12 @@ function updatePrintCalcMemory() {
                 Para garantizar que la resistencia característica especificada ($f'_{c}$) sea superada por el 95% de los ensayos, se calcula la resistencia media objetivo ($f'_{cm}$) según la recomendación del reglamento CIRSOC 201 y ACI 318 adoptando una desviación estándar esperada $S = 4.0\text{ MPa}$ para un control riguroso:
             </p>
             <div class="calc-mem-equation">
-                f'<sub>cm</sub> = f'<sub>c</sub> + 1.65 × S
+                $$f'_{cm} = f'_{c} + 1.65 \cdot S$$
             </div>
             <p class="calc-mem-text">
-                • Resistencia Característica Especificada ($f'_{c}$): <strong>${fce.toFixed(1)} MPa</strong><br>
-                • Desviación Estándar de Control ($S$): <strong>4.0 MPa</strong><br>
-                • Resistencia de Diseño Objetivo ($f'_{cm}$): <strong>${fce.toFixed(1)} MPa + 1.65 × 4.0 MPa = ${fcm.toFixed(1)} MPa</strong>
+                • Resistencia Característica Especificada ($f'_{c}$): <strong>$${fce.toFixed(1)}\text{ MPa}$</strong><br>
+                • Desviación Estándar de Control ($S$): <strong>$4.0\text{ MPa}$</strong><br>
+                • Resistencia de Diseño Objetivo ($f'_{cm}$): <strong>$${fce.toFixed(1)}\text{ MPa} + 1.65 \cdot 4.0\text{ MPa} = {fcm.toFixed(1)}\text{ MPa}$</strong>
             </p>
         </div>
         
@@ -4290,13 +4290,13 @@ function updatePrintCalcMemory() {
                 Calculada por la Ley de Abrams para la resistencia mecánica del hormigón según el tipo de cemento, y corregida por el aire atrapado:
             </p>
             <div class="calc-mem-equation">
-                w/c = ln( K / (f'<sub>cm</sub> × [1.0 + 0.03 × (Aire - 1.5)]) ) / ln(8.5)
+                $$\frac{w}{c} = \frac{\ln\left( \frac{K}{f'_{cm} \cdot [1.0 + 0.03 \cdot (\text{Aire} - 1.5)]} \right)}{\ln(8.5)}$$
             </div>
             <p class="calc-mem-text">
-                • Resistencia Objetivo Corregida por Aire ($f'_{cm,corr}$): <strong>${fcm_corrected.toFixed(2)} MPa</strong><br>
-                • Relación A/C Teórica por Resistencia: <strong>${customWC.toFixed(2)}</strong><br>
-                • Relación A/C Máxima por Exposición (Durabilidad): <strong>${maxAllowedWC.toFixed(2)}</strong><br>
-                • <strong>Relación Agua/Cemento Adoptada Final:</strong> <strong>${customWC.toFixed(2)}</strong> (menor valor entre resistencia y durabilidad).
+                • Resistencia Objetivo Corregida por Aire ($f'_{cm,corr}$): <strong>$${fcm_corrected.toFixed(2)}\text{ MPa}$</strong><br>
+                • Relación A/C Teórica por Resistencia: <strong>$${customWC.toFixed(2)}$</strong><br>
+                • Relación A/C Máxima por Exposición (Durabilidad): <strong>$${maxAllowedWC.toFixed(2)}$</strong><br>
+                • <strong>Relación Agua/Cemento Adoptada Final:</strong> <strong>$${customWC.toFixed(2)}$</strong> (menor valor entre resistencia y durabilidad).
             </p>
         </div>
         
@@ -4306,7 +4306,7 @@ function updatePrintCalcMemory() {
                 Se calcula la composición del pastón unitario resolviendo la ecuación de volúmenes absolutos para un volumen consolidado total de 1000 Litros de hormigón fresco:
             </p>
             <div class="calc-mem-equation">
-                V<sub>agregados</sub> = 1000 - [ V<sub>cemento</sub> + V<sub>agua</sub> + V<sub>aire</sub> + V<sub>aditivos</sub> ]
+                $$V_{\text{agregados}} = 1000\text{ L} - \left( V_{\text{cemento}} + V_{\text{agua}} + V_{\text{aire}} + V_{\text{aditivos}} \right)$$
             </div>
             
             <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 12px 0;">
@@ -4344,7 +4344,7 @@ function updatePrintCalcMemory() {
                 Los agregados en la obra contienen agua libre superficial y capacidad de absorción. Se corrigen los pesos secos unitarios a pesos húmedos de balanza para cargar en la mezcladora, descontando del agua de amasado el aporte de agua libre superficial de los áridos:
             </p>
             <div class="calc-mem-equation">
-                Agua Aportada = Peso Seco × (Humedad - Absorción) / 100
+                $$\text{Agua Aportada} = \text{Peso Seco} \cdot \frac{\text{Humedad} - \text{Absorción}}{100}$$
             </div>
             
             <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 12px 0;">
@@ -4378,6 +4378,17 @@ function updatePrintCalcMemory() {
             </p>
         </div>
     `;
+    
+    // Render mathematical formulas using KaTeX if available
+    if (window.renderMathInElement) {
+        window.renderMathInElement(calcDiv, {
+            delimiters: [
+                {left: '$$', right: '$$', display: true},
+                {left: '$', right: '$', display: false}
+            ],
+            throwOnError: false
+        });
+    }
 }
 
 // State for Laboratorio de Áridos
