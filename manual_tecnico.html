@@ -704,7 +704,7 @@
                     CalcDiff[Calcular elapsed = Date.now - curingStartTime]:::calc
                     CalcRem[Calcular remaining = curingDurationMs - elapsed]:::calc
                     
-                    CheckFinished{¿remaining <= 0?}:::logic
+                    CheckFinished{¿remaining &lt;= 0?}:::logic
                     
                     UpdateProgress[Actualizar reloj Xd Yh Zm Ss y barra de progreso %]:::output
                     
