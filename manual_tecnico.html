@@ -446,9 +446,8 @@
             <li class="menu-item" data-section="sec-dosif">📐 2. Dosificación y Bolomey</li>
             <li class="menu-item" data-section="sec-humedad">💧 3. Humedad de Áridos</li>
             <li class="menu-item" data-section="sec-reologia">🧪 4. Reología y Asentamiento</li>
-            <li class="menu-item" data-section="sec-ia">🤖 5. Asistente IA (Gemini)</li>
-            <li class="menu-item" data-section="sec-sync">☁️ 6. Base de Datos Supabase</li>
-            <li class="menu-item" data-section="sec-contacto">💬 7. Soporte Técnico</li>
+            <li class="menu-item" data-section="sec-ia">🤖 5. Asistente IA</li>
+            <li class="menu-item" data-section="sec-contacto">💬 6. Soporte Técnico</li>
         </ul>
 
         <div class="sidebar-footer">
@@ -478,7 +477,7 @@
             
             <h2>1. Arquitectura General y Flujo</h2>
             <p>HormigonIA es una plataforma científica de diseño y ajuste de mezclas de hormigón que opera bajo un flujo lógico estructurado. El sistema conecta parámetros de laboratorio granulométrico, leyes clásicas de empaquetamiento y modelos de reología viscoplástica avanzada para lograr un diseño óptimo tanto en teoría como en obra.</p>
-            <p>El núcleo de cálculo se divide en seis subsistemas matemáticos autónomos comunicados mediante APIs en formato JSON. En este manual se describen detalladamente las ecuaciones que gobiernan cada módulo.</p>
+            <p>El núcleo de cálculo se divide en subsistemas matemáticos autónomos. En este manual se describen detalladamente las ecuaciones que gobiernan cada módulo.</p>
             
             <div class="alert">
                 <div class="alert-title">ℹ️ Nota de Operación Local</div>
@@ -689,7 +688,7 @@
             </div>
 
             <h3>D. Cronómetro de Curado Persistente en Tiempo Real</h3>
-            <p>El siguiente esquema de máquina de estados detalla el flujo de inicialización, persistencia en <code>localStorage</code> y la lógica de ejecución del cronómetro de curado húmedo:</p>
+            <p>El siguiente esquema detalla el flujo de inicialización y la lógica de ejecución del cronómetro de curado húmedo:</p>
             <div class="mermaid" style="background-color: var(--bg-panel); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; margin: 15px 0;">
                 flowchart TD
                     classDef input fill:#2a4365,stroke:#3182ce,stroke-width:2px,color:#fff;
@@ -697,28 +696,28 @@
                     classDef calc fill:#1a202c,stroke:#805ad5,stroke-width:2px,color:#fff;
                     classDef output fill:#22543d,stroke:#38a169,stroke-width:2px,color:#fff;
 
-                    InitApp[Carga de Aplicación DOMContentLoaded]:::input
-                    ReadStorage{¿Existen curingStartTime y curingDurationMs en localStorage?}:::logic
+                    InitApp[Inicialización de la aplicación]:::input
+                    ReadStorage{¿Existe temporizador de curado activo?}:::logic
                     
                     BtnStart[Usuario Pulsa: Iniciar Producción]:::input
-                    SaveStorage[Guardar curingStartTime = Date.now y curingDurationMs en localStorage]:::logic
+                    SaveStorage[Registrar fecha de inicio y duración del curado]:::logic
                     
-                    StartLoop[Iniciar bucle setInterval de 1 segundo]:::calc
-                    CalcDiff[Calcular elapsed = Date.now - curingStartTime]:::calc
-                    CalcRem[Calcular remaining = curingDurationMs - elapsed]:::calc
+                    StartLoop[Iniciar cuenta regresiva del temporizador]:::calc
+                    CalcDiff[Calcular tiempo transcurrido]:::calc
+                    CalcRem[Calcular tiempo restante]:::calc
                     
                     CheckFinished{¿remaining &lt;= 0?}:::logic
                     
                     UpdateProgress[Actualizar reloj Xd Yh Zm Ss y barra de progreso %]:::output
                     
                     FinishCuring[1. Detener Intervalo
-                    2. Limpiar localStorage
+                    2. Limpiar registro del temporizador
                     3. Mostrar Curado Completado
                     4. Disparar Notificación de Escritorio]:::output
                     
                     UserStop[Usuario Pulsa: Detener/Reiniciar Curado]:::input
                     ClearState[1. Detener Intervalo
-                    2. Limpiar localStorage
+                    2. Limpiar registro del temporizador
                     3. Ocultar contenedor de cuenta regresiva]:::output
 
                     InitApp --> ReadStorage
@@ -815,20 +814,14 @@
                     $$Duración_{curado} = \text{curingDays} \cdot 24 \cdot 3600 \cdot 1000\ (\text{ms})$$
                     La variable <code>curingDays</code> se recalcula dinámicamente en base a la temperatura promedio del pronóstico del clima a 72 horas para asegurar la adecuada hidratación del cemento.
                 </li>
-                <li><strong>Persistencia de Estado Local (Local Storage):</strong>
-                    Al presionar "Iniciar Producción", se registran dos variables clave en <code>localStorage</code>:
-                    <ol>
-                        <li><code>curingStartTime</code>: Timestamp en milisegundos del instante exacto de inicio (<code>Date.now()</code>).</li>
-                        <li><code>curingDurationMs</code>: La duración total calculada en milisegundos.</li>
-                    </ol>
-                    Al recargar o abrir nuevamente la aplicación, un hook de inicialización evalúa la existencia de estas claves y reanuda de manera reactiva el bucle de actualización del contador (<code>setInterval</code> de 1 segundo) sin perder el progreso.
+                <li><strong>Persistencia de Estado:</strong>
+                    Al iniciar la producción, el temporizador almacena internamente la fecha de inicio y la duración calculada. Esto permite que al abrir nuevamente la aplicación, el temporizador retome la cuenta regresiva desde el tiempo real transcurrido sin perder el progreso del curado.
                 </li>
                 <li><strong>Visualización de Progreso:</strong>
-                    La barra de progreso se actualiza dinámicamente computando la fracción transcurrida:
-                    $$\text{Progreso (\%)} = \min\left(100,\ \frac{\text{Date.now()} - \text{curingStartTime}}{\text{curingDurationMs}} \cdot 100\right)$$
+                    La barra de progreso se actualiza dinámicamente mostrando la fracción de tiempo de curado transcurrida.
                 </li>
-                <li><strong>Desencadenador de Notificaciones de Escritorio (Push API):</strong>
-                    Si el navegador otorga permisos, se invoca la API nativa de notificaciones al iniciar la elaboración y al concluir la cuenta regresiva, informando al operador sobre la culminación del período crítico de curado.
+                <li><strong>Desencadenador de Notificaciones de Escritorio:</strong>
+                    Si el usuario habilita las notificaciones en el navegador, el sistema enviará alertas informando sobre el inicio de la elaboración y la culminación del período crítico de curado.
                 </li>
             </ul>
         </section>
@@ -836,13 +829,13 @@
         <!-- SECTION: IA -->
         <section id="sec-ia" class="manual-section">
             <h1>Módulo de Asistente Inteligente (HormigonIA Chat)</h1>
-            <p>Documenta el flujo de integración de Large Language Models (LLM) con el motor analítico de cálculo.</p>
+            <p>Documenta el flujo del asistente con el motor analítico de cálculo.</p>
 
-            <h2>1. Pipeline de Datos y Contexto</h2>
-            <p>El asistente inteligente utiliza el modelo **Gemini 3.5 Flash** optimizado para razonamiento de ingeniería de materiales. El sistema recopila el estado actual de la dosificación y lo inyecta como contexto estructurado en el system prompt antes de cada consulta del usuario.</p>
+            <h2>1. Flujo de Datos y Contexto</h2>
+            <p>El asistente inteligente analiza el estado actual de la dosificación para guiar al usuario. El sistema recopila los parámetros físicos e hidráulicos de la mezcla para que la IA responda con precisión de ingeniería.</p>
             
             <pre>
-[System Context Injected in JSON]
+[Contexto de Dosificación Recibido]
 {
   "diseño_actual": {
     "cemento": "CP40",
@@ -863,47 +856,8 @@
 }
             </pre>
 
-            <h2>2. Parsing de Parámetros</h2>
-            <p>El backend procesa la respuesta del LLM. Si el asistente sugiere ajustes o detecta anomalías granulométricas (como un desvío crítico respecto a la curva de Bolomey), puede proponer correcciones estructuradas que el frontend lee para disparar eventos visuales.</p>
-        </section>
-
-        <!-- SECTION: SUPABASE -->
-        <section id="sec-sync" class="manual-section">
-            <h1>Módulo de Base de Datos y Sincronización</h1>
-            <p>Detalla el diseño de almacenamiento persistente y las políticas de seguridad a nivel de fila (RLS).</p>
-
-            <h2>1. Esquema Relacional de Supabase</h2>
-            <p>Las dosificaciones se almacenan en la tabla `saved_mixes` vinculada a la tabla de autenticación nativa de Supabase (`auth.users`):</p>
-            
-            <pre>
-Table: saved_mixes
-+----------------+--------------------------+
-| Column Name    | Data Type                |
-+----------------+--------------------------+
-| id             | UUID (Primary Key)       |
-| user_id        | UUID (Foreign Key)       |
-| name           | TEXT                     |
-| created_at     | TIMESTAMP WITH TIME ZONE |
-| concrete_class | TEXT                     |
-| design_method  | TEXT                     |
-| exposure_class | TEXT                     |
-| batch_volume   | NUMERIC                  |
-| wc_ratio       | NUMERIC                  |
-| cement_base    | NUMERIC                  |
-| sieve_data     | JSONB                    |
-| additives      | JSONB                    |
-| materials      | JSONB                    |
-+----------------+--------------------------+
-            </pre>
-
-            <h2>2. Row Level Security (RLS)</h2>
-            <p>Para asegurar que ningún usuario pueda leer ni alterar las recetas de otros, la base de datos implementa políticas estrictas en el motor de PostgreSQL:</p>
-            
-            <pre>
--- Política SQL para control de lectura propio:
-CREATE POLICY "Permitir lectura propia" ON saved_mixes 
-    FOR SELECT USING (auth.uid() = user_id);
-            </pre>
+            <h2>2. Ajustes de Parámetros</h2>
+            <p>El asistente procesa los parámetros de dosificación. Si sugiere ajustes o detecta anomalías granulométricas (como un desvío crítico respecto a la curva de Bolomey), puede proponer correcciones estructuradas para corregir automáticamente los valores en pantalla.</p>
         </section>
 
         <!-- SECCIÓN 7: CONTACTO Y SOPORTE -->
