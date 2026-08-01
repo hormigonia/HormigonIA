@@ -4200,9 +4200,9 @@ function updatePrintCalcMemory() {
     }
     
     const waterDemandPerM3 = parseFloat(resWaterTheoretical) * (1000 / batchVol);
-    const cementDensitySolid = parseFloat(document.getElementById("densCement").value) || 3.10;
-    const sandDensitySolid = parseFloat(document.getElementById("densSand").value) || 2.65;
-    const stoneDensitySolid = parseFloat(document.getElementById("densStone").value) || 2.70;
+    const cementDensitySolid = parseFloat(document.getElementById("densCement")?.value || 3.10);
+    const sandDensitySolid = parseFloat(document.getElementById("densSand")?.value || 2.65);
+    const stoneDensitySolid = parseFloat(document.getElementById("densGrava")?.value || document.getElementById("densGravilla")?.value || 2.70);
     
     const volCement = parseFloat(resCementPerM3) / cementDensitySolid;
     const volWater = waterDemandPerM3;
