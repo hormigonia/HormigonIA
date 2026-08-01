@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HormigónMix AI - Dosificador Racional de Precisión (ICPA & Larrard)</title>
+    <title>HormigónMix AI - Dosificador Racional de Precisión</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -69,6 +69,10 @@
                         </a>
                     </div>
                 </div>
+
+                <button id="btnSupportModal" class="btn btn-secondary btn-icon" style="margin-right: 8px;">
+                    <span class="icon">💬</span> Soporte
+                </button>
 
                 <button id="btnExportPDF" class="btn btn-primary btn-icon">
                     <span class="icon">📥</span> Reporte de Mezcla
@@ -182,7 +186,7 @@
                                     <option value="pavimentos">Pavimentos Urbanos y Cordones Cuneta</option>
                                     <option value="pisos_ind">Pisos Industriales y Playas de Maniobra</option>
                                     <option value="proyectado">Hormigón Proyectado (Shotcrete / Túneles y Taludes)</option>
-                                    <option value="clima_frio">Clima Frío (Anticongelante - Norma ICPA Cap. 11)</option>
+                                    <option value="clima_frio">Clima Frío (Anticongelante)</option>
                                     <option value="clima_calido">Clima Cálido (Grandes Volúmenes - Retardado)</option>
                                     <option value="puentes">Tableros de Puentes e Infraestructura Expuesta</option>
                                     <option value="relleno">Bases de Limpieza y Hormigón de Relleno</option>
@@ -1538,6 +1542,52 @@
         </div>
     </div>
     
+    <!-- SUPPORT MODAL -->
+    <div id="supportModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <span class="modal-close" id="btnCloseSupportModal">&times;</span>
+            <h2 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 10px;">💬 Soporte al Usuario</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">
+                ¿Tenés alguna consulta o problema técnico? Envianos un ticket de soporte. También podés escribirnos a <a href="mailto:hormixia@gmail.com" style="color: var(--accent); text-decoration: none; font-weight: 600;">hormixia@gmail.com</a>.
+            </p>
+            
+            <form id="supportForm">
+                <div class="form-group">
+                    <label for="inputSupportEmail">Tu Correo Electrónico:</label>
+                    <input type="email" id="inputSupportEmail" required placeholder="correo@ejemplo.com" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="inputSupportSubject">Asunto:</label>
+                    <input type="text" id="inputSupportSubject" required placeholder="Ej: Error al exportar PDF" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label for="inputSupportMessage">Detalle del problema o consulta:</label>
+                    <textarea id="inputSupportMessage" required placeholder="Describe tu consulta con detalle..." class="form-input" style="height: 100px; resize: none; font-family: inherit; font-size: 0.85rem; padding: 8px;"></textarea>
+                </div>
+                
+                <div class="modal-footer" style="margin-top: 20px;">
+                    <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center;">Enviar Solicitud</button>
+                </div>
+            </form>
+            
+            <!-- Success Screen (Hidden by default) -->
+            <div id="supportSuccessScreen" style="display: none; text-align: center; padding: 10px 0;">
+                <div style="font-size: 3rem; margin-bottom: 15px;">✅</div>
+                <h3 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 10px; color: var(--accent);">¡Solicitud Recibida!</h3>
+                <p style="font-size: 0.85rem; line-height: 1.5; margin-bottom: 20px; color: var(--text-muted);">
+                    Se ha generado tu ticket de soporte con el siguiente identificador único:
+                </p>
+                <div id="supportIdContainer" style="font-family: monospace; font-size: 1.25rem; font-weight: bold; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); padding: 10px; border-radius: 8px; display: inline-block; color: var(--accent); margin-bottom: 20px; letter-spacing: 1px;">
+                    SUP-12345
+                </div>
+                <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;">
+                    Nos pondremos en contacto contigo en tu correo a la brevedad. Cualquier consulta adicional, podés responder al mail escribiendo a <strong>hormixia@gmail.com</strong>.
+                </p>
+                <button type="button" id="btnSupportSuccessClose" class="btn btn-secondary" style="margin-top: 20px; width: 100%; justify-content: center;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
     <script src="/ai.js?v=1.0.3"></script>
     <script src="/app_v1.js?v=1.0.7"></script>
     <!-- PRINTABLE CALCULATION MEMORY (HIDDEN ON SCREEN) -->

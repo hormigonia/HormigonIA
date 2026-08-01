@@ -448,6 +448,7 @@
             <li class="menu-item" data-section="sec-reologia">🧪 4. Reología y Asentamiento</li>
             <li class="menu-item" data-section="sec-ia">🤖 5. Asistente IA (Gemini)</li>
             <li class="menu-item" data-section="sec-sync">☁️ 6. Base de Datos Supabase</li>
+            <li class="menu-item" data-section="sec-contacto">💬 7. Soporte Técnico</li>
         </ul>
 
         <div class="sidebar-footer">
@@ -903,6 +904,17 @@ Table: saved_mixes
 CREATE POLICY "Permitir lectura propia" ON saved_mixes 
     FOR SELECT USING (auth.uid() = user_id);
             </pre>
+        </section>
+
+        <!-- SECCIÓN 7: CONTACTO Y SOPORTE -->
+        <section id="sec-contacto" class="manual-section">
+            <h2>7. Contacto y Soporte Técnico</h2>
+            <p>Para consultas técnicas sobre los algoritmos, informes de errores, sugerencias de mejora o asistencia personalizada en obra, por favor comuníquese a nuestra dirección de correo electrónico:</p>
+            <div style="background-color: var(--bg-panel); border: 1px solid var(--border-color); padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+                <p style="font-size: 1.1rem; font-weight: bold; margin-bottom: 5px;">Correo de Contacto Oficial:</p>
+                <a href="mailto:hormixia@gmail.com" style="color: var(--accent); font-size: 1.25rem; font-weight: bold; text-decoration: none; font-family: monospace;">hormixia@gmail.com</a>
+            </div>
+            <p>Por favor, adjunte el <strong>ID de Asistencia</strong> correspondiente si está reportando un problema desde la aplicación principal para agilizar el diagnóstico.</p>
         </section>
     </main>
 
