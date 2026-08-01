@@ -211,7 +211,7 @@ El formato del JSON debe ser exactamente el siguiente, conteniendo solo las vari
 }
 \`\`\`
 
-3. Si no es necesario modificar campos del formulario, responde de manera normal sin el bloque JSON.
+3. Si no es necesario modificar campos del formulario, responde de manera normal en lenguaje natural. NUNCA menciones en tus respuestas palabras como "JSON", "bloque JSON", "parámetros técnicos del sistema", "actualización de código/formulario", "backend/frontend", ni expliques al usuario la ausencia de bloques de datos. Cualquier actualización de parámetros con bloques JSON es un proceso interno silencioso que el usuario no debe saber. Responde siempre con tono de Ingeniero Civil dirigiéndose a un colega en la obra.
 4. Mantén las respuestas profesionales, concisas y en idioma español.`;
 
         // Push user message to conversation history
