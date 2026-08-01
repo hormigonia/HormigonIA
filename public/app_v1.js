@@ -1241,6 +1241,73 @@ function predictSlumpFromWater(mf, waterM3, waterReduction, factorG, isCrushed =
     return Math.min(24.0, baseSlump + slumpBoost);
 }
 
+function saveActiveDraft() {
+    try {
+        const draft = {
+            config: historyManager.config.getState(),
+            additives: historyManager.additives.getState(),
+            lab: historyManager.lab.getState(),
+            structuralElement: document.getElementById("selectStructuralElement")?.value || "",
+            exposureClass: document.getElementById("selectExposureClass")?.value || "",
+            batchVolume: document.getElementById("inputBatchVolume")?.value || "80",
+            calcSlumpMeasured: document.getElementById("calcSlumpMeasured")?.value || "",
+            inputQualityStrength7d: document.getElementById("inputQualityStrength7d")?.value || "",
+            inputQualityStrength28d: document.getElementById("inputQualityStrength28d")?.value || "",
+        };
+        localStorage.setItem("hormigonmix_active_draft", JSON.stringify(draft));
+    } catch (e) {
+        console.error("Error saving active draft", e);
+    }
+}
+
+function loadActiveDraft() {
+    try {
+        const stored = localStorage.getItem("hormigonmix_active_draft");
+        if (!stored) return false;
+        const draft = JSON.parse(stored);
+        
+        if (draft.config) historyManager.config.restoreState(draft.config);
+        if (draft.additives) historyManager.additives.restoreState(draft.additives);
+        if (draft.lab) historyManager.lab.restoreState(draft.lab);
+        
+        if (draft.structuralElement && document.getElementById("selectStructuralElement")) {
+            document.getElementById("selectStructuralElement").value = draft.structuralElement;
+        }
+        if (draft.exposureClass && document.getElementById("selectExposureClass")) {
+            document.getElementById("selectExposureClass").value = draft.exposureClass;
+        }
+        if (draft.batchVolume && document.getElementById("inputBatchVolume")) {
+            const selectVol = document.getElementById("inputBatchVolume");
+            if (selectVol) {
+                if (!Array.from(selectVol.options).some(o => o.value === draft.batchVolume)) {
+                    const opt = document.createElement("option");
+                    opt.value = draft.batchVolume;
+                    opt.text = parseFloat(draft.batchVolume) >= 0.1 && parseFloat(draft.batchVolume) <= 12 ? `${draft.batchVolume} m³` : `${draft.batchVolume} Litros`;
+                    selectVol.add(opt);
+                }
+                selectVol.value = draft.batchVolume;
+            }
+        }
+        if (draft.calcSlumpMeasured && document.getElementById("calcSlumpMeasured")) {
+            document.getElementById("calcSlumpMeasured").value = draft.calcSlumpMeasured;
+            const qcSlump = document.getElementById("inputSlumpMeasured");
+            if (qcSlump) qcSlump.value = draft.calcSlumpMeasured;
+        }
+        if (draft.inputQualityStrength7d && document.getElementById("inputQualityStrength7d")) {
+            document.getElementById("inputQualityStrength7d").value = draft.inputQualityStrength7d;
+        }
+        if (draft.inputQualityStrength28d && document.getElementById("inputQualityStrength28d")) {
+            document.getElementById("inputQualityStrength28d").value = draft.inputQualityStrength28d;
+        }
+        
+        calculateAndUpdate();
+        return true;
+    } catch (e) {
+        console.error("Error loading active draft", e);
+        return false;
+    }
+}
+
 
 // Initialise Application
 document.addEventListener("DOMContentLoaded", () => {
@@ -1393,7 +1460,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize curing countdown from localStorage if active
     initCuringCountdown();
 
-    calculateAndUpdate();
+    const restored = loadActiveDraft();
+    if (!restored) {
+        calculateAndUpdate();
+    }
 });
 
 // Event Listeners Setup
@@ -2658,6 +2728,7 @@ async function calculateAndUpdate() {
             updateHistoryButtonsUI();
         }
         
+        saveActiveDraft();
     } catch (err) {
         console.error("Error de comunicaciÃ³n con el servidor:", err);
         showServerErrorOverlay();
