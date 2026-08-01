@@ -4038,7 +4038,46 @@ async function saveCurrentMix() {
         return;
     }
     
-    const rawName = prompt("Ingresa el nombre para esta mezcla:", currentCustomName || "Mi Mezcla");
+    const ELEMENT_SHORT_NAMES = {
+        fund_pilotes: "Pilotes",
+        fund_directas: "Fundaciones Directas",
+        estructuras_elev: "Estructuras Elevadas",
+        tabiques: "Tabiques",
+        columnas_alta: "Columnas",
+        pavimentos: "Pavimento",
+        pisos_ind: "Piso Industrial",
+        proyectado: "Shotcrete",
+        clima_frio: "Clima Frío",
+        clima_calido: "Clima Cálido",
+        puentes: "Puente",
+        relleno: "Hormigón Relleno",
+        personalizado: "Mezcla"
+    };
+    
+    const elemVal = document.getElementById("selectStructuralElement")?.value || "";
+    const elemText = ELEMENT_SHORT_NAMES[elemVal] || "Mezcla";
+    const strengthVal = document.getElementById("inputTargetStrength")?.value || "21";
+    const baseName = `${elemText} H${strengthVal}`;
+    
+    // Find all mixes that match the baseName with a number suffix
+    let maxNum = 0;
+    const regex = new RegExp(`^${baseName.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')} - (\\d{4})$`, "i");
+    
+    savedMixes.forEach(mix => {
+        const match = mix.name.match(regex);
+        if (match) {
+            const num = parseInt(match[1], 10);
+            if (num > maxNum) {
+                maxNum = num;
+            }
+        }
+    });
+    
+    const nextNum = maxNum + 1;
+    const formattedNum = String(nextNum).padStart(4, '0');
+    const suggestedName = `${baseName} - ${formattedNum}`;
+    
+    const rawName = prompt("Ingresa el nombre para esta mezcla:", suggestedName);
     if (rawName === null) return;
     
     const name = rawName.trim() || "Mezcla Sin Nombre";
