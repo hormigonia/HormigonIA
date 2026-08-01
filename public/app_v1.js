@@ -466,9 +466,9 @@ function showGoogleChooserModalSimulated() {
 }
 
 
-// CORE ENGINE - HORMIGONMIX AI (ICPA & LARRARD INTEGRATED)
+// CORE ENGINE - HORMIGONMIX AI (LARRARD INTEGRATED)
 
-// Concrete Classes defaults for ICPA rational design
+// Concrete Classes defaults for rational design
 const CONCRETE_CLASSES = {
     "H8": { fce: 8, bolomeyA: 16.0, slump: 3.0 },
     "H15": { fce: 15, bolomeyA: 14.5, slump: 6.0 },
@@ -1472,6 +1472,69 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Event Listeners Setup
 function setupEventListeners() {
+    // Support Modal Control
+    const btnSupportModal = document.getElementById("btnSupportModal");
+    const supportModal = document.getElementById("supportModal");
+    const btnCloseSupportModal = document.getElementById("btnCloseSupportModal");
+    const supportForm = document.getElementById("supportForm");
+    const supportSuccessScreen = document.getElementById("supportSuccessScreen");
+    const supportIdContainer = document.getElementById("supportIdContainer");
+    const btnSupportSuccessClose = document.getElementById("btnSupportSuccessClose");
+    
+    if (btnSupportModal && supportModal) {
+        btnSupportModal.addEventListener("click", () => {
+            supportModal.classList.add("open");
+            const inputSupportEmail = document.getElementById("inputSupportEmail");
+            if (inputSupportEmail && typeof activeUser !== "undefined" && activeUser) {
+                inputSupportEmail.value = activeUser;
+            }
+            if (supportForm) supportForm.style.display = "block";
+            if (supportSuccessScreen) supportSuccessScreen.style.display = "none";
+        });
+    }
+    
+    if (btnCloseSupportModal && supportModal) {
+        btnCloseSupportModal.addEventListener("click", () => {
+            supportModal.classList.remove("open");
+        });
+    }
+    
+    if (btnSupportSuccessClose && supportModal) {
+        btnSupportSuccessClose.addEventListener("click", () => {
+            supportModal.classList.remove("open");
+        });
+    }
+    
+    if (supportForm) {
+        supportForm.addEventListener("submit", (e) => {
+            e.preventDefault();
+            const supportEmail = document.getElementById("inputSupportEmail")?.value || "";
+            const supportSubject = document.getElementById("inputSupportSubject")?.value || "";
+            const supportMessage = document.getElementById("inputSupportMessage")?.value || "";
+            
+            const supportId = `SUP-${Math.floor(10000 + Math.random() * 90000)}`;
+            
+            try {
+                const existingTickets = JSON.parse(localStorage.getItem("hormigonmix_support_tickets") || "[]");
+                existingTickets.push({
+                    id: supportId,
+                    email: supportEmail,
+                    subject: supportSubject,
+                    message: supportMessage,
+                    date: Date.now(),
+                    status: "Abierto"
+                });
+                localStorage.setItem("hormigonmix_support_tickets", JSON.stringify(existingTickets));
+            } catch (err) {
+                console.error("Error saving support ticket to local storage:", err);
+            }
+            
+            if (supportIdContainer) supportIdContainer.innerText = supportId;
+            supportForm.style.display = "none";
+            if (supportSuccessScreen) supportSuccessScreen.style.display = "block";
+        });
+    }
+
     // Target Strength Input
     const inputTargetStrength = document.getElementById("inputTargetStrength");
     if (inputTargetStrength) {
@@ -2302,7 +2365,7 @@ function autoAdjustCustomParamsFromStrength() {
     document.getElementById("inputCustomCement").value = cementBaseM3;
 }
 
-// CORE MATHEMATICS ENGINE - ICPA & LARRARD LPDM
+// CORE MATHEMATICS ENGINE - LARRARD LPDM
 async function calculateAndUpdate() {
     const designMethod = document.getElementById("selectDesignMethod")?.value || "bolomey";
     const divCustomBolomeyA = document.getElementById("divCustomBolomeyA");
@@ -4369,7 +4432,7 @@ function updatePrintCalcMemory() {
         <div class="calc-mem-section">
             <h2 class="calc-mem-subtitle">1. Criterios de Diseño y Datos de Entrada</h2>
             <p class="calc-mem-text">
-                El diseño de la mezcla se realiza en base a la metodología racional del ICPA (Instituto del Cemento Portland Argentino) y la metodología de ACI 211.1 (Volúmenes Absolutos), optimizando el esqueleto granular.
+                El diseño de la mezcla se realiza en base a la metodología de volúmenes absolutos de la ACI 211.1 y Larrard, optimizando el esqueleto granular.
             </p>
             <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; margin: 12px 0;">
                 <thead>
@@ -4495,7 +4558,8 @@ function updatePrintCalcMemory() {
             <p class="calc-mem-text" style="font-size: 0.8rem; margin-top: 15px; color: #555;">
                 * Aditivos químicos cargados: <strong>${additivesListText}</strong>.<br>
                 * Consistencia del hormigón estimada: <strong>${resSlump} cm</strong> (Asentamiento de cono de Abrams).<br>
-                * Coeficiente de desviación granulométrica Factor G (ICPA): <strong>${resFactorGDisplay}</strong>.
+                * Coeficiente de desviación granulométrica Factor G: <strong>${resFactorGDisplay}</strong>.<br>
+                * Soporte al Usuario: <strong>hormixia@gmail.com</strong>
             </p>
         </div>
     `;
