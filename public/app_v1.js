@@ -1250,7 +1250,7 @@ function saveActiveDraft() {
             structuralElement: document.getElementById("selectStructuralElement")?.value || "",
             exposureClass: document.getElementById("selectExposureClass")?.value || "",
             batchVolume: document.getElementById("inputBatchVolume")?.value || "80",
-            calcSlumpMeasured: document.getElementById("calcSlumpMeasured")?.value || "",
+            calcSlumpMeasured: document.getElementById("inputCalculatorSlumpMeasured")?.value || "",
             inputQualityStrength7d: document.getElementById("inputQualityStrength7d")?.value || "",
             inputQualityStrength28d: document.getElementById("inputQualityStrength28d")?.value || "",
         };
@@ -1288,8 +1288,8 @@ function loadActiveDraft() {
                 selectVol.value = draft.batchVolume;
             }
         }
-        if (draft.calcSlumpMeasured && document.getElementById("calcSlumpMeasured")) {
-            document.getElementById("calcSlumpMeasured").value = draft.calcSlumpMeasured;
+        if (draft.calcSlumpMeasured && document.getElementById("inputCalculatorSlumpMeasured")) {
+            document.getElementById("inputCalculatorSlumpMeasured").value = draft.calcSlumpMeasured;
             const qcSlump = document.getElementById("inputSlumpMeasured");
             if (qcSlump) qcSlump.value = draft.calcSlumpMeasured;
         }
@@ -1464,6 +1464,10 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!restored) {
         calculateAndUpdate();
     }
+
+    // Auto-save draft on any input or change event on the page
+    document.body.addEventListener("input", saveActiveDraft);
+    document.body.addEventListener("change", saveActiveDraft);
 });
 
 // Event Listeners Setup
@@ -1497,28 +1501,32 @@ function setupEventListeners() {
     const applyProjectConstraints = () => {
         const elementVal = document.getElementById("selectStructuralElement").value;
         const exposureVal = document.getElementById("selectExposureClass").value;
-        if (!elementVal) return;
+        if (!elementVal && !exposureVal) return;
         
         const elemSettings = ELEMENT_SETTINGS[elementVal];
         const expSettings = EXPOSURE_CONSTRAINTS[exposureVal];
-        if (!elemSettings || !expSettings) return;
         
         const sieveInput = document.getElementById("inputMaxSieveSize");
-        // 1. Update sieve size (from structural element)
-        sieveInput.value = elemSettings.maxSieve;
+        if (elemSettings && sieveInput) {
+            sieveInput.value = elemSettings.maxSieve;
+        }
         
-        // 2. Enforce minimum concrete strength (maximum of element and exposure)
         const overallMinClass = getMinConcreteClass();
         updateConcreteClassDropdown(overallMinClass);
         
         // 3. Clear and repopulate additives (union of element and exposure recommendations)
         additives = [];
-        const recommendedAdditives = [...elemSettings.additives];
-        expSettings.additives.forEach(item => {
-            if (!recommendedAdditives.some(ra => ra.typeKey === item.typeKey)) {
-                recommendedAdditives.push(item);
-            }
-        });
+        const recommendedAdditives = [];
+        if (elemSettings) {
+            elemSettings.additives.forEach(item => recommendedAdditives.push(item));
+        }
+        if (expSettings) {
+            expSettings.additives.forEach(item => {
+                if (!recommendedAdditives.some(ra => ra.typeKey === item.typeKey)) {
+                    recommendedAdditives.push(item);
+                }
+            });
+        }
         
         recommendedAdditives.forEach((item, idx) => {
             const spec = PREDEFINED_ADDITIVES[item.typeKey];
@@ -1536,15 +1544,18 @@ function setupEventListeners() {
             }
         });
         
-        // 4. Force air content if exposure requires it
         const airInput = document.getElementById("inputAirPercentage");
-        if (parseFloat(airInput.value) < expSettings.minAir) {
-            airInput.value = expSettings.minAir;
+        if (expSettings && airInput) {
+            if (parseFloat(airInput.value) < expSettings.minAir) {
+                airInput.value = expSettings.minAir;
+            }
         }
         
         renderAdditivesList();
         checkSikaFumeVisibility();
-        if (classDropdown.value !== "Personalizado") {
+        
+        const classDropdown = document.getElementById("inputTargetStrength");
+        if (classDropdown && classDropdown.value !== "Personalizado") {
             autoAdjustCustomParamsFromStrength();
         }
         calculateAndUpdate();
