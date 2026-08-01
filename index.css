@@ -1102,7 +1102,7 @@ label {
     .volume-presets {
         grid-template-columns: repeat(3, 1fr) !important;
         gap: 6px !important;
-
+    }
 }
 
 /* PRINT MEDIA (FOR PDF REPORT GENERATION) */
