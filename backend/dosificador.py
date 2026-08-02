@@ -401,8 +401,8 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
             # Admixture volume
             vs_ad = 0.0
             for add in additives:
-                if add.get("type") in ["plasticizer", "fume"]:
-                    weight_kg = c_base * (add.get("dosage", 0) / 100.0)
+                if add.get("dosage", 0.0) > 0.0:
+                    weight_kg = c_base * (add.get("dosage", 0.0) / 100.0)
                     vs_ad += (weight_kg / add.get("density", 1.11)) / 1000.0
                     
             vs_w = final_water / 1000.0
@@ -528,8 +528,8 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     admixture_recipes = []
     
     for add in additives:
-        if add.get("type") in ["plasticizer", "fume"]:
-            weight_kg = cement_weight_batch * (add.get("dosage", 0) / 100.0)
+        if add.get("dosage", 0.0) > 0.0:
+            weight_kg = cement_weight_batch * (add.get("dosage", 0.0) / 100.0)
             vol_l = weight_kg / add.get("density", 1.11)
             vs_admixture_total += (vol_l / 1000.0)
             
@@ -569,14 +569,8 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     
     # Calculate additive recipes
     for add in additives:
-        weight_kg = 0.0
-        vol_l = 0.0
-        if add.get("type") == "hidrofugo":
-            vol_l = (add.get("dosage", 2.0) / 2.0) * (net_water_theoretical / 10.0)
-            weight_kg = vol_l * add.get("density", 1.0)
-        else:
-            weight_kg = cement_weight_batch * (add.get("dosage", 0) / 100.0)
-            vol_l = weight_kg / add.get("density", 1.11)
+        weight_kg = cement_weight_batch * (add.get("dosage", 0.0) / 100.0)
+        vol_l = weight_kg / add.get("density", 1.11)
             
         admixture_recipes.append({
             "id": add.get("id"),
