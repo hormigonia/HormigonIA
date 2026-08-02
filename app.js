@@ -1,4 +1,4 @@
-// CORE ENGINE - HORMIGONMIX AI (ICPA & LARRARD INTEGRATED)
+// CORE ENGINE - HORMIGONIA (LARRARD INTEGRATED)
 import { 
     supabase, 
     signUp, 
@@ -1935,7 +1935,7 @@ async function fetchWeatherForCoordinates(lat, lon, isFallback) {
             const osmResponse = await fetch(nominatimUrl, {
                 signal: controller.signal,
                 headers: {
-                    'User-Agent': 'HormigonMixCalc/1.0',
+                    'User-Agent': 'HormigonIA/1.0',
                     'Accept-Language': 'es'
                 }
             });
