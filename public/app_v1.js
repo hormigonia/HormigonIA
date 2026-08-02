@@ -1,5 +1,7 @@
 let currentUserSession = null;
 let curingInterval = null;
+let curingMapInstance = null;
+let curingMarkerInstance = null;
 
 // Helper for Toast Notifications
 function showToast(message, type = 'success', duration = 3500) {
@@ -1554,6 +1556,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (qcAccordionBody.style.display === "none" || qcAccordionBody.style.display === "") {
                 qcAccordionBody.style.display = "flex";
                 if (qcAccordionArrow) qcAccordionArrow.innerText = "🔼";
+                initOrUpdateMap();
             } else {
                 qcAccordionBody.style.display = "none";
                 if (qcAccordionArrow) qcAccordionArrow.innerText = "🔽";
@@ -1563,6 +1566,44 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initialize curing countdown from localStorage if active
     initCuringCountdown();
+
+    // Hook static curing buttons
+    const btnRequestNotify = document.getElementById("btnRequestNotify");
+    if (btnRequestNotify) {
+        btnRequestNotify.addEventListener("click", () => {
+            const curingDays = lastWeatherData ? lastWeatherData.curingDays : 7;
+            const waterFrequencyHours = lastWeatherData ? lastWeatherData.waterFrequencyHours : 8;
+            if (!("Notification" in window)) {
+                alert("Este navegador no soporta notificaciones de escritorio.");
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    new Notification("HormigónIA - Curado Activo", {
+                        body: `Notificaciones activadas. Frecuencia de riego: cada ${waterFrequencyHours} horas durante ${curingDays} días.`,
+                        icon: "favicon.ico"
+                    });
+                    showToast("Notificaciones autorizadas. Recibirás recordatorios de riego en tu escritorio.");
+                } else {
+                    alert("Has bloqueado las notificaciones. Habilítalas en la configuración de tu navegador.");
+                }
+            });
+        });
+    }
+
+    const btnStartProduction = document.getElementById("btnStartProduction");
+    if (btnStartProduction) {
+        if (localStorage.getItem("curingStartTime")) {
+            btnStartProduction.innerText = "🛑 Reiniciar Curado";
+            btnStartProduction.classList.remove("btn-success");
+            btnStartProduction.classList.add("btn-secondary");
+            
+            const startTime = parseInt(localStorage.getItem("curingStartTime"));
+            const duration = parseInt(localStorage.getItem("curingDurationMs"));
+            startCountdownLoop(startTime, duration);
+        }
+        btnStartProduction.addEventListener("click", handleStartProductionClick);
+    }
 
     const restored = loadActiveDraft();
     if (!restored) {
@@ -3298,13 +3339,15 @@ function autoSelectDesignMethodByLocation(address, lat, lon) {
 async function fetchLocalWeatherManual() {
     const btn = document.getElementById("btnGetGpsWeatherManual");
     const spinner = document.getElementById("manualGpsLoadingSpinner");
-    const detailsDiv = document.getElementById("gpsLocationDetails");
-    const alertsDiv = document.getElementById("gpsWeatherAlerts");
+    const detailsDiv = document.getElementById("curingWeatherInfo");
+    const alertsDiv = document.getElementById("curingWeatherAlertsBlock");
     
     if (btn) btn.disabled = true;
     if (spinner) spinner.classList.remove("hidden");
-    detailsDiv.style.display = "none";
-    alertsDiv.innerHTML = "";
+    if (detailsDiv) {
+        detailsDiv.innerHTML = '<div style="font-style: italic; opacity: 0.6; text-align: center; padding: 40px 10px;">⏳ Consultando clima y pronóstico en la ubicación...</div>';
+    }
+    if (alertsDiv) alertsDiv.innerHTML = "";
     
     const coordsVal = document.getElementById("inputGpsCoords").value.trim();
     const parts = coordsVal.split(",");
@@ -3324,13 +3367,15 @@ async function fetchLocalWeatherManual() {
 async function fetchLocalWeatherAuto() {
     const btn = document.getElementById("btnGetGpsWeatherAuto");
     const spinner = document.getElementById("autoGpsLoadingSpinner");
-    const detailsDiv = document.getElementById("gpsLocationDetails");
-    const alertsDiv = document.getElementById("gpsWeatherAlerts");
+    const detailsDiv = document.getElementById("curingWeatherInfo");
+    const alertsDiv = document.getElementById("curingWeatherAlertsBlock");
     
     if (btn) btn.disabled = true;
     if (spinner) spinner.classList.remove("hidden");
-    detailsDiv.style.display = "none";
-    alertsDiv.innerHTML = "";
+    if (detailsDiv) {
+        detailsDiv.innerHTML = '<div style="font-style: italic; opacity: 0.6; text-align: center; padding: 40px 10px;">⏳ Consultando geolocalización actual y clima...</div>';
+    }
+    if (alertsDiv) alertsDiv.innerHTML = "";
     
     const coordsVal = document.getElementById("inputGpsCoords").value.trim();
     const parts = coordsVal.split(",");
@@ -3347,11 +3392,13 @@ async function fetchLocalWeatherAuto() {
     
     if (!navigator.geolocation) {
         console.warn("Geolocation not supported. Using fallback coordinates.");
-        alertsDiv.innerHTML = `
-            <div style="font-size: 0.75rem; padding: 8px 12px; border-radius: 4px; border-left: 4px solid var(--warning); background-color: rgba(245, 158, 11, 0.08); color: var(--text); line-height: 1.4; margin-bottom: 8px;">
-                ⚠️ <strong>Geolocalización no soportada:</strong> Usando las coordenadas ingresadas manualmente.
-            </div>
-        `;
+        if (alertsDiv) {
+            alertsDiv.innerHTML = `
+                <div style="font-size: 0.75rem; padding: 8px 12px; border-radius: 4px; border-left: 4px solid var(--warning); background-color: rgba(245, 158, 11, 0.08); color: var(--text); line-height: 1.4; margin-bottom: 8px;">
+                    ⚠️ <strong>Geolocalización no soportada:</strong> Usando las coordenadas ingresadas manualmente.
+                </div>
+            `;
+        }
         await fetchWeatherForCoordinates(fallbackLat, fallbackLon, true, btn, spinner);
         return;
     }
@@ -3371,11 +3418,13 @@ async function fetchLocalWeatherAuto() {
             } else if (err.code === 3) {
                 errMsg = "Tiempo de espera de geolocalización agotado";
             }
-            alertsDiv.innerHTML = `
-                <div style="font-size: 0.75rem; padding: 8px 12px; border-radius: 4px; border-left: 4px solid var(--warning); background-color: rgba(245, 158, 11, 0.08); color: var(--text); line-height: 1.4; margin-bottom: 8px;">
-                    ⚠️ <strong>${errMsg}:</strong> Usando las coordenadas ingresadas manualmente.
-                </div>
-            `;
+            if (alertsDiv) {
+                alertsDiv.innerHTML = `
+                    <div style="font-size: 0.75rem; padding: 8px 12px; border-radius: 4px; border-left: 4px solid var(--warning); background-color: rgba(245, 158, 11, 0.08); color: var(--text); line-height: 1.4; margin-bottom: 8px;">
+                        ⚠️ <strong>${errMsg}:</strong> Usando las coordenadas ingresadas manualmente.
+                    </div>
+                `;
+            }
             await fetchWeatherForCoordinates(fallbackLat, fallbackLon, true, btn, spinner);
         },
         { timeout: 15000, enableHighAccuracy: false }
@@ -3385,8 +3434,8 @@ async function fetchLocalWeatherAuto() {
 async function fetchWeatherForCoordinates(lat, lon, isFallback, btnElement, spinnerElement) {
     const btn = btnElement || document.getElementById("btnGetGpsWeatherManual");
     const spinner = spinnerElement || document.getElementById("manualGpsLoadingSpinner");
-    const detailsDiv = document.getElementById("gpsLocationDetails");
-    const alertsDiv = document.getElementById("gpsWeatherAlerts");
+    const detailsDiv = document.getElementById("curingWeatherInfo");
+    const alertsDiv = document.getElementById("curingWeatherAlertsBlock");
     
     try {
         let displayName = `Coordenadas: ${lat.toFixed(4)}, ${lon.toFixed(4)}`;
@@ -3761,8 +3810,72 @@ async function fetchWeatherForCoordinates(lat, lon, isFallback, btnElement, spin
     }
 }
 
+let curingMapInstance = null;
+let curingMarkerInstance = null;
+
+function initOrUpdateMap() {
+    const mapEl = document.getElementById("curingMap");
+    if (!mapEl) return;
+    
+    // Get lat/lon from inputGpsCoords or default to Buenos Aires
+    const coordsInput = document.getElementById("inputGpsCoords");
+    let lat = -34.6037;
+    let lon = -58.3816;
+    if (coordsInput && coordsInput.value) {
+        const parts = coordsInput.value.split(",");
+        if (parts.length === 2) {
+            const parsedLat = parseFloat(parts[0]);
+            const parsedLon = parseFloat(parts[1]);
+            if (!isNaN(parsedLat) && !isNaN(parsedLon)) {
+                lat = parsedLat;
+                lon = parsedLon;
+            }
+        }
+    }
+    
+    if (typeof L === "undefined") {
+        console.warn("Leaflet map library is not loaded yet.");
+        return;
+    }
+    
+    if (!curingMapInstance) {
+        // Initialize map
+        curingMapInstance = L.map('curingMap').setView([lat, lon], 13);
+        
+        // Add dark theme OSM tiles (fits perfectly with dark mode!)
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+            subdomains: 'abcd',
+            maxZoom: 20
+        }).addTo(curingMapInstance);
+        
+        // Add draggable marker
+        curingMarkerInstance = L.marker([lat, lon], { draggable: true }).addTo(curingMapInstance);
+        
+        // When marker is dragged, update coordinates and trigger weather search
+        curingMarkerInstance.on('dragend', function (e) {
+            const position = curingMarkerInstance.getLatLng();
+            const roundedLat = position.lat.toFixed(6);
+            const roundedLon = position.lng.toFixed(6);
+            if (coordsInput) {
+                coordsInput.value = `${roundedLat}, ${roundedLon}`;
+            }
+            // Trigger weather fetch automatically
+            fetchLocalWeatherManual();
+        });
+    } else {
+        // Map already exists, update view and marker
+        curingMapInstance.setView([lat, lon]);
+        curingMarkerInstance.setLatLng([lat, lon]);
+        // Leaflet needs to re-evaluate dimensions when container visibility changes
+        setTimeout(() => {
+            curingMapInstance.invalidateSize();
+        }, 100);
+    }
+}
+
 function renderWeatherInfoInUI(location, weather) {
-    const detailsDiv = document.getElementById("gpsLocationDetails");
+    const detailsDiv = document.getElementById("curingWeatherInfo");
     if (!detailsDiv) return;
     
     const displayName = location.displayName || "Ubicación Desconocida";
@@ -3772,8 +3885,6 @@ function renderWeatherInfoInUI(location, weather) {
     const hourly = weather.hourly;
     
     let forecastRows = "";
-    let rainAlerts = [];
-    let freezeAlerts = [];
     
     if (hourly && hourly.time) {
         for (let i = 0; i < hourly.time.length; i += 6) {
@@ -3819,166 +3930,52 @@ function renderWeatherInfoInUI(location, weather) {
                 </div>
             `;
         }
-        
-        for (let i = 0; i < hourly.time.length; i++) {
-            const temp = hourly.temperature_2m[i];
-            const prec = hourly.precipitation ? (hourly.precipitation[i] || 0) : 0;
-            const precProb = hourly.precipitation_probability ? (hourly.precipitation_probability[i] || 0) : 0;
-            
-            if (prec > 0.2 && precProb > 30) {
-                const dateObj = new Date(hourly.time[i]);
-                const dateStr = dateObj.toLocaleDateString("es-AR", { day: 'numeric', month: 'numeric' });
-                const hourStr = dateObj.toLocaleTimeString("es-AR", { hour: '2-digit', minute: '2-digit' });
-                rainAlerts.push({
-                    time: `${dateStr} a las ${hourStr} hs`,
-                    prob: precProb,
-                    amount: prec
-                });
-            }
-            if (temp < 0) {
-                const dateObj = new Date(hourly.time[i]);
-                const dateStr = dateObj.toLocaleDateString("es-AR", { day: 'numeric', month: 'numeric' });
-                const hourStr = dateObj.toLocaleTimeString("es-AR", { hour: '2-digit', minute: '2-digit' });
-                freezeAlerts.push(`${dateStr} a las ${hourStr} hs (${temp.toFixed(1)}°C)`);
-            }
-        }
     }
     
     const curingDays = weather.curingDays || 7;
     const curingReason = weather.curingReason || "Temperatura y humedad moderadas (Curado estándar reglamentario).";
     const waterFrequencyText = weather.waterFrequencyText || "Regar 3 veces al día (cada 8 horas)";
     const evapRate = weather.evapRate !== undefined ? weather.evapRate : 0.15;
-    const waterFrequencyHours = weather.waterFrequencyHours || 8;
     
+    // Update top header planning blocks statically
+    const displayCuringDays = document.getElementById("displayCuringDays");
+    if (displayCuringDays) displayCuringDays.innerText = `${curingDays} días`;
+    
+    const displayCuringReason = document.getElementById("displayCuringReason");
+    if (displayCuringReason) displayCuringReason.innerText = curingReason;
+    
+    const displayWaterFrequency = document.getElementById("displayWaterFrequency");
+    if (displayWaterFrequency) displayWaterFrequency.innerText = waterFrequencyText;
+    
+    const displayEvapRate = document.getElementById("displayEvapRate");
+    if (displayEvapRate) displayEvapRate.innerHTML = `Tasa de evaporación: <strong>${evapRate.toFixed(2)} kg/m²/h</strong>`;
+    
+    const btnStartProduction = document.getElementById("btnStartProduction");
+    if (btnStartProduction) btnStartProduction.dataset.days = curingDays;
+    
+    // Fill bottom forecast and weather info block
     detailsDiv.innerHTML = `
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
-            <!-- Columna Izquierda: Clima y Pronóstico -->
-            <div>
-                <div style="margin-bottom: 8px;">
-                    <strong>📍 Ubicación detectada:</strong><br>
-                    <span style="font-size: 0.75rem; color: var(--text);">${displayName}</span>
-                </div>
-                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background-color: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 12px; font-size: 0.72rem;">
-                    <div style="text-align: center;">⛅ <strong>Clima:</strong> ${currentTemp.toFixed(1)} °C</div>
-                    <div style="text-align: center;">💧 <strong>Hum:</strong> ${currentHum}%</div>
-                    <div style="text-align: center;">💨 <strong>Viento:</strong> ${currentWind.toFixed(1)} km/h</div>
-                </div>
-                <div style="margin-top: 5px; margin-bottom: 5px;">
-                    <strong>📅 Pronóstico de Curado (72 hs de la colada):</strong>
-                </div>
-                <div class="forecast-scroller" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-top: 5px;">
-                    ${forecastRows || '<p style="font-size: 0.7rem; color: var(--text-muted);">Sin datos de pronóstico.</p>'}
-                </div>
-            </div>
-            
-            <!-- Columna Derecha: Planificador de Curado y Alertas -->
-            <div style="background-color: rgba(255, 255, 255, 0.01); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; font-size: 0.75rem; display: flex; flex-direction: column; gap: 10px;">
-                <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 8px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px;">
-                    <strong style="color: var(--accent); font-size: 0.85rem;">📅 Planificación de Curado</strong>
-                    <button type="button" id="btnRequestNotify" class="btn btn-primary" style="font-size: 0.78rem; padding: 6px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s;">🔔 Alertas Riego</button>
-                </div>
-                
-                <div>
-                    <strong>Duración de Curado Recomendada:</strong><br>
-                    <span style="color: var(--text); font-weight: 600; font-size: 0.8rem;">${curingDays} días</span><br>
-                    <span style="font-size: 0.68rem; color: var(--text-muted); line-height: 1.3; display: block; margin-top: 2px;">${curingReason}</span>
-                </div>
-                
-                <div>
-                    <strong>Frecuencia de Riego:</strong><br>
-                    <span style="color: var(--text); font-weight: 600; font-size: 0.8rem;">${waterFrequencyText}</span><br>
-                    <span style="font-size: 0.68rem; color: var(--text-muted); line-height: 1.3; display: block; margin-top: 2px;">Tasa de evaporación del hormigonado: <strong>${evapRate.toFixed(2)} kg/m²/h</strong></span>
-                </div>
-
-                ${(() => {
-                    let alertHtml = "";
-                    if (rainAlerts.length > 0) {
-                        const nextRain = rainAlerts[0];
-                        alertHtml += `
-                            <div style="background-color: rgba(239, 68, 68, 0.08); border-left: 3px solid var(--error); border-radius: 4px; padding: 8px; line-height: 1.3; font-size: 0.68rem; margin-top: 4px;">
-                                🌧️ <strong>Alerta de Lluvia Detectada:</strong><br>
-                                Pronóstico para el <strong>${nextRain.time}</strong> (${nextRain.prob}% de prob., ${nextRain.amount.toFixed(1)} mm).<br>
-                                <span style="color: var(--warning); font-weight: 600;">⚠️ Se recomienda proteger el vertido o reprogramar la colada.</span>
-                            </div>
-                        `;
-                    }
-                    if (freezeAlerts.length > 0) {
-                        alertHtml += `
-                            <div style="background-color: rgba(139, 92, 246, 0.08); border-left: 3px solid var(--accent); border-radius: 4px; padding: 8px; line-height: 1.3; font-size: 0.68rem; margin-top: 4px;">
-                                ❄️ <strong>Riesgo de Congelamiento:</strong><br>
-                                Heladas detectadas el <strong>${freezeAlerts[0]}</strong>.<br>
-                                Use aditivo anticongelante y aislamiento térmico.
-                            </div>
-                        `;
-                    }
-                    if (rainAlerts.length === 0 && freezeAlerts.length === 0) {
-                        alertHtml += `
-                            <div style="background-color: rgba(16, 185, 129, 0.08); border-left: 3px solid var(--success); border-radius: 4px; padding: 6px 8px; line-height: 1.3; font-size: 0.68rem; margin-top: 4px; color: var(--success); font-weight: 600;">
-                                ☀️ Clima propicio: No se prevén lluvias ni congelamiento en las próximas 72 hs de la colada.
-                            </div>
-                        `;
-                    }
-                    return alertHtml;
-                })()}
-
-                <!-- Countdown and Curing Start Section -->
-                <div style="border-top: 1px dashed var(--border-color); padding-top: 10px; margin-top: 5px; display: flex; flex-direction: column; gap: 8px;">
-                    <div style="display: flex; align-items: center; justify-content: space-between;">
-                        <strong style="color: var(--accent);">⏳ Control de Producción</strong>
-                        <button type="button" id="btnStartProduction" class="btn btn-success" data-days="${curingDays}" style="font-size: 0.78rem; padding: 6px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; background-color: var(--success); border-color: var(--success); color: #fff; transition: all 0.2s;">🚀 Iniciar Producción</button>
-                    </div>
-                    <div id="curingCountdownContainer" class="hidden" style="background-color: rgba(16, 185, 129, 0.05); border: 1px solid var(--success); border-radius: 6px; padding: 10px; display: flex; flex-direction: column; gap: 6px;">
-                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
-                            <span>Tiempo de Curado Restante:</span>
-                            <span id="curingTimerDisplay" style="font-weight: 700; color: var(--success); font-family: monospace; font-size: 0.8rem;">--d --h --m --s</span>
-                        </div>
-                        <div style="width: 100%; height: 6px; background-color: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-                            <div id="curingProgressBar" style="width: 0%; height: 100%; background-color: var(--success); transition: width 1s linear;"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+        <div style="margin-bottom: 8px;">
+            <strong>📍 Ubicación detectada:</strong><br>
+            <span style="font-size: 0.75rem; color: var(--text);">${displayName}</span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; background-color: rgba(255,255,255,0.02); padding: 8px; border-radius: 6px; border: 1px solid var(--border-color); margin-bottom: 12px; font-size: 0.72rem; box-sizing: border-box;">
+            <div style="text-align: center;">⛅ <strong>Clima:</strong> ${currentTemp.toFixed(1)} °C</div>
+            <div style="text-align: center;">💧 <strong>Hum:</strong> ${currentHum}%</div>
+            <div style="text-align: center;">💨 <strong>Viento:</strong> ${currentWind.toFixed(1)} km/h</div>
+        </div>
+        <div style="margin-top: 5px; margin-bottom: 5px;">
+            <strong>📅 Pronóstico de Curado (72 hs de la colada):</strong>
+        </div>
+        <div class="forecast-scroller" style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-top: 5px;">
+            ${forecastRows || '<p style="font-size: 0.7rem; color: var(--text-muted);">Sin datos de pronóstico.</p>'}
         </div>
     `;
-
-    // Hook notification button click
-    const btnRequestNotify = document.getElementById("btnRequestNotify");
-    if (btnRequestNotify) {
-        btnRequestNotify.addEventListener("click", () => {
-            if (!("Notification" in window)) {
-                alert("Este navegador no soporta notificaciones de escritorio.");
-                return;
-            }
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    new Notification("HormigónIA - Curado Activo", {
-                        body: `Notificaciones activadas. Frecuencia de riego: cada ${waterFrequencyHours} horas durante ${curingDays} días.`,
-                        icon: "favicon.ico"
-                    });
-                    showToast("Notificaciones autorizadas. Recibirás recordatorios de riego en tu escritorio.");
-                } else {
-                    alert("Has bloqueado las notificaciones. Habilítalas en la configuración de tu navegador.");
-                }
-            });
-        });
-    }
-
-    // Hook start production button click
-    const btnStartProduction = document.getElementById("btnStartProduction");
-    if (btnStartProduction) {
-        if (localStorage.getItem("curingStartTime")) {
-            btnStartProduction.innerText = "🛑 Reiniciar Curado";
-            btnStartProduction.classList.remove("btn-success");
-            btnStartProduction.classList.add("btn-secondary");
-            
-            // Resume countdown loop visually
-            const startTime = parseInt(localStorage.getItem("curingStartTime"));
-            const duration = parseInt(localStorage.getItem("curingDurationMs"));
-            startCountdownLoop(startTime, duration);
-        }
-        btnStartProduction.addEventListener("click", handleStartProductionClick);
-    }
+    
+    // Update map marker and center view dynamically
+    initOrUpdateMap();
 }
+
 
 
 function createAlertCard(type, title, text) {
@@ -4203,16 +4200,21 @@ function loadSavedMixByIndex(index) {
     if (mix.location && mix.weather) {
         lastLocationData = mix.location;
         lastWeatherData = mix.weather;
-        const detailsDiv = document.getElementById("gpsLocationDetails");
+        const detailsDiv = document.getElementById("curingWeatherInfo");
         if (detailsDiv) {
-            detailsDiv.style.display = "block";
             renderWeatherInfoInUI(lastLocationData, lastWeatherData);
         }
     } else {
         lastLocationData = { lat: null, lon: null, displayName: "" };
         lastWeatherData = null;
-        const detailsDiv = document.getElementById("gpsLocationDetails");
-        if (detailsDiv) detailsDiv.style.display = "none";
+        const detailsDiv = document.getElementById("curingWeatherInfo");
+        if (detailsDiv) {
+            detailsDiv.innerHTML = '<div style="font-style: italic; opacity: 0.6; text-align: center; padding: 40px 10px;">Consulta las coordenadas o haz clic en el mapa para ver el clima y pronóstico detallado.</div>';
+        }
+        const alertsDiv = document.getElementById("curingWeatherAlertsBlock");
+        if (alertsDiv) {
+            alertsDiv.innerHTML = "";
+        }
     }
     
     showToast(`Mezcla "${mix.name}" cargada correctamente.`);
@@ -4474,12 +4476,11 @@ function resetAppFields() {
                     if (mm < 10) mm = '0' + mm;
                     dateInput.value = yyyy + '-' + mm + '-' + dd;
                 }
-                const gpsDetails = document.getElementById("gpsLocationDetails");
+                const gpsDetails = document.getElementById("curingWeatherInfo");
                 if (gpsDetails) {
-                    gpsDetails.style.display = "none";
-                    gpsDetails.innerHTML = "";
+                    gpsDetails.innerHTML = '<div style="font-style: italic; opacity: 0.6; text-align: center; padding: 40px 10px;">Consulta las coordenadas o haz clic en el mapa para ver el clima y pronóstico detallado.</div>';
                 }
-                const gpsAlerts = document.getElementById("gpsWeatherAlerts");
+                const gpsAlerts = document.getElementById("curingWeatherAlertsBlock");
                 if (gpsAlerts) {
                     gpsAlerts.innerHTML = "";
                 }
