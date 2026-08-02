@@ -1512,7 +1512,27 @@ function setupEventListeners() {
             const supportSubject = document.getElementById("inputSupportSubject")?.value || "";
             const supportMessage = document.getElementById("inputSupportMessage")?.value || "";
             
-            const supportId = `SUP-${Math.floor(10000 + Math.random() * 90000)}`;
+            // Calculate consecutive ticket ID starting from SUP-0125-0001
+            let nextNum = 1;
+            try {
+                const existingTickets = JSON.parse(localStorage.getItem("hormigonmix_support_tickets") || "[]");
+                let maxNum = 0;
+                const regex = /^SUP-0125-(\d{4})$/;
+                existingTickets.forEach(ticket => {
+                    const match = ticket.id?.match(regex);
+                    if (match) {
+                        const num = parseInt(match[1], 10);
+                        if (num > maxNum) {
+                            maxNum = num;
+                        }
+                    }
+                });
+                nextNum = maxNum + 1;
+            } catch (err) {
+                console.error("Error reading existing tickets for ID generation:", err);
+            }
+            const formattedNum = String(nextNum).padStart(4, '0');
+            const supportId = `SUP-0125-${formattedNum}`;
             
             try {
                 const existingTickets = JSON.parse(localStorage.getItem("hormigonmix_support_tickets") || "[]");
@@ -1528,6 +1548,26 @@ function setupEventListeners() {
             } catch (err) {
                 console.error("Error saving support ticket to local storage:", err);
             }
+            
+            // Post ticket details to Python backend API to send email to hormixia@gmail.com
+            fetch('/api/support', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: supportEmail,
+                    subject: supportSubject,
+                    message: supportMessage,
+                    ticket_id: supportId
+                })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    console.warn("Server could not send support email notification.");
+                }
+            })
+            .catch(err => {
+                console.error("Network error sending ticket to server:", err);
+            });
             
             if (supportIdContainer) supportIdContainer.innerText = supportId;
             supportForm.style.display = "none";
