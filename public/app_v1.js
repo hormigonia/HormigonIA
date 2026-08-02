@@ -50,7 +50,7 @@ function startCountdownLoop(startTime, duration) {
             localStorage.removeItem("curingDurationMs");
             
             if ("Notification" in window && Notification.permission === "granted") {
-                new Notification("HormigónMix AI - Curing Completo", {
+                new Notification("HormigónIA - Curado Completo", {
                     body: "El período sugerido de curado húmedo ha concluido con éxito.",
                     icon: "favicon.ico"
                 });
@@ -101,7 +101,7 @@ function handleStartProductionClick(e) {
         startCountdownLoop(startTime, durationMs);
         
         if ("Notification" in window && Notification.permission === "granted") {
-            new Notification("HormigónMix AI - Curado Iniciado", {
+            new Notification("HormigónIA - Curado Iniciado", {
                 body: `Se ha iniciado el cronómetro de curado de ${days} días.`,
                 icon: "favicon.ico"
             });
@@ -346,7 +346,7 @@ function showGoogleChooserModalSimulated() {
                         <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.24 0 3.19 2.73 1.38 6.45l4.13 4.12c.91-2.76 3.47-4.8 6.49-4.8z"/>
                     </svg>
                     <h3 style="margin: 0; font-size: 1.15rem; font-weight: 500; color: #202124;">Elige una cuenta</h3>
-                    <span style="font-size: 0.88rem; color: #5f6368;">para continuar en HormigónMix AI</span>
+                    <span style="font-size: 0.88rem; color: #5f6368;">para continuar en HormigónIA</span>
                 </div>
                 
                 <div style="display: flex; flex-direction: column; border: 1px solid #dadce0; border-radius: 8px; overflow: hidden; text-align: left;">
@@ -466,7 +466,7 @@ function showGoogleChooserModalSimulated() {
 }
 
 
-// CORE ENGINE - HORMIGONMIX AI (LARRARD INTEGRATED)
+// CORE ENGINE - HORMIGONIA (LARRARD INTEGRATED)
 
 // Concrete Classes defaults for rational design
 const CONCRETE_CLASSES = {
@@ -1675,7 +1675,7 @@ function setupEventListeners() {
                     Notification.requestPermission().then(permission => {
                         console.log("Permiso de notificación:", permission);
                         if (permission === "granted") {
-                            new Notification("HormigónMix AI", {
+                            new Notification("HormigónIA", {
                                 body: "Notificaciones activadas para alertas de curado y clima.",
                                 icon: "favicon.ico"
                             });
@@ -3293,7 +3293,7 @@ async function fetchWeatherForCoordinates(lat, lon, isFallback, btnElement, spin
             const osmResponse = await fetch(nominatimUrl, {
                 signal: controller.signal,
                 headers: {
-                    'User-Agent': 'HormigonMixCalc/1.0',
+                    'User-Agent': 'HormigonIA/1.0',
                     'Accept-Language': 'es'
                 }
             });
@@ -3842,7 +3842,7 @@ function renderWeatherInfoInUI(location, weather) {
             }
             Notification.requestPermission().then(permission => {
                 if (permission === "granted") {
-                    new Notification("HormigónMix AI - Curing Activo", {
+                    new Notification("HormigónIA - Curado Activo", {
                         body: `Notificaciones activadas. Frecuencia de riego: cada ${waterFrequencyHours} horas durante ${curingDays} días.`,
                         icon: "favicon.ico"
                     });
@@ -4465,7 +4465,7 @@ function updatePrintCalcMemory() {
     calcDiv.innerHTML = `
         <h1 class="calc-mem-title">Memoria de Cálculo de Dosificación de Hormigón</h1>
         <p style="font-size: 0.85rem; color: #555; margin-bottom: 25px; border-bottom: 2px solid #333; padding-bottom: 10px; text-align: center;">
-            <strong>HormigónMix AI - Software de Ingeniería de Mezclas</strong><br>
+            <strong>HormigónIA - Software de Ingeniería de Mezclas</strong><br>
             Fecha del Reporte: ${new Date().toLocaleString("es-AR")} | ID de Simulación: MIX-${Math.floor(Math.random()*100000)}
         </p>
         

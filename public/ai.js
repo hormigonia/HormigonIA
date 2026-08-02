@@ -1,4 +1,4 @@
-// AI ASSISTANT MODULE - HORMIGONMIX AI
+// AI ASSISTANT MODULE - HORMIGONIA
 
 // Get DOM Elements for Chat
 const chatMessages = document.getElementById("chatMessages");
