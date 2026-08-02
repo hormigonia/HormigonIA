@@ -71,6 +71,12 @@ class WeatherRequest(BaseModel):
 class ChatRequest(BaseModel):
     messages: List[Dict[str, str]]
 
+class SupportRequest(BaseModel):
+    email: str
+    subject: str
+    message: str
+    ticket_id: str
+
 @app.get("/api/config")
 def api_get_config():
     return {
@@ -107,6 +113,43 @@ def api_chat(payload: ChatRequest):
         return {"response": result}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/support")
+def api_support(payload: SupportRequest):
+    try:
+        # Log the ticket details
+        print(f"SUPPORT TICKET RECEIVED: {payload.ticket_id} | From: {payload.email} | Subject: {payload.subject}")
+        
+        # Get SMTP configuration from env
+        smtp_user = os.environ.get("SMTP_USER", "hormixia@gmail.com")
+        smtp_pass = os.environ.get("SMTP_PASS")
+        smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
+        smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+        
+        # If SMTP password is not set, log and return success (logged)
+        if not smtp_pass:
+            print("WARNING: SMTP_PASS env variable not set. Support email notification skipped.")
+            return {"status": "logged", "message": "Ticket registrado en logs del servidor.", "ticket_id": payload.ticket_id}
+            
+        import smtplib
+        from email.mime.text import MIMEText
+        
+        # Construct email message
+        msg = MIMEText(f"Ticket ID: {payload.ticket_id}\nDe: {payload.email}\nAsunto: {payload.subject}\n\nMensaje:\n{payload.message}")
+        msg['Subject'] = f"[Soporte HormigónMix] {payload.subject} ({payload.ticket_id})"
+        msg['From'] = smtp_user
+        msg['To'] = "hormixia@gmail.com"
+        
+        # Send email
+        with smtplib.SMTP(smtp_host, smtp_port) as server:
+            server.starttls()
+            server.login(smtp_user, smtp_pass)
+            server.sendmail(smtp_user, ["hormixia@gmail.com"], msg.as_string())
+            
+        return {"status": "sent", "message": "Email de soporte enviado a hormixia@gmail.com.", "ticket_id": payload.ticket_id}
+    except Exception as e:
+        print(f"Error sending support email: {str(e)}")
+        return {"status": "logged_fallback", "message": f"Registrado con error de envío: {str(e)}", "ticket_id": payload.ticket_id}
 
 @app.post("/api/reologia/simular")
 def api_simular_reologia(payload: Dict[str, Any]):
