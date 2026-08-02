@@ -3810,9 +3810,6 @@ async function fetchWeatherForCoordinates(lat, lon, isFallback, btnElement, spin
     }
 }
 
-let curingMapInstance = null;
-let curingMarkerInstance = null;
-
 function initOrUpdateMap() {
     const mapEl = document.getElementById("curingMap");
     if (!mapEl) return;
