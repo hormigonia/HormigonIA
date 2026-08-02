@@ -17,7 +17,7 @@ from backend.dosificador import dosificar_mezcla, calcular_reologia_y_perdida, c
 from backend.clima import fetch_weather_and_curing
 from backend.ai_client import call_ai_api
 
-app = FastAPI(title="HormigónMix AI Backend", version="1.0.0")
+app = FastAPI(title="HormigónIA Backend", version="1.0.0")
 
 # Enable CORS for frontend compatibility (including file:// protocol)
 app.add_middleware(
@@ -86,7 +86,7 @@ def api_get_config():
 
 @app.get("/api/health")
 def health_check():
-    return {"status": "ok", "message": "Servidor de HormigónMix AI activo."}
+    return {"status": "ok", "message": "Servidor de HormigónIA activo."}
 
 @app.post("/api/dosificar")
 def api_dosificar(payload: DosificacionRequest):
