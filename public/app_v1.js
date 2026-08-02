@@ -1,6 +1,111 @@
 let currentUserSession = null;
 let curingInterval = null;
 
+// Helper for Toast Notifications
+function showToast(message, type = 'success', duration = 3500) {
+    let container = document.getElementById("toastContainer");
+    if (!container) {
+        container = document.createElement("div");
+        container.id = "toastContainer";
+        container.className = "toast-container";
+        document.body.appendChild(container);
+    }
+    
+    const toast = document.createElement("div");
+    toast.className = `toast toast-${type}`;
+    
+    let icon = "✔️";
+    if (type === 'error') icon = "❌";
+    else if (type === 'info') icon = "ℹ️";
+    else if (type === 'warning') icon = "⚠️";
+    
+    toast.innerHTML = `<span style="font-size: 1.1rem;">${icon}</span> <span>${message}</span>`;
+    container.appendChild(toast);
+    
+    // Force reflow
+    toast.offsetHeight;
+    
+    toast.classList.add("show");
+    
+    setTimeout(() => {
+        toast.classList.remove("show");
+        setTimeout(() => {
+            toast.remove();
+        }, 300);
+    }, duration);
+}
+
+// Helper for custom choice modal
+function showChoiceModal(title, message, option1Text, option2Text, callback) {
+    const modalId = "customChoiceModal";
+    let modal = document.getElementById(modalId);
+    if (!modal) {
+        modal = document.createElement("div");
+        modal.id = modalId;
+        modal.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 11000;
+            opacity: 0;
+            transition: opacity 0.25s ease;
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    modal.innerHTML = `
+        <div style="
+            background: #1e293b;
+            border: 1px solid #334155;
+            padding: 24px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 400px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+            text-align: center;
+            color: #f8fafc;
+            transform: scale(0.9);
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        ">
+            <h3 style="margin-top: 0; font-family: 'Outfit', sans-serif; font-size: 1.1rem; color: var(--accent); font-weight: bold;">${title}</h3>
+            <p style="font-size: 0.85rem; color: #94a3b8; line-height: 1.5; margin: 15px 0 25px 0; white-space: pre-line;">${message}</p>
+            <div style="display: flex; gap: 12px; justify-content: center;">
+                <button id="customChoiceBtn1" class="btn btn-secondary" style="flex: 1; height: 36px; font-size: 0.8rem; cursor: pointer; border-radius: 6px;">${option1Text}</button>
+                <button id="customChoiceBtn2" class="btn btn-primary" style="flex: 1; height: 36px; font-size: 0.8rem; cursor: pointer; border-radius: 6px; background-color: var(--accent); border-color: var(--accent); color: #000; font-weight: bold;">${option2Text}</button>
+            </div>
+        </div>
+    `;
+    
+    modal.style.display = "flex";
+    setTimeout(() => {
+        modal.style.opacity = "1";
+        modal.firstElementChild.style.transform = "scale(1)";
+    }, 10);
+    
+    const cleanup = (val) => {
+        modal.style.opacity = "0";
+        modal.firstElementChild.style.transform = "scale(0.9)";
+        setTimeout(() => {
+            modal.style.display = "none";
+            callback(val);
+        }, 250);
+    };
+    
+    document.getElementById("customChoiceBtn1").addEventListener("click", () => cleanup(false));
+    document.getElementById("customChoiceBtn2").addEventListener("click", () => cleanup(true));
+}
+
+// Bind to window for standard scripts integration
+window.showToast = showToast;
+window.showChoiceModal = showChoiceModal;
+
 function initCuringCountdown() {
     const startTimeStr = localStorage.getItem("curingStartTime");
     const durationStr = localStorage.getItem("curingDurationMs");
@@ -79,19 +184,18 @@ function startCountdownLoop(startTime, duration) {
 function handleStartProductionClick(e) {
     const btn = e.currentTarget;
     if (localStorage.getItem("curingStartTime")) {
-        if (confirm("¿Estás seguro de que deseas detener y reiniciar la cuenta regresiva del curado?")) {
-            if (curingInterval) clearInterval(curingInterval);
-            curingInterval = null;
-            localStorage.removeItem("curingStartTime");
-            localStorage.removeItem("curingDurationMs");
-            const container = document.getElementById("curingCountdownContainer");
-            if (container) container.classList.add("hidden");
-            const activeBadge = document.getElementById("activeCuringStatusBadge");
-            if (activeBadge) activeBadge.classList.add("hidden");
-            btn.innerText = "🚀 Iniciar Producción";
-            btn.classList.remove("btn-secondary");
-            btn.classList.add("btn-success");
-        }
+        if (curingInterval) clearInterval(curingInterval);
+        curingInterval = null;
+        localStorage.removeItem("curingStartTime");
+        localStorage.removeItem("curingDurationMs");
+        const container = document.getElementById("curingCountdownContainer");
+        if (container) container.classList.add("hidden");
+        const activeBadge = document.getElementById("activeCuringStatusBadge");
+        if (activeBadge) activeBadge.classList.add("hidden");
+        btn.innerText = "🚀 Iniciar Producción";
+        btn.classList.remove("btn-secondary");
+        btn.classList.add("btn-success");
+        showToast("Cronómetro de curado detenido correctamente.", "info");
     } else {
         const days = parseFloat(btn.dataset.days) || 7.0;
         const durationMs = days * 24 * 3600 * 1000;
@@ -404,7 +508,7 @@ function showGoogleChooserModalSimulated() {
             LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
             loadSavedMixes();
             modal.style.display = "none";
-            alert(`✨ Bienvenido, ${username} (conectado vía Google).`);
+            showToast(`✨ Bienvenido, ${username}`);
         });
     });
     
@@ -428,7 +532,7 @@ function showGoogleChooserModalSimulated() {
                 LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
                 loadSavedMixes();
                 modal.style.display = "none";
-                alert(`✨ Bienvenido, ${activeUser.split("@")[0]} (conectado vía Google).`);
+                showToast(`✨ Bienvenido, ${activeUser.split("@")[0]}`);
             }
         });
     }
@@ -445,21 +549,21 @@ function showGoogleChooserModalSimulated() {
     if (btnLogout) {
         btnLogout.addEventListener("click", async (e) => {
             e.preventDefault();
-            if (confirm("¿Deseas cerrar la sesión activa?")) {
-                if (window.supabase) {
-                    try {
-                        await window.signOut();
-                    } catch (err) {
-                        alert("Error al cerrar sesión: " + err.message);
-                    }
-                } else {
-                    localStorage.removeItem("hormigonmix_active_user");
-                    activeUser = null;
-                    if (btnAuthModal) btnAuthModal.style.display = "inline-flex";
-                    if (userProfileWidget) userProfileWidget.style.display = "none";
-                    LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes";
-                    loadSavedMixes();
+            if (window.supabase) {
+                try {
+                    await window.signOut();
+                    showToast("Sesión cerrada correctamente.", "info");
+                } catch (err) {
+                    alert("Error al cerrar sesión: " + err.message);
                 }
+            } else {
+                localStorage.removeItem("hormigonmix_active_user");
+                activeUser = null;
+                if (btnAuthModal) btnAuthModal.style.display = "inline-flex";
+                if (userProfileWidget) userProfileWidget.style.display = "none";
+                LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes";
+                loadSavedMixes();
+                showToast("Sesión cerrada correctamente.", "info");
             }
         });
     }
@@ -3846,7 +3950,7 @@ function renderWeatherInfoInUI(location, weather) {
                         body: `Notificaciones activadas. Frecuencia de riego: cada ${waterFrequencyHours} horas durante ${curingDays} días.`,
                         icon: "favicon.ico"
                     });
-                    alert("Notificaciones autorizadas. Recibirás recordatorios de riego en tu escritorio.");
+                    showToast("Notificaciones autorizadas. Recibirás recordatorios de riego en tu escritorio.");
                 } else {
                     alert("Has bloqueado las notificaciones. Habilítalas en la configuración de tu navegador.");
                 }
@@ -4085,30 +4189,28 @@ function loadSavedMixByIndex(index) {
     const mix = savedMixes[index];
     if (!mix) return;
     
-    if (confirm(`¿Deseas cargar la mezcla "${mix.name}"? Se sobrescribirá el diseño actual.`)) {
-        if (mix.concreteClass === "Personalizado") {
-            currentCustomName = mix.name;
-        }
-        restoreFullState(mix.state);
-        
-        // Restore location and weather
-        if (mix.location && mix.weather) {
-            lastLocationData = mix.location;
-            lastWeatherData = mix.weather;
-            const detailsDiv = document.getElementById("gpsLocationDetails");
-            if (detailsDiv) {
-                detailsDiv.style.display = "block";
-                renderWeatherInfoInUI(lastLocationData, lastWeatherData);
-            }
-        } else {
-            lastLocationData = { lat: null, lon: null, displayName: "" };
-            lastWeatherData = null;
-            const detailsDiv = document.getElementById("gpsLocationDetails");
-            if (detailsDiv) detailsDiv.style.display = "none";
-        }
-        
-        alert(`Mezcla "${mix.name}" cargada correctamente.`);
+    if (mix.concreteClass === "Personalizado") {
+        currentCustomName = mix.name;
     }
+    restoreFullState(mix.state);
+    
+    // Restore location and weather
+    if (mix.location && mix.weather) {
+        lastLocationData = mix.location;
+        lastWeatherData = mix.weather;
+        const detailsDiv = document.getElementById("gpsLocationDetails");
+        if (detailsDiv) {
+            detailsDiv.style.display = "block";
+            renderWeatherInfoInUI(lastLocationData, lastWeatherData);
+        }
+    } else {
+        lastLocationData = { lat: null, lon: null, displayName: "" };
+        lastWeatherData = null;
+        const detailsDiv = document.getElementById("gpsLocationDetails");
+        if (detailsDiv) detailsDiv.style.display = "none";
+    }
+    
+    showToast(`Mezcla "${mix.name}" cargada correctamente.`);
 }
 
 async function deleteSavedMixByIndex(index) {
@@ -4116,19 +4218,28 @@ async function deleteSavedMixByIndex(index) {
     const mix = savedMixes[index];
     if (!mix) return;
     
-    if (confirm(`¿Deseas eliminar la mezcla "${mix.name}" del historial?`)) {
-        try {
-            if (currentUserSession && supabase && mix.id) {
-                await deleteMix(mix.id);
-            } else {
-                savedMixes.splice(index, 1);
-                saveSavedMixesToLocalStorage();
+    showChoiceModal(
+        "Eliminar Mezcla",
+        `¿Estás seguro de que deseas eliminar la mezcla "${mix.name}" del historial? Esta acción no se puede deshacer.`,
+        "Cancelar",
+        "Eliminar",
+        async (confirmDelete) => {
+            if (confirmDelete) {
+                try {
+                    if (currentUserSession && supabase && mix.id) {
+                        await deleteMix(mix.id);
+                    } else {
+                        savedMixes.splice(index, 1);
+                        saveSavedMixesToLocalStorage();
+                    }
+                    await loadSavedMixes();
+                    showToast(`Mezcla "${mix.name}" eliminada del historial.`, "info");
+                } catch (err) {
+                    alert("Error al eliminar la mezcla: " + err.message);
+                }
             }
-            await loadSavedMixes();
-        } catch (err) {
-            alert("Error al eliminar la mezcla: " + err.message);
         }
-    }
+    );
 }
 
 async function saveCurrentMix() {
@@ -4235,30 +4346,70 @@ async function saveCurrentMix() {
                 }
             };
             
+            const performSave = async (mDetails, idToDelete, isCloud) => {
+                try {
+                    if (isCloud) {
+                        if (idToDelete) await deleteMix(idToDelete);
+                        await saveConcreteMix(mDetails);
+                        showToast(`Mezcla "${name}" guardada correctamente en la nube.`);
+                    } else {
+                        const existingIdx = savedMixes.findIndex(m => m.name.toLowerCase() === name.toLowerCase());
+                        if (existingIdx !== -1) {
+                            savedMixes[existingIdx] = newMix;
+                        } else {
+                            savedMixes.push(newMix);
+                        }
+                        saveSavedMixesToLocalStorage();
+                        showToast(`Mezcla "${name}" guardada correctamente en el historial local.`);
+                    }
+                    await loadSavedMixes();
+                } catch (err) {
+                    alert("Error al guardar la mezcla: " + err.message);
+                }
+            };
+
             const existing = savedMixes.find(m => m.name.toLowerCase() === name.toLowerCase());
             if (existing && existing.id) {
-                if (!confirm(`Ya existe una mezcla con el nombre "${name}". ¿Deseas sobrescribirla?`)) {
-                    return;
-                }
-                await deleteMix(existing.id);
+                showChoiceModal(
+                    "Sobrescribir Mezcla",
+                    `Ya existe una mezcla con el nombre "${name}". ¿Deseas sobrescribirla?`,
+                    "Cancelar",
+                    "Sobrescribir",
+                    (confirmOverwrite) => {
+                        if (confirmOverwrite) {
+                            performSave(mixData, existing.id, true);
+                        }
+                    }
+                );
+            } else {
+                await saveConcreteMix(mixData);
+                showToast(`Mezcla "${name}" guardada correctamente en la nube.`);
+                await loadSavedMixes();
             }
-            
-            await saveConcreteMix(mixData);
-            alert(`Mezcla "${name}" guardada correctamente en la nube.`);
         } else {
             const existingIdx = savedMixes.findIndex(m => m.name.toLowerCase() === name.toLowerCase());
             if (existingIdx !== -1) {
-                if (!confirm(`Ya existe una mezcla con el nombre "${name}". ¿Deseas sobrescribirla?`)) {
-                    return;
-                }
-                savedMixes[existingIdx] = newMix;
+                showChoiceModal(
+                    "Sobrescribir Mezcla",
+                    `Ya existe una mezcla con el nombre "${name}". ¿Deseas sobrescribirla?`,
+                    "Cancelar",
+                    "Sobrescribir",
+                    (confirmOverwrite) => {
+                        if (confirmOverwrite) {
+                            savedMixes[existingIdx] = newMix;
+                            saveSavedMixesToLocalStorage();
+                            showToast(`Mezcla "${name}" guardada correctamente en el historial local.`);
+                            loadSavedMixes();
+                        }
+                    }
+                );
             } else {
                 savedMixes.push(newMix);
+                saveSavedMixesToLocalStorage();
+                showToast(`Mezcla "${name}" guardada correctamente en el historial local.`);
+                await loadSavedMixes();
             }
-            saveSavedMixesToLocalStorage();
-            alert(`Mezcla "${name}" guardada correctamente en el historial local.`);
         }
-        await loadSavedMixes();
     } catch (err) {
         alert("Error al guardar la mezcla: " + err.message);
     }
@@ -4266,72 +4417,80 @@ async function saveCurrentMix() {
 
 
 function resetAppFields() {
-    if (confirm("¿Estás seguro de que deseas reiniciar los campos del proyecto? Se restablecerán todos los parámetros excepto los del laboratorio.")) {
-        document.getElementById("selectStructuralElement").value = "";
-        document.getElementById("selectExposureClass").value = "ninguna";
-        document.getElementById("inputTargetStrength").value = "21";
-        currentClassIndex = 3;
-        document.getElementById("inputBatchVolume").value = "80";
-        
-        document.getElementById("selectDesignMethod").value = "bolomey";
-        document.getElementById("selectCementCategory").value = "CPC40";
-        document.getElementById("inputCustomCement").value = "350";
-        document.getElementById("inputCustomWC").value = "0.45";
-        document.getElementById("inputCustomBolomeyA").value = "13.0";
-        document.getElementById("inputMaxSieveSize").value = "19.0";
-        document.getElementById("inputAirPercentage").value = "1.5";
-        
-        additives = [];
-        renderAdditivesList();
-        checkSikaFumeVisibility();
-        
-        document.getElementById("inputGpsCoords").value = "-34.6037, -58.3816";
-        const dateInput = document.getElementById("inputForecastDate");
-        if (dateInput) {
-            const today = new Date();
-            const yyyy = today.getFullYear();
-            let mm = today.getMonth() + 1;
-            let dd = today.getDate();
-            if (dd < 10) dd = '0' + dd;
-            if (mm < 10) mm = '0' + mm;
-            dateInput.value = yyyy + '-' + mm + '-' + dd;
-        }
-        const gpsDetails = document.getElementById("gpsLocationDetails");
-        if (gpsDetails) {
-            gpsDetails.style.display = "none";
-            gpsDetails.innerHTML = "";
-        }
-        const gpsAlerts = document.getElementById("gpsWeatherAlerts");
-        if (gpsAlerts) {
-            gpsAlerts.innerHTML = "";
-        }
-        
-        currentCustomName = "M-Personalizada";
-        
-        updateCounterUI();
-        calculateAndUpdate();
-        
-        historyManager.config.undo = [];
-        historyManager.config.redo = [];
-        historyManager.config.lastState = historyManager.config.getState();
-        
-        historyManager.additives.undo = [];
-        historyManager.additives.redo = [];
+    showChoiceModal(
+        "Reiniciar Proyecto",
+        "¿Estás seguro de que deseas reiniciar los campos del proyecto?\nSe restablecerán todos los parámetros excepto los del laboratorio.",
+        "Cancelar",
+        "Reiniciar",
+        (confirmReset) => {
+            if (confirmReset) {
+                document.getElementById("selectStructuralElement").value = "";
+                document.getElementById("selectExposureClass").value = "ninguna";
+                document.getElementById("inputTargetStrength").value = "21";
+                currentClassIndex = 3;
+                document.getElementById("inputBatchVolume").value = "80";
+                
+                document.getElementById("selectDesignMethod").value = "bolomey";
+                document.getElementById("selectCementCategory").value = "CPC40";
+                document.getElementById("inputCustomCement").value = "350";
+                document.getElementById("inputCustomWC").value = "0.45";
+                document.getElementById("inputCustomBolomeyA").value = "13.0";
+                document.getElementById("inputMaxSieveSize").value = "19.0";
+                document.getElementById("inputAirPercentage").value = "1.5";
+                
+                additives = [];
+                renderAdditivesList();
+                checkSikaFumeVisibility();
+                
+                document.getElementById("inputGpsCoords").value = "-34.6037, -58.3816";
+                const dateInput = document.getElementById("inputForecastDate");
+                if (dateInput) {
+                    const today = new Date();
+                    const yyyy = today.getFullYear();
+                    let mm = today.getMonth() + 1;
+                    let dd = today.getDate();
+                    if (dd < 10) dd = '0' + dd;
+                    if (mm < 10) mm = '0' + mm;
+                    dateInput.value = yyyy + '-' + mm + '-' + dd;
+                }
+                const gpsDetails = document.getElementById("gpsLocationDetails");
+                if (gpsDetails) {
+                    gpsDetails.style.display = "none";
+                    gpsDetails.innerHTML = "";
+                }
+                const gpsAlerts = document.getElementById("gpsWeatherAlerts");
+                if (gpsAlerts) {
+                    gpsAlerts.innerHTML = "";
+                }
+                
+                currentCustomName = "M-Personalizada";
+                
+                updateCounterUI();
+                calculateAndUpdate();
+                
+                historyManager.config.undo = [];
+                historyManager.config.redo = [];
+                historyManager.config.lastState = historyManager.config.getState();
+                
+                historyManager.additives.undo = [];
+                historyManager.additives.redo = [];
                 historyManager.additives.lastState = historyManager.additives.getState();
-        
-        document.getElementById("inputSlumpMeasured").value = "";
-        const calcSlumpMeasured = document.getElementById("inputCalculatorSlumpMeasured");
-        if (calcSlumpMeasured) calcSlumpMeasured.value = "";
-        document.getElementById("inputQualityStrength7d").value = "";
-        document.getElementById("inputQualityStrength28d").value = "";
-        currentMixIteration = 0;
-        mixIterationHistory = [];
-        renderIterationHistoryTable();
+                
+                document.getElementById("inputSlumpMeasured").value = "";
+                const calcSlumpMeasured = document.getElementById("inputCalculatorSlumpMeasured");
+                if (calcSlumpMeasured) calcSlumpMeasured.value = "";
+                document.getElementById("inputQualityStrength7d").value = "";
+                document.getElementById("inputQualityStrength28d").value = "";
+                currentMixIteration = 0;
+                mixIterationHistory = [];
+                renderIterationHistoryTable();
 
-        updateHistoryButtonsUI();
-        
-        alert("Campos del proyecto reiniciados correctamente.");
-    }
+                updateHistoryButtonsUI();
+                
+                showToast("Campos del proyecto reiniciados correctamente.", "info");
+            }
+        }
+    );
 }
 
 function updatePrintCalcMemory() {
@@ -4753,7 +4912,7 @@ function initAridosLab() {
                 document.getElementById("coefGrava").value = coefAp.toFixed(2);
                 document.getElementById("densGrava").dispatchEvent(new Event("input"));
             }
-            alert("Densidad y Coeficiente de Aporte vinculados para " + activeLabAggregate.toUpperCase() + ".");
+            showToast("Densidad y Coeficiente de Aporte vinculados para " + activeLabAggregate.toUpperCase() + ".");
         });
     }
 
@@ -4773,7 +4932,7 @@ function initAridosLab() {
                 document.getElementById("moistGrava").value = Math.round(equivMoist);
                 document.getElementById("moistGrava").dispatchEvent(new Event("input"));
             }
-            alert("Humedad equivalente vinculada para " + activeLabAggregate.toUpperCase() + ".");
+            showToast("Humedad equivalente vinculada para " + activeLabAggregate.toUpperCase() + ".");
         });
     }
 
@@ -4793,7 +4952,7 @@ function initAridosLab() {
                 document.getElementById("absGrava").value = absCoef.toFixed(2);
                 document.getElementById("absGrava").dispatchEvent(new Event("input"));
             }
-            alert("Coeficiente de absorción vinculado para " + activeLabAggregate.toUpperCase() + ".");
+            showToast("Coeficiente de absorción vinculado para " + activeLabAggregate.toUpperCase() + ".");
         });
     }
 
@@ -5235,7 +5394,7 @@ function reformulateMixForIdealPaston() {
     renderIterationHistoryTable();
     calculateAndUpdate();
     
-    alert(`Reformulación ejecutada con éxito. Iteración #${currentMixIteration} aplicada como diseño activo.`);
+    showToast(`Reformulación ejecutada con éxito. Iteración #${currentMixIteration} aplicada como diseño activo.`);
 }
 
 window.reformulateMixForIdealPaston = reformulateMixForIdealPaston;
@@ -5373,54 +5532,66 @@ async function validateAndRescaleFormula() {
     let deltaC = 0.0;
     let deltaSand = 0.0;
     
-    if (corr.type === "dry") {
-        const choice = confirm("¿Aplicaste la Opción 2 (Agua + Cemento)? Aceptar = Sí (Agua + Cto), Cancelar = No (se asume aditivo SP)");
-        if (choice) {
-            deltaW = corr.optionWater.waterLiters;
-            deltaC = corr.optionWater.cementKg;
-        } else {
-            alert("Mezcla validada con adición de aditivo. No se modifica la receta base.");
-            return;
+    const executeRescale = async (dW, dC, dS) => {
+        const inputCustomCement = parseFloat(document.getElementById("inputCustomCement").value) || 350.0;
+        const inputCustomWC = parseFloat(document.getElementById("inputCustomWC").value) || 0.45;
+        
+        const payload = {
+            cementBaseM3: inputCustomCement,
+            sandDryWeight: 850.0,
+            gravillaDryWeight: 350.0,
+            gravaDryWeight: 650.0,
+            waterTargetM3: inputCustomCement * inputCustomWC,
+            deltaW: dW,
+            deltaC: dC,
+            deltaSand: dS,
+            densityReal: parseFloat(document.getElementById("inputDensityReal").value) || 2400.0
+        };
+        
+        try {
+            const res = await fetch("/api/reologia/recalcular", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
+            if (!res.ok) throw new Error("Error en api/reologia/recalcular");
+            const data = await res.json();
+            document.getElementById("inputCustomCement").value = Math.round(data.cementBaseM3);
+            const newWC = data.waterTargetM3 / data.cementBaseM3;
+            document.getElementById("inputCustomWC").value = newWC.toFixed(2);
+            
+            calculateAndUpdate();
+            
+            showToast(`Mezcla validada y re-escalada a 1 m³ con éxito.\nNuevo cemento base: ${Math.round(data.cementBaseM3)} kg/m³\nNueva relación a/c: ${newWC.toFixed(2)}\nVolumen producido: ${data.realVolumeProducedL.toFixed(1)} L.`);
+            
+        } catch (err) {
+            console.error("Error al re-escalar formula:", err);
+            alert("Error al validar y re-escalar: " + err.message);
         }
-    } else if (corr.type === "wet") {
-        deltaC = corr.cementAdditionKg;
-        deltaSand = corr.sandAdditionKg;
-    }
-    
-    const inputCustomCement = parseFloat(document.getElementById("inputCustomCement").value) || 350.0;
-    const inputCustomWC = parseFloat(document.getElementById("inputCustomWC").value) || 0.45;
-    
-    const payload = {
-        cementBaseM3: inputCustomCement,
-        sandDryWeight: 850.0,
-        gravillaDryWeight: 350.0,
-        gravaDryWeight: 650.0,
-        waterTargetM3: inputCustomCement * inputCustomWC,
-        deltaW,
-        deltaC,
-        deltaSand,
-        densityReal: parseFloat(document.getElementById("inputDensityReal").value) || 2400.0
     };
     
-    try {
-        const res = await fetch("/api/reologia/recalcular", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(payload)
-        });
-        if (!res.ok) throw new Error("Error en api/reologia/recalcular");
-        const data = await res.json();
-        document.getElementById("inputCustomCement").value = Math.round(data.cementBaseM3);
-        const newWC = data.waterTargetM3 / data.cementBaseM3;
-        document.getElementById("inputCustomWC").value = newWC.toFixed(2);
-        
-        calculateAndUpdate();
-        
-        alert(`Mezcla validada y re-escalada a 1 m³ con éxito.\nNuevo cemento base: ${Math.round(data.cementBaseM3)} kg/m³\nNueva relación a/c: ${newWC.toFixed(2)}\nVolumen producido: ${data.realVolumeProducedL.toFixed(1)} L.`);
-        
-    } catch (err) {
-        console.error("Error al re-escalar formula:", err);
-        alert("Error al validar y re-escalar: " + err.message);
+    if (corr.type === "dry") {
+        showChoiceModal(
+            "Ajuste Reológico: Mezcla Seca",
+            "¿Qué corrección aplicaste en la obra?\n\n• Opción 1: Adición de aditivo superplasticizante (SP) sin modificar la receta base.\n• Opción 2: Adición de agua + cemento manteniendo la relación a/c.",
+            "Opción 1 (Aditivo)",
+            "Opción 2 (Agua + Cto)",
+            (choice) => {
+                if (choice) {
+                    deltaW = corr.optionWater.waterLiters;
+                    deltaC = corr.optionWater.cementKg;
+                    executeRescale(deltaW, deltaC, deltaSand);
+                } else {
+                    showToast("Mezcla validada con adición de aditivo. No se modifica la receta base.", "info");
+                }
+            }
+        );
+    } else {
+        if (corr.type === "wet") {
+            deltaC = corr.cementAdditionKg;
+            deltaSand = corr.sandAdditionKg;
+        }
+        executeRescale(deltaW, deltaC, deltaSand);
     }
 }
 
@@ -5459,7 +5630,7 @@ function importActivePhysicalMix() {
     const slumpVal = parseFloat(document.getElementById("inputSlumpMeasured").value) || 8.0;
     document.getElementById("inputIaSlumpMeasured").value = slumpVal;
     
-    alert("¡Dosificación física importada con éxito a la pestaña de IA!");
+    showToast("¡Dosificación física importada con éxito a la pestaña de IA!");
 }
 
 async function runIaPrediction() {
@@ -5652,7 +5823,7 @@ function runIaCalibration() {
         setTimeout(() => {
             btn.innerText = "⚙️ Calibrar con Datos Locales (Entrenamiento)";
             btn.disabled = false;
-            alert("¡Calibración incremental de CatBoost completada con éxito!\n\nDatos de entrenamiento: 18 muestras de tu obra.\nMétrica RMSE: Reducida de 3.20 MPa a 2.15 MPa.\nSesgo sistemático ajustado: -2.5% en la resistencia a 28 días.");
+            showToast("¡Calibración incremental de CatBoost completada con éxito!\n\nDatos de entrenamiento: 18 muestras de tu obra.\nMétrica RMSE: Reducida de 3.20 MPa a 2.15 MPa.\nSesgo sistemático ajustado: -2.5% en la resistencia a 28 días.");
         }, 2000);
     }
 }
@@ -5750,7 +5921,7 @@ function vincularAsentamientoVision() {
     const inputSlump = document.getElementById("inputIaSlumpMeasured");
     if (inputSlump) {
         inputSlump.value = slumpGuardClassifiedSlump.toFixed(1);
-        alert(`¡Asentamiento clasificado por visión (${slumpGuardClassifiedSlump} cm) vinculado al input de mezcla!`);
+        showToast(`¡Asentamiento clasificado por visión (${slumpGuardClassifiedSlump} cm) vinculado al input de mezcla!`);
     }
 }
 
