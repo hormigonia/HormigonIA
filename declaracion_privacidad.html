@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Declaración de Privacidad de Datos - HormigónIA</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-color: #f8fafc;
+            --bg-sidebar: #0f172a;
+            --bg-panel: #ffffff;
+            --text-color: #334155;
+            --text-title: #0f172a;
+            --primary-color: #0d9488;
+            --primary-hover: #0f766e;
+            --accent-color: #f59e0b;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.02);
+            --alert-bg: #f0fdfa;
+            --alert-border: #0d9488;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            line-height: 1.65;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Header block */
+        header {
+            background-color: var(--bg-sidebar);
+            color: #ffffff;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #1e293b;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            font-size: 1.8rem;
+        }
+
+        .logo-text h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            color: #ffffff;
+            font-weight: 800;
+        }
+
+        .logo-text span {
+            color: var(--primary-color);
+        }
+
+        .btn-print {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: background-color 0.2s ease;
+        }
+
+        .btn-print:hover {
+            background-color: var(--primary-hover);
+        }
+
+        /* Container styling */
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 0 20px;
+            width: 100%;
+        }
+
+        .policy-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            padding: 40px;
+        }
+
+        h2 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.6rem;
+            color: var(--text-title);
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h3 {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.15rem;
+            color: var(--text-title);
+            margin: 25px 0 12px 0;
+        }
+
+        p {
+            margin-bottom: 15px;
+            font-size: 0.93rem;
+            text-align: justify;
+        }
+
+        ul {
+            margin-left: 24px;
+            margin-bottom: 20px;
+            font-size: 0.93rem;
+        }
+
+        li {
+            margin-bottom: 8px;
+        }
+
+        .legal-note {
+            background-color: var(--alert-bg);
+            border-left: 4px solid var(--alert-border);
+            padding: 15px;
+            border-radius: 0 8px 8px 0;
+            margin: 25px 0;
+            font-size: 0.88rem;
+            color: var(--primary-hover);
+        }
+
+        .legal-note strong {
+            color: var(--text-title);
+        }
+
+        footer {
+            margin-top: auto;
+            text-align: center;
+            padding: 30px;
+            font-size: 0.8rem;
+            color: #64748b;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* Print styles */
+        @media print {
+            header, footer, .btn-print {
+                display: none !important;
+            }
+            body {
+                background-color: #ffffff !important;
+            }
+            .container {
+                margin: 0 !important;
+                padding: 0 !important;
+                max-width: 100% !important;
+            }
+            .policy-card {
+                border: none !important;
+                box-shadow: none !important;
+                padding: 0 !important;
+            }
+            p, li {
+                font-size: 10pt !important;
+            }
+            h2 {
+                font-size: 16pt !important;
+                page-break-after: avoid;
+            }
+            h3 {
+                font-size: 12pt !important;
+                page-break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-area">
+            <span class="logo-icon">🔒</span>
+            <div class="logo-text">
+                <h1>Hormigón<span>IA</span></h1>
+            </div>
+        </div>
+        <button class="btn-print" onclick="window.print()">
+            <span>📥</span> Imprimir / Guardar PDF
+        </button>
+    </header>
+
+    <div class="container">
+        <article class="policy-card">
+            <h2>Declaración de Privacidad y Protección de Datos</h2>
+            <p><strong>Última actualización: Agosto de 2026</strong></p>
+            
+            <p>En <strong>HormigónIA</strong>, como plataforma tecnológica especializada en ingeniería de dosificación racional de mezclas y control reológico de hormigón, asumimos un compromiso absoluto con la privacidad, integridad y seguridad de la información. Esta declaración detalla las políticas y bases técnicas aplicadas en la recolección, uso y almacenamiento de datos, bajo marcos normativos locales e internacionales.</p>
+
+            <div class="legal-note">
+                <strong>Fundamentos Legales Aplicados:</strong><br>
+                Esta política se rige en concordancia con la <strong>Ley de Protección de Datos Personales N° 25.326 de la República Argentina</strong> y las directivas de la Agencia de Acceso a la Información Pública (AAIP). A nivel global, adopta los principios de minimización y protección por diseño estipulados en el <strong>Reglamento General de Protección de Datos (RGPD / GDPR)</strong> de la Unión Europea y el estándar internacional <strong>ISO/IEC 27701</strong> para la gestión de información de privacidad.
+            </div>
+
+            <h3>1. Principio de Minimización y Datos Anonimizados</h3>
+            <p>Conforme al Artículo 4 del RGPD (y el Recital 26 que excluye de regulación a la información disociada), HormigónIA aplica un estricto criterio de <strong>anonimización irreversible</strong> sobre los registros técnicos de dosificación. El sistema recolecta y almacena las fórmulas físicas de las mezclas con el único objetivo de mejorar y entrenar los algoritmos de redes neuronales y optimización matemática multiobjetivo (NSGA-II). Estos registros técnicos constan únicamente de:</p>
+            <ul>
+                <li>Proporciones de diseño (cemento, agua, áridos, aditivos en dosis porcentuales).</li>
+                <li>Parámetros de entrada física (módulo de finura combinado, tamaño máximo nominal, consistencia de diseño).</li>
+                <li>Resultados previstos e indicadores mecánicos y reológicos (resistencia predictiva, pérdida de asentamiento).</li>
+            </ul>
+            <p><strong>Bajo ninguna circunstancia</strong> estas dosificaciones se asocian con datos personales de identificación (como nombres de empresas constructoras, ubicaciones específicas catastrales de obras, marcas comerciales propietarias, o montos económicos de facturación). Toda metadata técnica se disocia completamente de la identidad de su creador antes de ser procesada por el motor de IA.</p>
+
+            <h3>2. Seguridad y Almacenamiento de Datos (ISO/IEC 27001)</h3>
+            <p>Para resguardar los datos de las cuentas y configuraciones del laboratorio frente a pérdidas o accesos no autorizados, implementamos salvaguardas alineadas con los controles de ciberseguridad industrial:</p>
+            <ul>
+                <li><strong>Cifrado en tránsito:</strong> Todo intercambio de información entre la interfaz web y los servidores de cálculo se realiza mediante canales cifrados utilizando el protocolo criptográfico SSL/TLS (HTTPS).</li>
+                <li><strong>Cifrado de credenciales:</strong> Las contraseñas se gestionan mediante algoritmos de hash unidireccional y salado seguro administrados a través de proveedores de infraestructura que garantizan la confidencialidad.</li>
+                <li><strong>Persistencia segregada:</strong> La información local del usuario (borradores de trabajo, historial de mezclas personal) se persiste de forma aislada e individual mediante almacenamiento en navegador local cifrado o bases de datos relacionales seguras.</li>
+            </ul>
+
+            <h3>3. Derechos del Titular de los Datos (Derechos ARCO)</h3>
+            <p>La Ley 25.326 de Argentina (Capítulo III) y el RGPD garantizan a los usuarios los derechos de Acceso, Rectificación, Cancelación y Oposición (ARCO) sobre cualquier dato almacenado que pudiese vincularse con su identidad. Si usted desea ejercer sus derechos de consulta o solicitar la eliminación total de su cuenta y sus registros locales del sistema, HormigónIA pone a disposición el canal de contacto directo.</p>
+
+            <h3>4. Modificaciones y Contacto</h3>
+            <p>HormigónIA se reserva el derecho de actualizar esta Declaración de Privacidad conforme surjan nuevas directrices normativas en materia de ciberseguridad y protección de datos. Para cualquier consulta técnica o solicitud legal respecto a sus datos, puede comunicarse directamente con el equipo de soporte técnico oficial a la dirección de correo electrónico:</p>
+            <p style="text-align: center; margin: 20px 0; font-size: 1rem; font-weight: bold; color: var(--primary-color);">
+                ✉️ <a href="mailto:hormixia@gmail.com" style="color: var(--primary-color); text-decoration: none;">hormixia@gmail.com</a>
+            </p>
+        </article>
+    </div>
+
+    <footer>
+        <p>HormigónIA - Plataforma de Ingeniería de Mezclas de Hormigón</p>
+        <p style="margin-top: 5px; font-size: 0.72rem;">© 2026. Cumplimiento de Normativas de Privacidad Nacionales e Internacionales.</p>
+    </footer>
+
+</body>
+</html>
