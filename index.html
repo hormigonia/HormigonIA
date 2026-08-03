@@ -241,50 +241,24 @@
 
                             <!-- Volumen de hormigón -->
                             <div class="form-group">
-                                <label for="inputBatchVolume" style="font-weight: 600; color: var(--text); font-size: 0.95rem;">Volumen de hormigón</label>
-                                <select id="inputBatchVolume" class="form-select">
-                                    <optgroup label="Maquinadas (Litros)">
-                                        <option value="80" selected>Maquinada: 80 L</option>
-                                        <option value="120">Maquinada: 120 L</option>
-                                        <option value="200">Maquinada: 200 L</option>
-                                        <option value="300">Maquinada: 300 L</option>
-                                        <option value="400">Maquinada: 400 L</option>
-                                    </optgroup>
-                                    <optgroup label="Volumen a Medida (m³)">
-                                        <option value="100">0.1 m³</option>
-                                        <option value="200">0.2 m³</option>
-                                        <option value="300">0.3 m³</option>
-                                        <option value="400">0.4 m³</option>
-                                        <option value="500">0.5 m³</option>
-                                        <option value="600">0.6 m³</option>
-                                        <option value="700">0.7 m³</option>
-                                        <option value="800">0.8 m³</option>
-                                        <option value="900">0.9 m³</option>
-                                        <option value="1000">1.0 m³</option>
-                                        <option value="1500">1.5 m³</option>
-                                        <option value="2000">2.0 m³</option>
-                                        <option value="2500">2.5 m³</option>
-                                        <option value="3000">3.0 m³</option>
-                                        <option value="3500">3.5 m³</option>
-                                        <option value="4000">4.0 m³</option>
-                                        <option value="4500">4.5 m³</option>
-                                        <option value="5000">5.0 m³</option>
-                                        <option value="5500">5.5 m³</option>
-                                        <option value="6000">6.0 m³</option>
-                                        <option value="6500">6.5 m³</option>
-                                        <option value="7000">7.0 m³</option>
-                                        <option value="7500">7.5 m³</option>
-                                        <option value="8000">8.0 m³</option>
-                                        <option value="8500">8.5 m³</option>
-                                        <option value="9000">9.0 m³</option>
-                                        <option value="9500">9.5 m³</option>
-                                        <option value="10000">10.0 m³</option>
-                                        <option value="10500">10.5 m³</option>
-                                        <option value="11000">11.0 m³</option>
-                                        <option value="11500">11.5 m³</option>
-                                        <option value="12000">12.0 m³</option>
-                                    </optgroup>
-                                </select>
+                                <label style="font-weight: 600; color: var(--text); font-size: 0.95rem; display: block; margin-bottom: 6px;">Volumen de hormigón</label>
+                                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                    <input type="number" id="inputBatchVolumeValue" class="form-input" value="80" min="1" step="any" style="flex: 1; text-align: center; height: 38px; font-size: 0.95rem; font-weight: 500;">
+                                    <select id="selectBatchVolumeUnit" class="form-select" style="width: auto; min-width: 90px; height: 38px; padding: 4px 8px; font-weight: 500;">
+                                        <option value="L" selected>L (Litros)</option>
+                                        <option value="m3">m³</option>
+                                    </select>
+                                </div>
+                                <input type="hidden" id="inputBatchVolume" value="80">
+                                
+                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
+                                    <button type="button" class="btn-vol-badge active" data-value="80" data-unit="L">80 L</button>
+                                    <button type="button" class="btn-vol-badge" data-value="110" data-unit="L">110 L</button>
+                                    <button type="button" class="btn-vol-badge" data-value="200" data-unit="L">200 L</button>
+                                    <button type="button" class="btn-vol-badge" data-value="6" data-unit="m3">6 m³</button>
+                                    <button type="button" class="btn-vol-badge" data-value="8" data-unit="m3">8 m³</button>
+                                    <button type="button" class="btn-vol-badge" data-value="12" data-unit="m3">12 m³</button>
+                                </div>
                             </div>
                         </div>
                     </section>

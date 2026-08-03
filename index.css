@@ -12,6 +12,8 @@
     --primary-hover: #2563eb;
     --accent: #10b981;
     --accent-hover: #059669;
+    --success: #10b981;
+    --success-hover: #059669;
     
     --warning: #f59e0b;
     --error: #ef4444;
@@ -299,6 +301,17 @@ body {
 
 .btn-primary:hover {
     background-color: var(--primary-hover);
+}
+
+.btn-success {
+    background-color: var(--success) !important;
+    border-color: var(--success) !important;
+    color: white !important;
+}
+
+.btn-success:hover {
+    background-color: var(--success-hover) !important;
+    border-color: var(--success-hover) !important;
 }
 
 .btn-secondary {
@@ -1687,4 +1700,29 @@ body.printing-active .print-only {
         grid-template-columns: 1fr !important;
     }
 }
+
+.btn-vol-badge {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-muted);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+.btn-vol-badge:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text);
+    border-color: rgba(255, 255, 255, 0.2);
+}
+.btn-vol-badge.active {
+    background: var(--accent, #3b82f6);
+    color: #ffffff;
+    border-color: var(--accent, #3b82f6);
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
+}
+
 
