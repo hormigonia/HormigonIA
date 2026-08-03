@@ -1706,10 +1706,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const themeToggleIcon = document.getElementById("themeToggleIcon");
     if (savedTheme === "light") {
         document.documentElement.classList.add("light-mode");
-        if (themeToggleIcon) themeToggleIcon.innerText = "☀️";
+        if (themeToggleIcon) themeToggleIcon.innerText = "🌙";
     } else {
         document.documentElement.classList.remove("light-mode");
-        if (themeToggleIcon) themeToggleIcon.innerText = "🌙";
+        if (themeToggleIcon) themeToggleIcon.innerText = "☀️";
     }
 
     // Initial tab visibility update based on restored user session
@@ -1726,7 +1726,7 @@ function setupEventListeners() {
             const isLight = document.documentElement.classList.toggle("light-mode");
             localStorage.setItem("hormigonmix_theme", isLight ? "light" : "dark");
             if (themeToggleIcon) {
-                themeToggleIcon.innerText = isLight ? "☀️" : "🌙";
+                themeToggleIcon.innerText = isLight ? "🌙" : "☀️";
             }
         });
     }
