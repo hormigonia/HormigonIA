@@ -37,7 +37,7 @@
         <!-- HEADER -->
         <header class="app-header">
             <div class="header-logo">
-                <div class="logo-icon">🧱</div>
+                <img src="/logo_ant.jpg" alt="Logo HormigónIA" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--accent); box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); margin-right: 4px;">
                 <div class="logo-text">
                     <h1>Hormigón<span class="accent-text">IA</span></h1>
                     <p>Dosificación Científica de Laboratorio y Asistente Inteligente</p>
@@ -75,6 +75,10 @@
                         </a>
                     </div>
                 </div>
+
+                <button id="btnThemeToggle" class="btn btn-secondary btn-icon" style="margin-right: 8px;" title="Cambiar Tema (Claro / Oscuro)">
+                    <span class="icon" id="themeToggleIcon">🌙</span>
+                </button>
 
                 <button id="btnSupportModal" class="btn btn-secondary btn-icon" style="margin-right: 8px;">
                     <span class="icon">💬</span> Soporte
@@ -942,7 +946,7 @@
                                 <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
                                     <div>
                                         <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">A. Densidad de Conjunto (&rho;<sub>conj</sub>)</h3>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                        <div class="form-grid-2">
                                              <div class="form-group">
                                                 <label for="inputMrec">Masa Recipiente (M<sub>rec</sub>) [g] <span style="font-size: 0.72rem; opacity: 0.75; font-weight: normal;">(0 si balanza está tarada)</span>:</label>
                                                 <input type="number" id="inputMrec" value="3200" class="form-input" min="0">
@@ -960,7 +964,7 @@
 
                                     <div>
                                         <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">B. Densidad Relativa del Árido Seco (&rho;<sub>rel</sub>)</h3>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                        <div class="form-grid-2">
                                             <div class="form-group">
                                                 <label for="inputMseco">Masa Seca (M<sub>seco</sub>) [g]:</label>
                                                 <input type="number" id="inputMseco" value="1000" class="form-input" min="0">
@@ -978,7 +982,7 @@
 
                                     <div style="background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 5px;">
                                         <h3 style="font-size: 0.88rem; font-weight: bold; margin-bottom: 8px;">Resultados y Vinculación</h3>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; line-height: 1.4;">
+                                        <div class="form-grid-2" style="font-size: 0.8rem; line-height: 1.4;">
                                             <div>• Dens. Conjunto (&rho;<sub>conj</sub>): <strong id="resRhoConj">1.650</strong> kg/dm³</div>
                                             <div>• Dens. Relativa (&rho;<sub>rel</sub>): <strong id="resRhoRel">2.632</strong> g/cm³</div>
                                             <div>• Porcentaje Oquedad (O): <strong id="resOquedad">37.3</strong> %</div>
@@ -1006,7 +1010,7 @@
                                     <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
                                         <div>
                                             <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">A. Humedad del Árido (H)</h3>
-                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                            <div class="form-grid-2">
                                                 <div class="form-group">
                                                     <label for="inputMhumedo">Masa Muestra Húmeda [g]:</label>
                                                     <input type="number" id="inputMhumedo" value="1050" class="form-input" min="0">
@@ -1024,7 +1028,7 @@
 
                                         <div>
                                             <h3 style="font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px;">B. Coeficiente de Entumecimiento (K<sub>ent</sub>)</h3>
-                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                            <div class="form-grid-2">
                                                 <div class="form-group">
                                                     <label for="selectSandType">Tipo de Arena:</label>
                                                     <select id="selectSandType" class="form-select">
@@ -1070,7 +1074,7 @@
                                                     <option value="reciclado">Árido Reciclado (Hormigón de RCD)</option>
                                                 </select>
                                             </div>
-                                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                                            <div class="form-grid-2">
                                                 <div class="form-group">
                                                     <label for="inputMsss">Masa SSS (M<sub>SSS</sub>) [g]:</label>
                                                     <input type="number" id="inputMsss" value="1010" class="form-input" min="0">
@@ -1108,7 +1112,7 @@
                                 <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
                                     <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                                         <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">A. Ensayo de Los Ángeles</h3>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                        <div class="form-grid-2" style="margin-bottom: 8px;">
                                             <div class="form-group">
                                                 <label for="inputLAInitial">Masa Inicial (M<sub>ini</sub>) [g]:</label>
                                                 <input type="number" id="inputLAInitial" value="5000" class="form-input" min="0">
@@ -1136,7 +1140,7 @@
                                     <!-- Índice de Lajas -->
                                     <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                                         <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">A. Índice de Lajas (I<sub>Lajas</sub>)</h3>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                        <div class="form-grid-2" style="margin-bottom: 8px;">
                                             <div class="form-group">
                                                 <label for="inputMallasTotal">Masa Total Mallas [g]:</label>
                                                 <input type="number" id="inputMallasTotal" value="1000" class="form-input" min="0">
@@ -1155,7 +1159,7 @@
                                     <!-- Coeficiente de Forma -->
                                     <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                                         <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">B. Coeficiente de Forma (C<sub>f</sub>)</h3>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                        <div class="form-grid-2" style="margin-bottom: 8px;">
                                             <div class="form-group">
                                                 <label for="inputVgranos">Vol. 20 Granos [cm³]:</label>
                                                 <input type="number" id="inputVgranos" value="25" class="form-input" min="0">
@@ -1189,7 +1193,7 @@
                                     <!-- Contenido de Finos -->
                                     <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                                         <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">A. Contenido de Finos (Tamiz &lt; 0.063 mm)</h3>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                        <div class="form-grid-2" style="margin-bottom: 8px;">
                                             <div class="form-group">
                                                 <label for="inputFinosMuestra">Masa Total Seca [g]:</label>
                                                 <input type="number" id="inputFinosMuestra" value="2000" class="form-input" min="0">
@@ -1215,7 +1219,7 @@
                                     <!-- Equivalente de Arena -->
                                     <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                                         <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">B. Equivalente de Arena (EA - Solo Arena)</h3>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                        <div class="form-grid-2" style="margin-bottom: 8px;">
                                             <div class="form-group">
                                                 <label for="inputEAArcilla">Lectura Arcilla (h<sub>arcilla</sub>) [mm]:</label>
                                                 <input type="number" id="inputEAArcilla" value="100" class="form-input" min="0">
@@ -1287,7 +1291,7 @@
                                     <!-- Sulfuros Oxidables (Módulo 7 - B) -->
                                     <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                                         <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">D. Contenido de Sulfuros Oxidables (Piritas)</h3>
-                                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 8px;">
+                                        <div class="form-grid-2" style="margin-bottom: 8px;">
                                             <div class="form-group">
                                                 <label for="inputStotal">Azufre Total (S<sub>total</sub>) [%]:</label>
                                                 <input type="number" id="inputStotal" value="0.15" class="form-input" step="0.05" min="0">
@@ -1537,10 +1541,13 @@
 
     <!-- AUTHENTICATION MODAL -->
     <div id="authModal" class="modal">
-        <div class="modal-content" style="max-width: 400px;">
-            <span class="modal-close" id="btnCloseAuthModal">&times;</span>
-            <h2 id="authModalTitle" style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 10px;">Iniciar Sesión</h2>
-            <p id="authModalSubtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Accedé a tu cuenta de HormigonIA para sincronizar tus dosificaciones.</p>
+        <div class="modal-content" style="max-width: 400px; padding: 0; overflow: hidden; border-radius: 12px;">
+            <div style="width: 100%; height: 160px; background-image: url('/logo_full.jpg'); background-size: cover; background-position: center; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; position: relative;">
+                <span class="modal-close" id="btnCloseAuthModal" style="position: absolute; top: 10px; right: 15px; color: white; background: rgba(0,0,0,0.5); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; line-height: 1; cursor: pointer; z-index: 10;">&times;</span>
+            </div>
+            <div style="padding: 0 25px 25px 25px;">
+                <h2 id="authModalTitle" style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 10px;">Iniciar Sesión</h2>
+                <p id="authModalSubtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Accedé a tu cuenta de HormigonIA para sincronizar tus dosificaciones.</p>
             
             <form id="authForm">
                 <div class="form-group">
@@ -1579,6 +1586,7 @@
                     </button>
                 </div>
             </form>
+            </div> <!-- Close padding div -->
         </div>
     </div>
     

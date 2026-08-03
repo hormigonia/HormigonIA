@@ -7,6 +7,16 @@
     --border-color: #475569;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
+}
+
+:root.light-mode {
+    --bg-main: #f1f5f9;
+    --bg-panel: rgba(255, 255, 255, 0.82);
+    --bg-input: #ffffff;
+    --border-color: #cbd5e1;
+    --text-main: #0f172a;
+    --text-muted: #475569;
+}
     
     --primary: #3b82f6;
     --primary-hover: #2563eb;
@@ -37,10 +47,18 @@
 
 body {
     background-color: var(--bg-main);
+    background-image: url('/concrete_texture_dark.jpg');
+    background-repeat: repeat;
+    background-size: 256px 256px;
     color: var(--text-main);
     font-family: var(--font-sans);
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease, background-image 0.3s ease;
+}
+
+:root.light-mode body {
+    background-image: url('/concrete_texture_light.jpg') !important;
 }
 
 .app-container {
@@ -256,6 +274,9 @@ body {
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .panel-header {
@@ -1753,6 +1774,18 @@ body.printing-active .print-only {
         text-align: center;
         padding: 8px 10px;
         font-size: 0.78rem;
+    }
+}
+
+.form-grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+@media (max-width: 600px) {
+    .form-grid-2 {
+        grid-template-columns: 1fr !important;
     }
 }
 
