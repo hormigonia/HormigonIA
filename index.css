@@ -1733,4 +1733,27 @@ body.printing-active .print-only {
     box-shadow: 0 0 8px rgba(59, 130, 246, 0.4);
 }
 
+/* RESPONSIVE LAYOUT FOR AGGREGATES LABORATORY */
+.lab-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 900px) {
+    .lab-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .sub-nav-tabs {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    .sub-nav-tabs .sub-tab-btn {
+        flex-grow: 1;
+        text-align: center;
+        padding: 8px 10px;
+        font-size: 0.78rem;
+    }
+}
+
 
