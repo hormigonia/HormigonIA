@@ -1701,12 +1701,36 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.addEventListener("input", saveActiveDraft);
     document.body.addEventListener("change", saveActiveDraft);
     
+    // Initialize Theme from localStorage
+    const savedTheme = localStorage.getItem("hormigonmix_theme") || "dark";
+    const themeToggleIcon = document.getElementById("themeToggleIcon");
+    if (savedTheme === "light") {
+        document.documentElement.classList.add("light-mode");
+        if (themeToggleIcon) themeToggleIcon.innerText = "☀️";
+    } else {
+        document.documentElement.classList.remove("light-mode");
+        if (themeToggleIcon) themeToggleIcon.innerText = "🌙";
+    }
+
     // Initial tab visibility update based on restored user session
     updateTabVisibility();
 });
 
 // Event Listeners Setup
 function setupEventListeners() {
+    // Theme Toggle Handler
+    const btnThemeToggle = document.getElementById("btnThemeToggle");
+    const themeToggleIcon = document.getElementById("themeToggleIcon");
+    if (btnThemeToggle) {
+        btnThemeToggle.addEventListener("click", () => {
+            const isLight = document.documentElement.classList.toggle("light-mode");
+            localStorage.setItem("hormigonmix_theme", isLight ? "light" : "dark");
+            if (themeToggleIcon) {
+                themeToggleIcon.innerText = isLight ? "☀️" : "🌙";
+            }
+        });
+    }
+
     // Support Modal Control
     const btnSupportModal = document.getElementById("btnSupportModal");
     const supportModal = document.getElementById("supportModal");
