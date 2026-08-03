@@ -688,6 +688,14 @@ label {
     border-color: var(--purple);
 }
 
+#btnSendChat svg {
+    transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#btnSendChat:hover svg {
+    transform: translate(2px, -2px) scale(1.1);
+}
+
 /* RESULTS & CARDS */
 .results-meta {
     display: flex;
