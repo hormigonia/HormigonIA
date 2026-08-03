@@ -1420,14 +1420,28 @@ document.addEventListener("DOMContentLoaded", () => {
     // Intercept inputBatchVolume value setting to sync custom UI
     const inputBatchVolume = document.getElementById("inputBatchVolume");
     if (inputBatchVolume) {
-        const originalValueProp = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+        const originalValueProp = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value");
         Object.defineProperty(inputBatchVolume, "value", {
             get: function() {
                 return originalValueProp.get.call(this);
             },
             set: function(val) {
-                originalValueProp.set.call(this, val);
                 const liters = parseFloat(val) || 80;
+                let exists = false;
+                for (let i = 0; i < this.options.length; i++) {
+                    if (parseFloat(this.options[i].value) === liters) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    const opt = document.createElement("option");
+                    opt.value = val.toString();
+                    opt.text = liters >= 1000 ? `${(liters / 1000).toFixed(1)} m³` : `${liters} L`;
+                    this.add(opt);
+                }
+                
+                originalValueProp.set.call(this, val);
                 const inputVal = document.getElementById("inputBatchVolumeValue");
                 const selectUnit = document.getElementById("selectBatchVolumeUnit");
                 if (inputVal && selectUnit) {
@@ -1916,7 +1930,21 @@ function setupEventListeners() {
         const unit = selectBatchVolumeUnit.value;
         const liters = unit === "m3" ? val * 1000 : val;
         
-        const originalValueProp = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+        let exists = false;
+        for (let i = 0; i < inputBatchVolume.options.length; i++) {
+            if (parseFloat(inputBatchVolume.options[i].value) === liters) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) {
+            const opt = document.createElement("option");
+            opt.value = liters.toString();
+            opt.text = liters >= 1000 ? `${(liters / 1000).toFixed(1)} m³` : `${liters} L`;
+            inputBatchVolume.add(opt);
+        }
+        
+        const originalValueProp = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, "value");
         originalValueProp.set.call(inputBatchVolume, liters.toString());
         
         // Sync active class on badges
