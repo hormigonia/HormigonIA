@@ -3,6 +3,41 @@ let curingInterval = null;
 let curingMapInstance = null;
 let curingMarkerInstance = null;
 
+function updateTabVisibility() {
+    const optTabBtn = document.querySelector('.nav-tab[data-tab="optimizacion-ia"]');
+    if (!optTabBtn) return;
+    
+    const allowedEmails = ["hormix@gmail.com", "aledflores@gmail.com"];
+    const email = window.activeUser;
+    
+    if (email && allowedEmails.includes(email.toLowerCase().trim())) {
+        optTabBtn.style.display = ""; // Show
+    } else {
+        optTabBtn.style.display = "none"; // Hide
+        
+        // If the active tab was "optimizacion-ia", switch back to "hormigon" tab
+        if (optTabBtn.classList.contains("active")) {
+            const defaultTab = document.querySelector('.nav-tab[data-tab="hormigon"]');
+            if (defaultTab) {
+                defaultTab.click();
+            }
+        }
+    }
+}
+
+let _activeUser = null;
+Object.defineProperty(window, "activeUser", {
+    get: function() {
+        return _activeUser;
+    },
+    set: function(val) {
+        _activeUser = val;
+        updateTabVisibility();
+    },
+    configurable: true
+});
+
+
 // Helper for Toast Notifications
 function showToast(message, type = 'success', duration = 3500) {
     let container = document.getElementById("toastContainer");
@@ -1665,6 +1700,9 @@ document.addEventListener("DOMContentLoaded", () => {
     // Auto-save draft on any input or change event on the page
     document.body.addEventListener("input", saveActiveDraft);
     document.body.addEventListener("change", saveActiveDraft);
+    
+    // Initial tab visibility update based on restored user session
+    updateTabVisibility();
 });
 
 // Event Listeners Setup
@@ -3950,8 +3988,8 @@ function initOrUpdateMap() {
         // Initialize map
         curingMapInstance = L.map('curingMap').setView([lat, lon], 13);
         
-        // Add dark theme OSM tiles (fits perfectly with dark mode!)
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        // Add Voyager (Google Maps-like) tiles for high contrast and readability
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
             attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
             subdomains: 'abcd',
             maxZoom: 20
