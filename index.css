@@ -17,7 +17,8 @@
     --text-main: #0f172a;
     --text-muted: #475569;
 }
-    
+
+:root {
     --primary: #3b82f6;
     --primary-hover: #2563eb;
     --accent: #10b981;
