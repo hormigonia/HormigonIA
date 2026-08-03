@@ -1417,6 +1417,44 @@ function loadActiveDraft() {
 
 // Initialise Application
 document.addEventListener("DOMContentLoaded", () => {
+    // Intercept inputBatchVolume value setting to sync custom UI
+    const inputBatchVolume = document.getElementById("inputBatchVolume");
+    if (inputBatchVolume) {
+        const originalValueProp = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+        Object.defineProperty(inputBatchVolume, "value", {
+            get: function() {
+                return originalValueProp.get.call(this);
+            },
+            set: function(val) {
+                originalValueProp.set.call(this, val);
+                const liters = parseFloat(val) || 80;
+                const inputVal = document.getElementById("inputBatchVolumeValue");
+                const selectUnit = document.getElementById("selectBatchVolumeUnit");
+                if (inputVal && selectUnit) {
+                    if (liters >= 500) {
+                        inputVal.value = (liters / 1000).toString();
+                        selectUnit.value = "m3";
+                    } else {
+                        inputVal.value = liters.toString();
+                        selectUnit.value = "L";
+                    }
+                    
+                    // Sync active class on badges
+                    document.querySelectorAll(".btn-vol-badge").forEach(btn => {
+                        const bVal = parseFloat(btn.dataset.value);
+                        const bUnit = btn.dataset.unit;
+                        const bLiters = bUnit === "m3" ? bVal * 1000 : bVal;
+                        if (Math.abs(bLiters - liters) < 0.01) {
+                            btn.classList.add("active");
+                        } else {
+                            btn.classList.remove("active");
+                        }
+                    });
+                }
+            }
+        });
+    }
+
     initLoginSystem();
     // Set default forecast date to today
     // Set default forecast date and time to today/now
@@ -1867,6 +1905,51 @@ function setupEventListeners() {
             calculateAndUpdate();
         });
     }
+
+    // Custom volume controls sync
+    const inputBatchVolumeValue = document.getElementById("inputBatchVolumeValue");
+    const selectBatchVolumeUnit = document.getElementById("selectBatchVolumeUnit");
+    
+    function syncLitersFromUI() {
+        if (!inputBatchVolumeValue || !selectBatchVolumeUnit || !inputBatchVolume) return;
+        const val = parseFloat(inputBatchVolumeValue.value) || 80;
+        const unit = selectBatchVolumeUnit.value;
+        const liters = unit === "m3" ? val * 1000 : val;
+        
+        const originalValueProp = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+        originalValueProp.set.call(inputBatchVolume, liters.toString());
+        
+        // Sync active class on badges
+        document.querySelectorAll(".btn-vol-badge").forEach(btn => {
+            const bVal = parseFloat(btn.dataset.value);
+            const bUnit = btn.dataset.unit;
+            const bLiters = bUnit === "m3" ? bVal * 1000 : bVal;
+            if (Math.abs(bLiters - liters) < 0.01) {
+                btn.classList.add("active");
+            } else {
+                btn.classList.remove("active");
+            }
+        });
+        
+        // Trigger change event to run calculations
+        inputBatchVolume.dispatchEvent(new Event("change"));
+    }
+    
+    if (inputBatchVolumeValue) {
+        inputBatchVolumeValue.addEventListener("input", syncLitersFromUI);
+        inputBatchVolumeValue.addEventListener("change", syncLitersFromUI);
+    }
+    if (selectBatchVolumeUnit) {
+        selectBatchVolumeUnit.addEventListener("change", syncLitersFromUI);
+    }
+    
+    document.querySelectorAll(".btn-vol-badge").forEach(btn => {
+        btn.addEventListener("click", () => {
+            if (inputBatchVolumeValue) inputBatchVolumeValue.value = btn.dataset.value;
+            if (selectBatchVolumeUnit) selectBatchVolumeUnit.value = btn.dataset.unit;
+            syncLitersFromUI();
+        });
+    });
 
     // Sync Measured Slump Inputs
     const calcSlumpMeasured = document.getElementById("inputCalculatorSlumpMeasured");
