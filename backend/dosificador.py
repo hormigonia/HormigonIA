@@ -268,6 +268,7 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     sand_sieves = params["sandPassing"]
     gravilla_sieves = params["gravillaPassing"]
     grava_sieves = params["gravaPassing"]
+    grava2_sieves = params.get("grava2Passing") or [0.0] * len(sieve_sizes)
     
     num_aggregates = params.get("numAggregates", 3)
     design_method = params.get("designMethod", "bolomey")
@@ -277,6 +278,7 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     
     gravilla_ratio_in = params.get("gravillaRatio", 0.30)
     grava_ratio_in = params.get("gravaRatio", 0.30)
+    grava2_ratio_in = params.get("grava2Ratio", 0.20)
     
     concrete_class = params.get("concreteClass", "H25")
     vol_m3 = params.get("batchVolume", 1.0)
@@ -291,6 +293,8 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     coef_gravilla = params.get("coefGravilla", 1.0)
     dens_grava = params.get("densGrava", 2.70)
     coef_grava = params.get("coefGrava", 1.0)
+    dens_grava2 = params.get("densGrava2", 2.70)
+    coef_grava2 = params.get("coefGrava2", 1.0)
     
     moist_sand = params.get("moistSand", 4.0)
     abs_sand = params.get("absSand", 1.0)
@@ -298,6 +302,8 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     abs_gravilla = params.get("absGravilla", 0.8)
     moist_grava = params.get("moistGrava", 1.0)
     abs_grava = params.get("absGrava", 0.5)
+    moist_grava2 = params.get("moistGrava2", 1.0)
+    abs_grava2 = params.get("absGrava2", 0.5)
     
     custom_cement = params.get("customCement", 350.0)
     
@@ -344,13 +350,20 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
         m_g = calculate_curve_fm(sieve_sizes, gravilla_sieves)
         m_G = calculate_curve_fm(sieve_sizes, grava_sieves)
         
-        total_coarse = gravilla_ratio_in + grava_ratio_in
-        r_g = (gravilla_ratio_in / total_coarse) if total_coarse > 0 else 0.5
-        r_G = (grava_ratio_in / total_coarse) if total_coarse > 0 else 0.5
+        total_coarse = gravilla_ratio_in + grava_ratio_in + (grava2_ratio_in if num_aggregates == 4 else 0.0)
+        r_g = (gravilla_ratio_in / total_coarse) if total_coarse > 0 else 0.33
+        r_G = (grava_ratio_in / total_coarse) if total_coarse > 0 else 0.33
+        r_G2 = (grava2_ratio_in / total_coarse) if (num_aggregates == 4 and total_coarse > 0) else 0.34
         
         stone_sieve_passing_combined = []
         for i in range(len(sieve_sizes)):
-            stone_sieve_passing_combined.append(r_g * gravilla_sieves[i] + r_G * grava_sieves[i])
+            if num_aggregates == 4:
+                stone_sieve_passing_combined.append(r_g * gravilla_sieves[i] + r_G * grava_sieves[i] + r_G2 * grava2_sieves[i])
+            else:
+                total_coarse_3 = gravilla_ratio_in + grava_ratio_in
+                r_g_3 = (gravilla_ratio_in / total_coarse_3) if total_coarse_3 > 0 else 0.5
+                r_G_3 = (grava_ratio_in / total_coarse_3) if total_coarse_3 > 0 else 0.5
+                stone_sieve_passing_combined.append(r_g_3 * gravilla_sieves[i] + r_G_3 * grava_sieves[i])
             
         v_coarse = get_aci_coarse_aggregate_volume(max_sieve_size_d, m_a)
         
@@ -419,9 +432,18 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
         if num_aggregates == 2:
             gravilla_ratio = 1.0 - sand_ratio
             grava_ratio = 0.0
-        else:
+            grava2_ratio = 0.0
+        elif num_aggregates == 3:
+            total_coarse_3 = gravilla_ratio_in + grava_ratio_in
+            r_g_3 = (gravilla_ratio_in / total_coarse_3) if total_coarse_3 > 0 else 0.5
+            r_G_3 = (grava_ratio_in / total_coarse_3) if total_coarse_3 > 0 else 0.5
+            gravilla_ratio = (1.0 - sand_ratio) * r_g_3
+            grava_ratio = (1.0 - sand_ratio) * r_G_3
+            grava2_ratio = 0.0
+        else: # num_aggregates == 4
             gravilla_ratio = (1.0 - sand_ratio) * r_g
             grava_ratio = (1.0 - sand_ratio) * r_G
+            grava2_ratio = (1.0 - sand_ratio) * r_G2
             
     else:  # Bolomey, Fuller, La Peña
         m_a = calculate_curve_fm(sieve_sizes, sand_sieves)
@@ -439,7 +461,8 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
             sand_ratio = a_pct_solved / 100.0
             gravilla_ratio = 1.0 - sand_ratio
             grava_ratio = 0.0
-        else:
+            grava2_ratio = 0.0
+        elif num_aggregates == 3:
             ideal_split = get_ideal_curve(act_method, sieve_sizes, split_sieve_size, split_sieve_size, bolomey_a)
             ideal_max = get_ideal_curve(act_method, sieve_sizes, max_sieve_size_d, max_sieve_size_d, bolomey_a)
             
@@ -460,6 +483,29 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
             sand_ratio = a_pct_solved / 100.0
             gravilla_ratio = (s_f - a_pct_solved) / 100.0
             grava_ratio = G_pct_solved / 100.0
+            grava2_ratio = 0.0
+        else: # num_aggregates == 4
+            total_coarse = gravilla_ratio_in + grava_ratio_in + grava2_ratio_in
+            w_g = (gravilla_ratio_in / total_coarse) if total_coarse > 0 else 0.33
+            w_G = (grava_ratio_in / total_coarse) if total_coarse > 0 else 0.33
+            w_G2 = (grava2_ratio_in / total_coarse) if total_coarse > 0 else 0.34
+            
+            coarse_combined = []
+            for i in range(len(sieve_sizes)):
+                coarse_combined.append(w_g * gravilla_sieves[i] + w_G * grava_sieves[i] + w_G2 * grava2_sieves[i])
+                
+            m_coarse = calculate_curve_fm(sieve_sizes, coarse_combined)
+            ideal_passing = get_ideal_curve(act_method, sieve_sizes, max_sieve_size_d, max_sieve_size_d, bolomey_a)
+            m_ideal = calculate_curve_fm(sieve_sizes, ideal_passing)
+            
+            den = m_a - m_coarse
+            a_pct_solved = (100.0 * (m_ideal - m_coarse)) / den if abs(den) > 0.001 else 40.0
+            a_pct_solved = min(100.0, max(0.0, a_pct_solved))
+            
+            sand_ratio = a_pct_solved / 100.0
+            gravilla_ratio = (1.0 - sand_ratio) * w_g
+            grava_ratio = (1.0 - sand_ratio) * w_G
+            grava2_ratio = (1.0 - sand_ratio) * w_G2
 
     # 2. Compute curves
     bolomey_ideal_passing = get_ideal_curve("bolomey", sieve_sizes, max_sieve_size_d, max_sieve_size_d, bolomey_a)
@@ -468,8 +514,9 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     
     combined_sieve_passing = []
     sum_sieve_diffs = 0.0
-    for i in range(len(sieve_sizes)):
         comb = sand_ratio * sand_sieves[i] + gravilla_ratio * gravilla_sieves[i] + grava_ratio * grava_sieves[i]
+        if num_aggregates == 4:
+            comb += grava2_ratio * grava2_sieves[i]
         combined_sieve_passing.append(comb)
         
         ideal_compare = bolomey_ideal_passing[i]
@@ -515,7 +562,10 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
         cement_base_m3 = max(10.0, float(custom_cement))
         
     if concrete_class == "Personalizado":
-        water_target_m3 = cement_base_m3 * target_wc * water_reduction
+        # En mezclas personalizadas, no reducimos automáticamente el agua de diseño
+        # para que la relación a/c real coincida con la ingresada por el usuario,
+        # permitiendo que el aditivo incremente directamente la fluidez estimada (slump).
+        water_target_m3 = cement_base_m3 * target_wc
     else:
         water_target_m3 = cement_base_m3 * target_wc
         
@@ -541,17 +591,20 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     vs_sand = vs_aggregates * sand_ratio
     vs_gravilla = vs_aggregates * gravilla_ratio
     vs_grava = vs_aggregates * grava_ratio
+    vs_grava2 = vs_aggregates * grava2_ratio if num_aggregates == 4 else 0.0
     
     # Moisture & Free Water Correction
     w_sand_total = (vs_sand / coef_sand) * moist_sand
     w_gravilla_total = (vs_gravilla / coef_gravilla) * moist_gravilla
     w_grava_total = (vs_grava / coef_grava) * moist_grava
+    w_grava2_total = (vs_grava2 / coef_grava2) * moist_grava2 if num_aggregates == 4 else 0.0
     
     w_sand_free = (vs_sand / coef_sand) * (moist_sand - (dens_sand * abs_sand / 100.0))
     w_gravilla_free = (vs_gravilla / coef_gravilla) * (moist_gravilla - (dens_gravilla * abs_gravilla / 100.0))
     w_grava_free = (vs_grava / coef_grava) * (moist_grava - (dens_grava * abs_grava / 100.0))
+    w_grava2_free = (vs_grava2 / coef_grava2) * (moist_grava2 - (dens_grava2 * abs_grava2 / 100.0)) if num_aggregates == 4 else 0.0
     
-    net_water_final = max(0.0, (target_water_batch - w_sand_free - w_gravilla_free - w_grava_free) / 1.1)
+    net_water_final = max(0.0, (target_water_batch - w_sand_free - w_gravilla_free - w_grava_free - w_grava2_free) / 1.1)
     net_water_theoretical = max(0.0, target_water_batch / 1.1)
     
     # Aggregate weights
@@ -563,6 +616,9 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     
     grava_dry_weight = (vs_grava / coef_grava) * dens_grava
     grava_wet_weight = grava_dry_weight + w_grava_total
+    
+    grava2_dry_weight = (vs_grava2 / coef_grava2) * dens_grava2 if num_aggregates == 4 else 0.0
+    grava2_wet_weight = grava2_dry_weight + w_grava2_total
     
     # Slump prediction
     slump_pred = predict_slump_from_water(combined_fm, water_target_m3, water_reduction, factor_g, True)
@@ -589,18 +645,23 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     mpt = max_sieve_size_d * ((agg_packing_density / g_frac) ** (1.0/3.0) - 1.0) if (g_frac > 0.001 and agg_packing_density > g_frac) else 0.0
 
     # Calculate final Larrard packing curve points for chart
-    total_stone = gravilla_ratio + grava_ratio
-    w_g = (gravilla_ratio / total_stone) if total_stone > 0 else 0.5
-    w_G = (grava_ratio / total_stone) if total_stone > 0 else 0.5
+    total_stone = gravilla_ratio + grava_ratio + (grava2_ratio if num_aggregates == 4 else 0.0)
+    w_g = (gravilla_ratio / total_stone) if total_stone > 0 else 0.33
+    w_G = (grava_ratio / total_stone) if total_stone > 0 else 0.33
+    w_G2 = (grava2_ratio / total_stone) if (num_aggregates == 4 and total_stone > 0) else 0.34
     stone_combined = []
     for i in range(len(sieve_sizes)):
-        stone_combined.append(w_g * gravilla_sieves[i] + w_G * grava_sieves[i])
+        if num_aggregates == 4:
+            stone_combined.append(w_g * gravilla_sieves[i] + w_G * grava_sieves[i] + w_G2 * grava2_sieves[i])
+        else:
+            stone_combined.append(w_g * gravilla_sieves[i] + w_G * grava_sieves[i])
     packing_points = calculate_larrard_packing_curve(sieve_sizes, sand_sieves, stone_combined)
 
     return {
         "sandRatio": sand_ratio,
         "gravillaRatio": gravilla_ratio,
         "gravaRatio": grava_ratio,
+        "grava2Ratio": grava2_ratio if num_aggregates == 4 else 0.0,
         "combinedSievePassing": combined_sieve_passing,
         "bolomeyIdealPassing": bolomey_ideal_passing,
         "fullerIdealPassing": fuller_ideal_passing,
@@ -617,6 +678,8 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
         "gravillaWetWeight": gravilla_wet_weight,
         "gravaDryWeight": grava_dry_weight,
         "gravaWetWeight": grava_wet_weight,
+        "grava2DryWeight": grava2_dry_weight if num_aggregates == 4 else 0.0,
+        "grava2WetWeight": grava2_wet_weight if num_aggregates == 4 else 0.0,
         "netWaterFinal": net_water_final,
         "netWaterTheoretical": net_water_theoretical,
         "slumpPred": slump_pred,
@@ -711,9 +774,10 @@ def calcular_correcciones_reologia(params: Dict[str, Any]) -> Dict[str, Any]:
     sand_1m3 = params.get("sandDryWeight", 800.0)
     gravilla_1m3 = params.get("gravillaDryWeight", 300.0)
     grava_1m3 = params.get("gravaDryWeight", 700.0)
+    grava2_1m3 = params.get("grava2DryWeight", 0.0)
     water_1m3 = params.get("waterTargetM3", 185.0)
     
-    rho_teorica = cement_1m3 + sand_1m3 + gravilla_1m3 + grava_1m3 + water_1m3
+    rho_teorica = cement_1m3 + sand_1m3 + gravilla_1m3 + grava_1m3 + grava2_1m3 + water_1m3
     rho_real = params.get("densityReal") or rho_teorica
     
     # Physically correct Roussel
@@ -794,15 +858,17 @@ def recalcular_formula_validada(params: Dict[str, Any]) -> Dict[str, Any]:
     sand_init = params.get("sandDryWeight", 800.0) * vol_paston
     gravilla_init = params.get("gravillaDryWeight", 300.0) * vol_paston
     grava_init = params.get("gravaDryWeight", 700.0) * vol_paston
+    grava2_init = params.get("grava2DryWeight", 0.0) * vol_paston
     water_init = params.get("waterTargetM3", 185.0) * vol_paston
     
     c_final_80l = c_init + delta_c
     sand_final_80l = sand_init + delta_sand
     gravilla_final_80l = gravilla_init
     grava_final_80l = grava_init
+    grava2_final_80l = grava2_init
     water_final_80l = water_init + delta_w
     
-    m_total_80l = c_final_80l + sand_final_80l + gravilla_final_80l + grava_final_80l + water_final_80l
+    m_total_80l = c_final_80l + sand_final_80l + gravilla_final_80l + grava_final_80l + grava2_final_80l + water_final_80l
     v_real = m_total_80l / density_real if density_real > 100.0 else vol_paston
     scale_factor = 1.0 / v_real if v_real > 0.001 else 12.5
     
@@ -811,6 +877,7 @@ def recalcular_formula_validada(params: Dict[str, Any]) -> Dict[str, Any]:
         "sandDryWeight": float(sand_final_80l * scale_factor),
         "gravillaDryWeight": float(gravilla_final_80l * scale_factor),
         "gravaDryWeight": float(grava_final_80l * scale_factor),
+        "grava2DryWeight": float(grava2_final_80l * scale_factor),
         "waterTargetM3": float(water_final_80l * scale_factor),
         "realVolumeProducedL": float(v_real * 1000.0)
     }

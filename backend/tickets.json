@@ -1,0 +1,18 @@
+[
+    {
+        "ticket_id": "SUP-0125-0001",
+        "email": "cliente1@ejemplo.com",
+        "subject": "Problema con dosificación de aditivos",
+        "message": "Hola, al seleccionar un volumen de 250 litros, noto que la proporción de aditivo plastificante no se actualiza de manera lineal en la pestaña de laboratorio. ¿Podrían revisar si la ecuación de cemento por volumen está correcta?",
+        "date": 1785784500000,
+        "status": "Abierto"
+    },
+    {
+        "ticket_id": "SUP-0125-0002",
+        "email": "laboratorio_test@obra.com",
+        "subject": "Error al exportar reporte PDF en celular",
+        "message": "Buenas tardes, cuando intento exportar el reporte técnico en formato PDF desde mi teléfono celular (Android 14, Chrome), el botón parece no responder o el archivo se descarga en blanco. En la computadora funciona perfecto. ¡Gracias!",
+        "date": 1785802500000,
+        "status": "En Proceso"
+    }
+]

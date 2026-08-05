@@ -1,4 +1,6 @@
 import os
+import json
+import time
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 
@@ -61,6 +63,12 @@ class DosificacionRequest(BaseModel):
     absGrava: float
     customCement: float
     additives: List[Dict[str, Any]]
+    grava2Passing: Optional[List[float]] = None
+    grava2Ratio: Optional[float] = 0.20
+    densGrava2: Optional[float] = 2.70
+    coefGrava2: Optional[float] = 1.0
+    moistGrava2: Optional[float] = 1.0
+    absGrava2: Optional[float] = 0.5
 
 class WeatherRequest(BaseModel):
     lat: float
@@ -114,42 +122,105 @@ def api_chat(payload: ChatRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+# Helper functions for tickets JSON persistence
+TICKETS_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), "tickets.json")
+
+def load_tickets() -> list:
+    if not os.path.exists(TICKETS_FILE):
+        return []
+    try:
+        with open(TICKETS_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception as e:
+        print(f"Error loading tickets: {e}")
+        return []
+
+def save_tickets(tickets: list):
+    try:
+        with open(TICKETS_FILE, "w", encoding="utf-8") as f:
+            json.dump(tickets, f, ensure_ascii=False, indent=4)
+    except Exception as e:
+        print(f"Error saving tickets: {e}")
+
+class UpdateStatusRequest(BaseModel):
+    ticket_id: str
+    status: str
+
 @app.post("/api/support")
 def api_support(payload: SupportRequest):
     try:
         # Log the ticket details
         print(f"SUPPORT TICKET RECEIVED: {payload.ticket_id} | From: {payload.email} | Subject: {payload.subject}")
         
-        # Get SMTP configuration from env
+        # 1. Persist the ticket in the JSON file
+        tickets = load_tickets()
+        # Avoid duplicate entries
+        if not any(t.get("ticket_id") == payload.ticket_id for t in tickets):
+            tickets.append({
+                "ticket_id": payload.ticket_id,
+                "email": payload.email,
+                "subject": payload.subject,
+                "message": payload.message,
+                "date": int(time.time() * 1000), # Unix timestamp in milliseconds
+                "status": "Abierto"
+            })
+            save_tickets(tickets)
+            print(f"Ticket {payload.ticket_id} persisted in tickets.json")
+        
+        # 2. Try SMTP sending as background/secondary action
         smtp_user = os.environ.get("SMTP_USER", "hormixia@gmail.com")
         smtp_pass = os.environ.get("SMTP_PASS")
         smtp_host = os.environ.get("SMTP_HOST", "smtp.gmail.com")
         smtp_port = int(os.environ.get("SMTP_PORT", "587"))
         
-        # If SMTP password is not set, log and return success (logged)
         if not smtp_pass:
             print("WARNING: SMTP_PASS env variable not set. Support email notification skipped.")
-            return {"status": "logged", "message": "Ticket registrado en logs del servidor.", "ticket_id": payload.ticket_id}
+            return {"status": "logged", "message": "Ticket registrado y guardado en el servidor.", "ticket_id": payload.ticket_id}
             
         import smtplib
         from email.mime.text import MIMEText
         
-        # Construct email message
         msg = MIMEText(f"Ticket ID: {payload.ticket_id}\nDe: {payload.email}\nAsunto: {payload.subject}\n\nMensaje:\n{payload.message}")
         msg['Subject'] = f"[Soporte HormigónMix] {payload.subject} ({payload.ticket_id})"
         msg['From'] = smtp_user
         msg['To'] = "hormixia@gmail.com"
         
-        # Send email
         with smtplib.SMTP(smtp_host, smtp_port) as server:
             server.starttls()
             server.login(smtp_user, smtp_pass)
             server.sendmail(smtp_user, ["hormixia@gmail.com"], msg.as_string())
             
-        return {"status": "sent", "message": "Email de soporte enviado a hormixia@gmail.com.", "ticket_id": payload.ticket_id}
+        return {"status": "sent", "message": "Email de soporte enviado y guardado en servidor.", "ticket_id": payload.ticket_id}
     except Exception as e:
-        print(f"Error sending support email: {str(e)}")
-        return {"status": "logged_fallback", "message": f"Registrado con error de envío: {str(e)}", "ticket_id": payload.ticket_id}
+        print(f"Error handling support ticket: {str(e)}")
+        # Even if SMTP fails, return logged because we saved it in the JSON file
+        return {"status": "logged_fallback", "message": f"Registrado en el servidor. Error de envío SMTP: {str(e)}", "ticket_id": payload.ticket_id}
+
+@app.get("/api/support/list")
+def api_support_list():
+    try:
+        return load_tickets()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@app.post("/api/support/update_status")
+def api_support_update_status(payload: UpdateStatusRequest):
+    try:
+        tickets = load_tickets()
+        updated = False
+        for t in tickets:
+            if t.get("ticket_id") == payload.ticket_id:
+                t["status"] = payload.status
+                updated = True
+                break
+        if not updated:
+            raise HTTPException(status_code=404, detail="Ticket no encontrado")
+        save_tickets(tickets)
+        return {"status": "success", "message": f"Estado del ticket {payload.ticket_id} actualizado a {payload.status}"}
+    except Exception as e:
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/reologia/simular")
 def api_simular_reologia(payload: Dict[str, Any]):
