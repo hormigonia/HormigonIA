@@ -973,19 +973,21 @@ label {
 .modal {
     display: none;
     position: fixed;
-    z-index: 100;
+    z-index: 1000;
     left: 0;
     top: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.7);
     backdrop-filter: blur(4px);
-    align-items: center;
-    justify-content: center;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
 .modal.open {
     display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .modal-content {
@@ -1000,6 +1002,7 @@ label {
     display: flex;
     flex-direction: column;
     gap: 15px;
+    margin: 40px auto;
 }
 
 .modal-close {

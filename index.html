@@ -47,6 +47,16 @@
             </div>
             
             <div class="header-actions">
+                <!-- Selector de Perfil Profesional -->
+                <div class="profile-role-selector" style="margin-right: 8px; display: flex; align-items: center; gap: 6px;">
+                    <label for="selectUserProfileRole" style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; white-space: nowrap;">Perfil:</label>
+                    <select id="selectUserProfileRole" class="form-select" style="height: 32px; padding: 2px 8px; font-size: 0.78rem; width: auto; background-color: var(--bg-panel); font-weight: bold; border-color: var(--border-color); border-radius: 6px; color: var(--text);">
+                        <option value="completo">👷 Completo (Ing. / Arq.)</option>
+                        <option value="proveedor-materiales">🏭 Proveedor Materiales</option>
+                        <option value="proveedor-servicios">🛠️ Proveedor Servicios</option>
+                        <option value="operador">🚜 Operador de Mezcla</option>
+                    </select>
+                </div>
                 <!-- Simulación Config -->
                 <button id="btnAuthModal" class="btn btn-secondary btn-icon" style="margin-right: 8px;">
                     <span class="icon">👤</span> <span id="userSessionText">Iniciar Sesión</span>
@@ -98,6 +108,7 @@
             <button class="nav-tab" data-tab="laboratorio-hormigon">Laboratorio de Hormigón</button>
             <button class="nav-tab" data-tab="laboratorio-aridos">Laboratorio de Áridos</button>
             <button class="nav-tab" data-tab="optimizacion-ia" style="display: none;">Optimización y Predicción IA</button>
+            <button class="nav-tab" data-tab="produccion">Producción</button>
             <button class="nav-tab" data-tab="admin-soporte" id="tabNavAdminSoporte" style="display: none;">Adm. Soporte</button>
         </nav>
 
@@ -685,6 +696,12 @@
                     </section>
                     
                     </div>
+            </div>
+
+            <!-- TAB CONTENT: PRODUCCIÓN -->
+            <div id="tab-produccion" class="tab-content">
+                <div class="workspace-grid" style="margin-top: 20px;" id="produccionWorkspaceGrid">
+                </div>
             </div>
 
             <!-- TAB CONTENT: LABORATORIO HORMIGON -->
@@ -1639,6 +1656,15 @@
                 <div class="form-group" id="groupConfirmPassword" style="display: none;">
                     <label for="inputAuthConfirmPassword">Confirmar Contraseña:</label>
                     <input type="password" id="inputAuthConfirmPassword" placeholder="••••••••" class="form-input">
+                </div>
+                <div class="form-group" id="groupAuthRole" style="display: none;">
+                    <label for="selectAuthRole">Rol / Perfil Profesional:</label>
+                    <select id="selectAuthRole" class="form-input" style="background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px;">
+                        <option value="completo">👷 Ingeniero Civil / Arquitecto / Hormigonera</option>
+                        <option value="proveedor-materiales">🏭 Proveedor de Materiales</option>
+                        <option value="proveedor-servicios">🛠️ Proveedor de Servicios</option>
+                        <option value="operador">🚜 Constructor / Albañil (Producción)</option>
+                    </select>
                 </div>
                 <div class="auth-error-msg" id="authErrorMsg" style="color: var(--error); margin-top: 10px; font-size: 0.85rem; display: none; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.2);"></div>
                 <div class="auth-success-msg" id="authSuccessMsg" style="color: var(--accent); margin-top: 10px; font-size: 0.85rem; display: none; background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2);"></div>
