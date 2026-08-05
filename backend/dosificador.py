@@ -514,6 +514,7 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     
     combined_sieve_passing = []
     sum_sieve_diffs = 0.0
+    for i in range(len(sieve_sizes)):
         comb = sand_ratio * sand_sieves[i] + gravilla_ratio * gravilla_sieves[i] + grava_ratio * grava_sieves[i]
         if num_aggregates == 4:
             comb += grava2_ratio * grava2_sieves[i]
