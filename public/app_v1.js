@@ -794,7 +794,12 @@ const historyManager = {
             additives = JSON.parse(JSON.stringify(state));
             renderAdditivesList();
             checkSikaFumeVisibility();
-               lastState: null,
+        }
+    },
+    lab: {
+        undo: [],
+        redo: [],
+        lastState: null,
         getState: function() {
             const sandSieves = Array.from(document.querySelectorAll(".sand-sieve")).map(el => el.value);
             const gravillaSieves = Array.from(document.querySelectorAll(".gravilla-sieve")).map(el => el.value);
