@@ -37,7 +37,9 @@
         <!-- HEADER -->
         <header class="app-header">
             <div class="header-logo">
-                <img src="/logo_ant.jpg" alt="Logo HormigónIA" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--accent); box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); margin-right: 4px;">
+                <div style="width: 38px; height: 38px; border-radius: 50%; border: 1.5px solid var(--accent); box-shadow: 0 0 8px rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; overflow: hidden; background-color: rgba(255,255,255,0.05); margin-right: 4px;">
+                    <img src="/logo_ant.jpg" alt="Logo HormigónIA" style="width: 100%; height: 100%; object-fit: cover; transform: scale(0.9) translateY(1px);">
+                </div>
                 <div class="logo-text">
                     <h1>Hormigón<span class="accent-text">IA</span></h1>
                     <p>Dosificación Científica de Laboratorio y Asistente Inteligente</p>
@@ -96,6 +98,7 @@
             <button class="nav-tab" data-tab="laboratorio-hormigon">Laboratorio de Hormigón</button>
             <button class="nav-tab" data-tab="laboratorio-aridos">Laboratorio de Áridos</button>
             <button class="nav-tab" data-tab="optimizacion-ia" style="display: none;">Optimización y Predicción IA</button>
+            <button class="nav-tab" data-tab="admin-soporte" id="tabNavAdminSoporte" style="display: none;">Adm. Soporte</button>
         </nav>
 
         <!-- MAIN LAYOUT -->
@@ -252,7 +255,7 @@
                             <!-- Volumen de hormigón -->
                             <div class="form-group">
                                 <label style="font-weight: 600; color: var(--text); font-size: 0.95rem; display: block; margin-bottom: 6px;">Volumen de hormigón</label>
-                                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                <div style="display: flex; gap: 8px; margin-bottom: 8px; max-width: 250px;">
                                     <input type="number" id="inputBatchVolumeValue" class="form-input" value="80" min="1" step="any" style="flex: 1; text-align: center; height: 38px; font-size: 0.95rem; font-weight: 500;">
                                     <select id="selectBatchVolumeUnit" class="form-select" style="width: auto; min-width: 90px; height: 38px; padding: 4px 8px; font-weight: 500;">
                                         <option value="L" selected>L (Litros)</option>
@@ -417,6 +420,15 @@
                                             <div class="card-label">Piedra</div>
                                             <div class="card-value"><span id="resGrava">0.0</span> <span class="unit">kg</span></div>
                                             <div class="card-subtext">Prop. Mezcla: <span id="resGravaRatio">0.0</span>%</div>
+                                        </div>
+                                    </div>
+                                    <!-- Grava 2 -->
+                                    <div class="recipe-card item-grava2" style="display: none;">
+                                        <div class="card-icon">🧱</div>
+                                        <div class="card-content">
+                                            <div class="card-label">Piedra 2</div>
+                                            <div class="card-value"><span id="resGrava2">0.0</span> <span class="unit">kg</span></div>
+                                            <div class="card-subtext">Prop. Mezcla: <span id="resGrava2Ratio">0.0</span>%</div>
                                         </div>
                                     </div>
                                 </div>
@@ -826,6 +838,13 @@
                                                     <td><input type="number" id="moistGrava" value="50" step="5" class="table-input"></td>
                                                     <td><input type="number" id="absGrava" value="0.5" step="0.1" class="table-input"></td>
                                                 </tr>
+                                                <tr id="trLabGrava2" style="display: none;">
+                                                    <td><strong>Grava 2</strong></td>
+                                                    <td><input type="number" id="densGrava2" value="1600" step="50" class="table-input"></td>
+                                                    <td><input type="number" id="coefGrava2" value="0.51" step="0.01" class="table-input"></td>
+                                                    <td><input type="number" id="moistGrava2" value="50" step="5" class="table-input"></td>
+                                                    <td><input type="number" id="absGrava2" value="0.5" step="0.1" class="table-input"></td>
+                                                </tr>
                                             </tbody>
                                         </table>
                                     </div>
@@ -837,6 +856,7 @@
                                         <label style="font-weight: 600; color: var(--text);">📊 Tamizado de Áridos (Peso Retenido)</label>
                                         <div style="display: flex; align-items: center; gap: 6px;">
                                             <select id="selectNumAggregates" class="form-select btn-xs" style="height: 24px; padding: 2px 6px; font-size: 0.72rem; width: auto; background-color: var(--bg-panel); font-weight: bold; border-color: var(--accent); margin-right: 4px;">
+                                                <option value="4">4 Áridos</option>
                                                 <option value="3" selected>3 Áridos</option>
                                                 <option value="2">2 Áridos</option>
                                             </select>
@@ -857,26 +877,27 @@
                                                      <th>Arena (g)</th>
                                                      <th id="thCoarse1">Gravilla (g)</th>
                                                      <th id="thCoarse2">Grava (g)</th>
+                                                     <th id="thCoarse3" style="display: none;">Grava 2 (g)</th>
                                                  </tr>
                                             </thead>
                                             <tbody>
-                                                <tr data-sieve="37.5"><td><strong>37.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="20" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="25.0"><td><strong>25.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="230" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="19.0"><td><strong>19.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="9.5"><td><strong>9.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="100" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="250" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="4.75"><td><strong>4.75 (N°4)</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="100" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="2.36"><td><strong>2.36 (N°8)</strong></td><td><input type="number" value="120" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="50" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="1.18"><td><strong>1.18 (N°16)</strong></td><td><input type="number" value="180" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="150" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="0.6"><td><strong>0.6 (N°30)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="50" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="0.3"><td><strong>0.3 (N°50)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="0.15"><td><strong>0.15 (N°100)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
-                                                <tr data-sieve="0.0"><td><strong>Fondo (Pan)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td></tr>
+                                                <tr data-sieve="37.5"><td><strong>37.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="20" min="0" step="1" class="table-input grava-sieve"></td><td><input type="number" value="300" min="0" step="1" class="table-input grava2-sieve"></td></tr>
+                                                <tr data-sieve="25.0"><td><strong>25.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="230" min="0" step="1" class="table-input grava-sieve"></td><td><input type="number" value="500" min="0" step="1" class="table-input grava2-sieve"></td></tr>
+                                                <tr data-sieve="19.0"><td><strong>19.0 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input grava-sieve"></td><td><input type="number" value="150" min="0" step="1" class="table-input grava2-sieve"></td></tr>
+                                                <tr data-sieve="9.5"><td><strong>9.5 mm</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="100" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="250" min="0" step="1" class="table-input grava-sieve"></td><td><input type="number" value="50" min="0" step="1" class="table-input grava2-sieve"></td></tr>
+                                                <tr data-sieve="4.75"><td><strong>4.75 (N°4)</strong></td><td><input type="number" value="0" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="100" min="0" step="1" class="table-input grava-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava2-sieve"></td></tr>
+                                                <tr data-sieve="2.36"><td><strong>2.36 (N°8)</strong></td><td><input type="number" value="120" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="350" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="50" min="0" step="1" class="table-input grava-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava2-sieve"></td></tr>
+                                                <tr data-sieve="1.18"><td><strong>1.18 (N°16)</strong></td><td><input type="number" value="180" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="150" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava2-sieve"></td></tr>
+                                                <tr data-sieve="0.6"><td><strong>0.6 (N°30)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="50" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava2-sieve"></td></tr>
+                                                <tr data-sieve="0.3"><td><strong>0.3 (N°50)</strong></td><td><input type="number" value="200" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava2-sieve"></td></tr>
+                                                <tr data-sieve="0.15"><td><strong>0.15 (N°100)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava2-sieve"></td></tr>
+                                                <tr data-sieve="0.0"><td><strong>Fondo (Pan)</strong></td><td><input type="number" value="150" min="0" step="1" class="table-input sand-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input gravilla-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava-sieve"></td><td><input type="number" value="0" min="0" step="1" class="table-input grava2-sieve"></td></tr>
                                             </tbody>
                                         </table>
                                     </div>
                                     <div class="form-group" style="margin-top: 5px;">
                                         <span style="font-size: 0.68rem; color: var(--text-muted); display: block; line-height: 1.4;">
-                                            Muestras totales: Arena: <strong id="totalSandSample">1000</strong>g | Gravilla: <strong id="totalGravillaSample">1000</strong>g | Grava: <strong id="totalGravaSample">1000</strong>g
+                                            Muestras totales: Arena: <strong id="totalSandSample">1000</strong>g | Gravilla: <strong id="totalGravillaSample">1000</strong>g | Grava: <strong id="totalGravaSample">1000</strong>g<span id="lblTotalGrava2Sample" style="display: none;"> | Grava 2: <strong id="totalGrava2Sample">1000</strong>g</span>
                                         </span>
                                     </div>
                                 </div>
@@ -1536,13 +1557,70 @@
 
                 </div>
             </div>
+
+            <!-- TAB CONTENT: ADMIN SOPORTE -->
+            <div id="tab-admin-soporte" class="tab-content">
+                <div class="workspace-grid" style="margin-top: 20px;">
+                    <!-- PANEL SUPERIOR: FILTROS Y BÚSQUEDA -->
+                    <section class="panel">
+                        <div class="panel-header" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 15px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
+                                <span class="panel-icon">⚙️</span>
+                                <h2>Administración de Servicio Técnico y Soporte</h2>
+                            </div>
+                            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                                <input type="text" id="inputSearchAdminTickets" placeholder="Buscar por ID, email o asunto..." class="form-input" style="max-width: 250px; height: 36px; font-size: 0.85rem;">
+                                <select id="selectFilterAdminTicketsStatus" class="form-select" style="max-width: 150px; height: 36px; font-size: 0.85rem; padding: 4px 8px;">
+                                    <option value="todos">Todos los Estados</option>
+                                    <option value="Abierto">Abiertos</option>
+                                    <option value="En Proceso">En Proceso</option>
+                                    <option value="Resuelto">Resueltos</option>
+                                    <option value="Cerrado">Cerrados</option>
+                                </select>
+                                <button type="button" id="btnRefreshAdminTickets" class="btn btn-secondary btn-icon" style="height: 36px;" title="Actualizar lista">
+                                    <span class="icon">🔄</span>
+                                </button>
+                            </div>
+                        </div>
+                    </section>
+
+                    <!-- SECCIÓN DETALLE Y LISTADO -->
+                    <div class="lab-grid">
+                        <!-- COLUMNA IZQUIERDA: LISTADO DE TICKETS -->
+                        <section class="panel" style="min-height: 400px; max-height: 600px;">
+                            <div class="panel-header">
+                                <span class="panel-icon">📋</span>
+                                <h2>Tickets de Soporte</h2>
+                            </div>
+                            <div class="panel-body" style="overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px;" id="adminTicketsListContainer">
+                                <!-- Se renderiza dinámicamente -->
+                                <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 20px 0;">Cargando tickets...</div>
+                            </div>
+                        </section>
+
+                        <!-- COLUMNA DERECHA: DETALLE DEL TICKET -->
+                        <section class="panel" style="min-height: 400px;">
+                            <div class="panel-header">
+                                <span class="panel-icon">🔍</span>
+                                <h2>Detalle de Ticket</h2>
+                            </div>
+                            <div class="panel-body" id="adminTicketDetailContainer" style="display: flex; flex-direction: column; gap: 15px; height: 100%;">
+                                <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 40px 0; margin: auto;">
+                                    Selecciona un ticket de la lista para ver su información y gestionar su estado.
+                                </div>
+                            </div>
+                        </section>
+                    </div>
+                </div>
+            </div>
         </main>
     </div>
 
     <!-- AUTHENTICATION MODAL -->
     <div id="authModal" class="modal">
         <div class="modal-content" style="max-width: 400px; padding: 0; overflow: hidden; border-radius: 12px;">
-            <div style="width: 100%; height: 160px; background-image: url('/logo_full.jpg'); background-size: cover; background-position: center; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; position: relative;">
+            <div style="width: 100%; position: relative; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; background-color: #e3e3e3;">
+                <img src="/logo_full.jpg" alt="HormigónIA" style="width: 100%; height: auto; display: block;">
                 <span class="modal-close" id="btnCloseAuthModal" style="position: absolute; top: 10px; right: 15px; color: white; background: rgba(0,0,0,0.5); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; line-height: 1; cursor: pointer; z-index: 10;">&times;</span>
             </div>
             <div style="padding: 0 25px 25px 25px;">

@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manual del Módulo de Reología - HormigonIA</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@600;700;800&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- KaTeX CDN for beautiful mathematical formatting -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js" onload="renderMathInElement(document.body, {delimiters: [{left: '$$', right: '$$', display: true}, {left: '$', right: '$', display: false}]});"></script>
+
+    <style>
+        :root {
+            --bg-color: #ffffff;
+            --text-color: #1e293b;
+            --primary-color: #2563eb;
+            --accent-color: #d97706;
+            --border-color: #e2e8f0;
+            --code-bg: #f8fafc;
+            --alert-bg: #eff6ff;
+            --alert-border: #3b82f6;
+            --table-header: #f1f5f9;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            color: var(--text-color);
+            background-color: var(--bg-color);
+            line-height: 1.6;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        /* Header print styles */
+        .print-header-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--border-color);
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn-print {
+            background-color: #2563eb;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.2s;
+        }
+
+        .btn-print:hover {
+            background-color: #1d4ed8;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: 'Outfit', sans-serif;
+            color: #0f172a;
+            margin-top: 1.8em;
+            margin-bottom: 0.6em;
+        }
+
+        h1 {
+            font-size: 2.2rem;
+            margin-top: 0;
+            border-bottom: 3px solid var(--primary-color);
+            padding-bottom: 10px;
+        }
+
+        h2 {
+            font-size: 1.6rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 6px;
+            color: var(--primary-color);
+        }
+
+        h3 {
+            font-size: 1.2rem;
+            color: #1e293b;
+        }
+
+        p {
+            margin-bottom: 1.2em;
+        }
+
+        /* Tables styling */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 0.9rem;
+        }
+
+        th, td {
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--table-header);
+            font-weight: 600;
+            color: #0f172a;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        /* Alerts/Callouts */
+        .alert {
+            background-color: var(--alert-bg);
+            border-left: 4px solid var(--alert-border);
+            padding: 15px 20px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+
+        .alert-title {
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: #1e3a8a;
+        }
+
+        /* Math formula centering styling */
+        .katex-display {
+            padding: 12px 0;
+            overflow-x: auto;
+            overflow-y: hidden;
+        }
+
+        /* Lists */
+        ol, ul {
+            padding-left: 20px;
+            margin-bottom: 1.2em;
+        }
+
+        li {
+            margin-bottom: 0.5em;
+        }
+
+        /* Page breaks for clean PDF export */
+        @media print {
+            body {
+                padding: 0;
+                font-size: 11pt;
+            }
+            .print-header-actions {
+                display: none !important;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+            h1, h2, h3 {
+                page-break-after: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="print-header-actions">
+        <div style="font-family: 'Outfit', sans-serif; font-size: 0.85rem; color: #64748b;">
+            📄 Documento optimizado para impresión o guardado como PDF
+        </div>
+        <button onclick="window.print()" class="btn-print">
+            🖨️ Guardar o Imprimir a PDF
+        </button>
+    </div>
+
+    <h1>MANUAL DE USUARIO Y ESPECIFICACIÓN TÉCNICA</h1>
+    <h3 style="margin-top: 5px; color: var(--accent-color); font-weight: 500;">Módulo de Control de Calidad y Optimización Reológica (HormigonIA)</h3>
+
+    <p>Este documento sirve como instructivo de operación (Manual del Usuario) y especificación matemática (Manual Técnico) para el módulo de reología y control de calidad en estado fresco.</p>
+
+    <h2>PARTE I: MANUAL DEL USUARIO (OPERACIÓN PRÁCTICA)</h2>
+
+    <h3>1. ¿Para qué sirve este módulo?</h3>
+    <p>Cuando se diseña una mezcla de hormigón en papel (dosificación teórica) y luego se realiza un pastón de prueba en el laboratorio o en la obra, la consistencia real medida (asentamiento o <em>slump</em>) suele discrepar de la planificada debido a factores como la absorción real de los áridos, el desgaste del aditivo, la temperatura de la masa o el tiempo transcurrido desde el amasado.</p>
+    <p>Este módulo permite:</p>
+    <ol>
+        <li><strong>Evaluar</strong> la consistencia medida del hormigón.</li>
+        <li><strong>Proyectar</strong> la pérdida de asentamiento (<em>slump loss</em>) a lo largo de 120 minutos bajo las condiciones climáticas de la obra.</li>
+        <li><strong>Calcular la dosis correctiva exacta</strong> de aditivo o de agua + cemento compensatorio para estabilizar la mezcla sin perder resistencia mecánica.</li>
+        <li><strong>Validar y re-escalar</strong> la fórmula por volumen absoluto para garantizar el rendimiento exacto de $1\text{ m}^3$ de entrega.</li>
+    </ol>
+
+    <h3>2. Variables de Entrada y su Significado</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Variable</th>
+                <th>Nombre en Pantalla</th>
+                <th>Significado Práctico</th>
+                <th>Rango Recomendado</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>$S_{target}$</td>
+                <td><strong>Asentamiento Obj. Definido</strong></td>
+                <td>El asentamiento deseado para la colocación en obra. Se hereda del calculador principal.</td>
+                <td>2 a 22 cm (20 a 220 mm)</td>
+            </tr>
+            <tr>
+                <td>$S_1$</td>
+                <td><strong>Asentamiento Medido (cm)</strong></td>
+                <td>El resultado real obtenido al realizar el ensayo del Cono de Abrams en el pastón.</td>
+                <td>0 a 25 cm (0 a 250 mm)</td>
+            </tr>
+            <tr>
+                <td>$t_1$</td>
+                <td><strong>Tiempo t1 (minutos)</strong></td>
+                <td>Tiempo transcurrido desde que el agua tomó contacto con el cemento hasta la medición.</td>
+                <td>5 a 30 minutos</td>
+            </tr>
+            <tr>
+                <td>$T_c$</td>
+                <td><strong>Temp. Mezcla Tc (°C)</strong></td>
+                <td>La temperatura interna de la masa de hormigón medida con termómetro de inserción.</td>
+                <td>5 a 40 °C</td>
+            </tr>
+            <tr>
+                <td>$\rho_{real}$</td>
+                <td><strong>Densidad Real (kg/m³)</strong></td>
+                <td>Peso del hormigón fresco compactado por unidad de volumen (medida mediante olla calibrada).</td>
+                <td>Vacío (teórica) o valor medido</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="alert">
+        <div class="alert-title">⚠️ IMPORTANTE: Medición del Tiempo $t_1$</div>
+        <strong>No ingresar 1 minuto como tiempo de ensayo</strong>, aun cuando el pastón se prepare <em>in situ</em> en el mismo lugar de la medición. El mezclado mecánico y el llenado del cono toman tiempo. Un registro real toma entre <strong>10 y 15 minutos</strong>. Si se ingresa 1 minuto, el modelo asumirá incorrectamente que no hubo hidratación inicial y sobredosificará los aditivos correctores.
+    </div>
+
+    <h3>3. Guía de Cronometraje Paso a Paso en Obra</h3>
+    <ol>
+        <li><strong>Inicio ($t = 0$):</strong> Iniciá el cronómetro en el momento exacto en que comenzás a verter el agua sobre el cemento en la mezcladora.</li>
+        <li><strong>Mezclado (Minutos 0 a 3):</strong> Dejá mezclar el hormigón hasta lograr homogeneidad (típicamente de 2 a 3 minutos).</li>
+        <li><strong>Muestreo e Instrumentación (Minutos 3 a 7):</strong> Descargá el hormigón, medí la temperatura de la masa ($T_c$) e introducí la densidad si tenés balanza y recipiente calibrado.</li>
+        <li><strong>Ensayo de Cono (Minutos 7 a 12):</strong> Llená el Cono de Abrams en 3 capas de igual volumen, compactando cada una con 25 golpes de varilla metálica estándar. Limpiá los excesos y levantá el cono suavemente.</li>
+        <li><strong>Lectura ($t = t_1$):</strong> Medí el asentamiento y anotá el tiempo transcurrido en el cronómetro (ej: <code>12</code> minutos).</li>
+    </ol>
+
+    <h3>4. Interpretación de Diagnósticos y Correcciones (Pastón de 80 L)</h3>
+    <p>El sistema calcula dos opciones de corrección basadas en un pastón de control estándar de **80 Litros**:</p>
+    <ul>
+        <li><strong>Caso A: Mezcla Validada (Verde):</strong> El asentamiento está dentro de tolerancia ($\pm 10\text{ mm}$). No requiere ajustes.</li>
+        <li><strong>Caso B: Mezcla Muy Seca (Amarillo):</strong>
+            <ul>
+                <li><em>Opción 1:</em> Adición de aditivo Superplastificante (SP) en gramos para fluidificar sin alterar la relación $w/c$.</li>
+                <li><em>Opción 2:</em> Adición de agua libre y cemento compensatorio para licuar manteniendo constante la relación $w/c$.</li>
+            </ul>
+        </li>
+        <li><strong>Caso C: Mezcla Muy Fluida (Rojo):</strong> Adición de sólidos de ajuste (cemento + arena seca) en proporciones calculadas para dar cohesión y evitar la segregación.</li>
+    </ul>
+
+    <div class="page-break"></div>
+
+    <h2>PARTE II: ESPECIFICACIÓN TÉCNICA (DESCRIPCIÓN MATEMÁTICA)</h2>
+    <p>El motor físico en el backend de HormigonIA implementa un acoplamiento analítico de tres leyes fundamentales:</p>
+
+    <h3>1. Conversión de Abrams a Esfuerzo de Fluencia (Roussel)</h3>
+    <p>El asentamiento del cono de Abrams se vincula matemáticamente con el esfuerzo de fluencia o umbral de corte inicial ($\tau_y$, en Pascales) mediante la formulación física de suspensiones viscoplásticas:</p>
+
+    $$\tau_y = \frac{\rho \cdot g \cdot (H - S)}{225}$$
+
+    <p>Donde $\rho$ es la densidad ($\text{kg/m}^3$), $g$ es la gravedad ($9.81\text{ m/s}^2$), $H$ es la altura del molde ($0.30\text{ m}$), y $S$ es el asentamiento en metros.</p>
+
+    <h3>2. Termodinámica de Pérdida por Evaporación (Menzel)</h3>
+    <p>La tasa de evaporación del agua libre superficial se simula en base a factores climáticos y térmicos de la masa:</p>
+
+    $$E_v = 5.0 \cdot \left[ (T_c + 18)^{2.5} - HR \cdot (T_{amb} + 18)^{2.5} \right] \cdot (V_{viento} + 0.4) \cdot 10^{-6}\ (\text{kg/m}^2/\text{h})$$
+
+    <p>Donde $T_c$ es la temperatura del hormigón, $HR$ la humedad relativa ($0 \text{ a } 1$) y $V_{viento}$ la velocidad del viento ($\text{km/h}$). La pérdida de agua incrementa el esfuerzo de fluencia de forma potencial:</p>
+
+    $$\tau_{corregido}(t) = \frac{\tau(t)}{(w_{remanente} / w_{inicial})^3}$$
+
+    <h3>3. Cinética de Hidratación Química (Arrhenius)</h3>
+    <p>La maduración temprana y rigidización por fraguado se modela mediante la edad equivalente térmica a $20^\circ\text{C}$:</p>
+
+    $$t_e = \int_0^t \exp\left( -\frac{E_a}{R} \cdot \left[ \frac{1}{273.15 + T_c} - \frac{1}{293.15} \right] \right) dt$$
+
+    $$\tau(t) = \tau_{inicial} + k_{20} \cdot (t_e)^{1.2}$$
+
+    <p>Donde $E_a/R \approx 4000\text{ K}$ y $k_{20}$ es la constante de rigidización específica del cemento a $20^\circ\text{C}$ ($\text{Pa/min}^{1.2}$).</p>
+
+    <h3>4. Algoritmos de Corrección Reológica (Pastón de $V_{paston} = 0.080\text{ m}^3$)</h3>
+    <p><strong>A. Para mezclas secas:</strong></p>
+    <ul>
+        <li>Adición de superplastificante basada en la constante de afinidad molecular del aditivo ($k_{sp}$):
+            $$\Delta SP\ (\text{g}) = \frac{\tau_{fresco} - \tau_{target}}{k_{sp}} \cdot M_{cemento\ (paston)}$$
+        </li>
+        <li>Adición de agua y cemento compensatorio para mantener $(w/c)_{max}$:
+            $$\Delta W = V_{paston} \cdot W_{1m3} \cdot \left[ \left(\frac{S_1}{S_{target}}\right)^{0.10} - 1.0 \right]$$
+            $$\Delta C = \frac{\Delta W}{(w/c)_{max}}$$
+        </li>
+    </ul>
+
+    <p><strong>B. Para mezclas fluidas:</strong></p>
+    <ul>
+        <li>Adición de sólidos de ajuste mediante la constante sólida $\beta$ para restablecer cohesión:
+            $$M_{solidos} = V_{paston} \cdot \left( \frac{\beta}{\tau_{target} - \tau_{fresco}} \right)$$
+            repartidos proporcionalmente en cemento ($M_{cemento}$) y arena ($M_{arena}$) del diseño base.
+        </li>
+    </ul>
+
+    <h3>5. Re-escalado Volumétrico (Garantía de Rendimiento de $1\text{ m}^3$)</h3>
+    <p>El volumen absoluto final del pastón se calcula incorporando las adiciones y la densidad real medida:</p>
+
+    $$V_{real} = \frac{M_{cemento} + M_{arena} + M_{gravilla} + M_{grava} + M_{grava2} + M_{agua} + M_{aditivos}}{\rho_{real}}$$
+
+    <p>El factor de rendimiento volumétrico $\gamma$ redistribuye los componentes de forma exacta:</p>
+    $$\gamma = \frac{1.0}{V_{real}} \implies Componente_{1m3} = Componente_{paston} \cdot \gamma$$
+</div>
+
+</body>
+</html>

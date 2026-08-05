@@ -1193,9 +1193,16 @@ label {
     padding: 20px;
 }
 
-/* Sieve Table 2-Aggregate display overrides */
+/* Sieve Table overrides for 2 and 3 aggregates */
+#tableSieves.num-aggregates-3 th:nth-child(5),
+#tableSieves.num-aggregates-3 td:nth-child(5) {
+    display: none !important;
+}
+
 #tableSieves.num-aggregates-2 th:nth-child(4),
-#tableSieves.num-aggregates-2 td:nth-child(4) {
+#tableSieves.num-aggregates-2 td:nth-child(4),
+#tableSieves.num-aggregates-2 th:nth-child(5),
+#tableSieves.num-aggregates-2 td:nth-child(5) {
     display: none !important;
 }
 
@@ -1388,6 +1395,11 @@ body.printing-active .print-only {
     background-color: rgba(0, 122, 255, 0.15) !important;
     color: #007aff !important;
     border: 1px solid rgba(0, 122, 255, 0.3) !important;
+}
+.badge-muted {
+    background-color: rgba(148, 163, 184, 0.15) !important;
+    color: #94a3b8 !important;
+    border: 1px solid rgba(148, 163, 184, 0.3) !important;
 }
 
 /* SUB-TAB SYSTEM FOR LABORATORY */

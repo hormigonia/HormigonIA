@@ -740,25 +740,29 @@
             <p>Ajusta el pesaje de los agregados húmedos y calcula el balance de agua neta a incorporar a la mezcladora debido al agua libre y la absorción interna.</p>
 
             <h2>1. Peso Húmedo de los Agregados</h2>
-            <p>Para compensar el peso de agua contenido en las pilas de acopio en obra y garantizar que la cantidad de esqueleto seco permanezca constante, los pesos secos de diseño de arena ($S_s$) y piedra ($P_s$) se ajustan a pesos húmedos ($S_h$ y $P_h$):</p>
+            <p>Para compensar el peso de agua contenido en las pilas de acopio en obra y garantizar que la cantidad de esqueleto seco permanezca constante, los pesos secos de diseño de arena ($S_s$) y piedras/gravas ($P_s$, $P_{2,s}$, $P_{3,s}$) se ajustan a pesos húmedos:</p>
             
             $$S_h = S_s \cdot \left(1 + \frac{h_{sand}}{100}\right) \cdot V_{paston}$$
-            $$P_h = P_s \cdot \left(1 + \frac{h_{stone}}{100}\right) \cdot V_{paston}$$
+            $$P_{h} = P_s \cdot \left(1 + \frac{h_{stone}}{100}\right) \cdot V_{paston}$$
+            $$P_{2,h} = P_{2,s} \cdot \left(1 + \frac{h_{stone2}}{100}\right) \cdot V_{paston}$$
+            $$P_{3,h} = P_{3,s} \cdot \left(1 + \frac{h_{stone3}}{100}\right) \cdot V_{paston}$$
 
-            <p>Donde $h_{sand}$ y $h_{stone}$ son las humedades gravimétricas medidas en %.</p>
+            <p>Donde $h_{sand}$, $h_{stone}$, $h_{stone2}$ y $h_{stone3}$ son las humedades gravimétricas medidas en %.</p>
 
             <h2>2. Aporte de Agua Libre</h2>
-            <p>El árido sólo aporta agua líquida a la mezcla si su humedad medida excede su capacidad interna de absorción ($abs_{sand}$, $abs_{stone}$):</p>
+            <p>El árido sólo aporta agua líquida a la mezcla si su humedad medida excede su capacidad interna de absorción:</p>
             
             $$W_{libre, sand} = S_s \cdot \left(\frac{h_{sand} - abs_{sand}}{100}\right) \cdot V_{paston}$$
             $$W_{libre, stone} = P_s \cdot \left(\frac{h_{stone} - abs_{stone}}{100}\right) \cdot V_{paston}$$
+            $$W_{libre, stone2} = P_{2,s} \cdot \left(\frac{h_{stone2} - abs_{stone2}}{100}\right) \cdot V_{paston}$$
+            $$W_{libre, stone3} = P_{3,s} \cdot \left(\frac{h_{stone3} - abs_{stone3}}{100}\right) \cdot V_{paston}$$
 
-            <p>Si un árido se encuentra extremadamente seco ($h &lt; abs$), el término será negativo. Esto representa agua absorbida por los agregados secos, la cual se compensará adicionando más agua libre de amasado.</p>
+            <p>Si un árido se encuentra extremadamente seco ($h < abs$), el término será negativo. Esto representa agua absorbida por los agregados secos, la cual se compensará adicionando más agua libre de amasado.</p>
 
             <h2>3. Agua Neta de Amasado</h2>
             <p>El agua final a dosificar en el trompo ($W_{amasado, final}$) descuenta las contribuciones de los agregados del agua de diseño corregida por el factor de eficiencia de amasado de laboratorio ($1.1$) y multiplicada por el desvío granulométrico combinatorio ($G$):</p>
             
-            $$W_{amasado, final} = \left[ \frac{(W_{objetivo} \cdot V_{paston}) - W_{libre, sand} - W_{libre, stone}}{1.1} \right] \cdot G$$
+            $$W_{amasado, final} = \left[ \frac{(W_{objetivo} \cdot V_{paston}) - W_{libre, sand} - W_{libre, stone} - W_{libre, stone2} - W_{libre, stone3}}{1.1} \right] \cdot G$$
         </section>
 
 
