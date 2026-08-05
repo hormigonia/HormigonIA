@@ -5,21 +5,34 @@ let curingMarkerInstance = null;
 
 function updateTabVisibility() {
     const optTabBtn = document.querySelector('.nav-tab[data-tab="optimizacion-ia"]');
-    if (!optTabBtn) return;
+    const adminSoporteBtn = document.getElementById("tabNavAdminSoporte");
     
-    const allowedEmails = ["hormix@gmail.com", "aledflores@gmail.com"];
-    const email = window.activeUser;
+    const email = window.activeUser ? window.activeUser.toLowerCase().trim() : "";
     
-    if (email && allowedEmails.includes(email.toLowerCase().trim())) {
-        optTabBtn.style.display = ""; // Show
-    } else {
-        optTabBtn.style.display = "none"; // Hide
-        
-        // If the active tab was "optimizacion-ia", switch back to "hormigon" tab
-        if (optTabBtn.classList.contains("active")) {
-            const defaultTab = document.querySelector('.nav-tab[data-tab="hormigon"]');
-            if (defaultTab) {
-                defaultTab.click();
+    // AI Tab Control
+    const allowedAIEmails = ["hormix@gmail.com", "aledflores@gmail.com"];
+    if (optTabBtn) {
+        if (email && allowedAIEmails.includes(email)) {
+            optTabBtn.style.display = ""; // Show
+        } else {
+            optTabBtn.style.display = "none"; // Hide
+            if (optTabBtn.classList.contains("active")) {
+                const defaultTab = document.querySelector('.nav-tab[data-tab="hormigon"]');
+                if (defaultTab) defaultTab.click();
+            }
+        }
+    }
+    
+    // Admin Support Tab Control
+    const allowedAdminSupportEmails = ["aledflores@gmail.com", "hormixia@gmail.com"];
+    if (adminSoporteBtn) {
+        if (email && allowedAdminSupportEmails.includes(email)) {
+            adminSoporteBtn.style.display = ""; // Show
+        } else {
+            adminSoporteBtn.style.display = "none"; // Hide
+            if (adminSoporteBtn.classList.contains("active")) {
+                const defaultTab = document.querySelector('.nav-tab[data-tab="hormigon"]');
+                if (defaultTab) defaultTab.click();
             }
         }
     }
@@ -251,7 +264,7 @@ function handleStartProductionClick(e) {
 }
 
 function showServerErrorOverlay() {
-    const els = ["resCement", "resWater", "resSand", "resSandRatio", "resGravilla", "resGravillaRatio", "resGrava", "resGravaRatio", "resLarrardMPT", "resLarrardMFP", "resSlump", "resMF", "resTotalDiff"];
+    const els = ["resCement", "resWater", "resSand", "resSandRatio", "resGravilla", "resGravillaRatio", "resGrava", "resGravaRatio", "resGrava2", "resGrava2Ratio", "resLarrardMPT", "resLarrardMFP", "resSlump", "resMF", "resTotalDiff"];
     els.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = "---";
@@ -730,8 +743,10 @@ let lastCalculatedPassingSand = [];
 let lastCalculatedPackingPoints = [];
 let lastCalculatedPassingGravilla = [];
 let lastCalculatedPassingGrava = [];
+let lastCalculatedPassingGrava2 = [];
 let gravillaRatio = 0.30;
 let gravaRatio = 0.30;
+let grava2Ratio = 0.20;
 let currentClimateTemp = 20; // Default temperature (20°C)
 let lastLocationData = { lat: null, lon: null, displayName: "" };
 let lastWeatherData = null;
@@ -779,21 +794,18 @@ const historyManager = {
             additives = JSON.parse(JSON.stringify(state));
             renderAdditivesList();
             checkSikaFumeVisibility();
-        }
-    },
-    lab: {
-        undo: [],
-        redo: [],
-        lastState: null,
+               lastState: null,
         getState: function() {
             const sandSieves = Array.from(document.querySelectorAll(".sand-sieve")).map(el => el.value);
             const gravillaSieves = Array.from(document.querySelectorAll(".gravilla-sieve")).map(el => el.value);
             const gravaSieves = Array.from(document.querySelectorAll(".grava-sieve")).map(el => el.value);
+            const grava2Sieves = Array.from(document.querySelectorAll(".grava2-sieve")).map(el => el.value);
             return {
                 numAggregates: document.getElementById("selectNumAggregates") ? document.getElementById("selectNumAggregates").value : "3",
                 sandSieves,
                 gravillaSieves,
                 gravaSieves,
+                grava2Sieves,
                 densCement: document.getElementById("densCement").value,
                 coefCement: document.getElementById("coefCement").value,
                 densSand: document.getElementById("densSand").value,
@@ -808,6 +820,10 @@ const historyManager = {
                 coefGrava: document.getElementById("coefGrava").value,
                 moistGrava: document.getElementById("moistGrava").value,
                 absGrava: document.getElementById("absGrava").value,
+                densGrava2: document.getElementById("densGrava2") ? document.getElementById("densGrava2").value : "1600",
+                coefGrava2: document.getElementById("coefGrava2") ? document.getElementById("coefGrava2").value : "0.51",
+                moistGrava2: document.getElementById("moistGrava2") ? document.getElementById("moistGrava2").value : "50",
+                absGrava2: document.getElementById("absGrava2") ? document.getElementById("absGrava2").value : "0.5",
                 aridosLabData: JSON.parse(JSON.stringify(aridosLabData))
             };
         },
@@ -819,9 +835,13 @@ const historyManager = {
             const sandInputs = document.querySelectorAll(".sand-sieve");
             const gravillaInputs = document.querySelectorAll(".gravilla-sieve");
             const gravaInputs = document.querySelectorAll(".grava-sieve");
+            const grava2Inputs = document.querySelectorAll(".grava2-sieve");
             state.sandSieves.forEach((val, i) => { if (sandInputs[i]) sandInputs[i].value = val; });
             state.gravillaSieves.forEach((val, i) => { if (gravillaInputs[i]) gravillaInputs[i].value = val; });
             state.gravaSieves.forEach((val, i) => { if (gravaInputs[i]) gravaInputs[i].value = val; });
+            if (state.grava2Sieves) {
+                state.grava2Sieves.forEach((val, i) => { if (grava2Inputs[i]) grava2Inputs[i].value = val; });
+            }
             
             document.getElementById("densCement").value = state.densCement;
             document.getElementById("coefCement").value = state.coefCement;
@@ -840,6 +860,12 @@ const historyManager = {
             document.getElementById("moistGrava").value = state.moistGrava || state.moistStone || 50;
             document.getElementById("absGrava").value = state.absGrava || state.absStone || 0.5;
 
+            if (document.getElementById("densGrava2")) {
+                document.getElementById("densGrava2").value = state.densGrava2 || 1600;
+                document.getElementById("coefGrava2").value = state.coefGrava2 || 0.51;
+                document.getElementById("moistGrava2").value = state.moistGrava2 || 50;
+                document.getElementById("absGrava2").value = state.absGrava2 || 0.5;
+            }
             if (state.aridosLabData) {
                 aridosLabData = JSON.parse(JSON.stringify(state.aridosLabData));
                 updateAridosLabUI();
@@ -918,25 +944,56 @@ function updateAggregatesSelectorUI() {
     const table = document.getElementById("tableSieves");
     const thCoarse1 = document.getElementById("thCoarse1");
     const thCoarse2 = document.getElementById("thCoarse2");
+    const thCoarse3 = document.getElementById("thCoarse3");
     
     const trLabGravilla = document.getElementById("trLabGravilla");
     const trLabGrava = document.getElementById("trLabGrava");
+    const trLabGrava2 = document.getElementById("trLabGrava2");
     const lblLabGravilla = document.getElementById("lblLabGravilla");
+    const lblTotalGrava2Sample = document.getElementById("lblTotalGrava2Sample");
+    
+    if (table) {
+        table.classList.remove("num-aggregates-2", "num-aggregates-3");
+        if (numAgg === 2) {
+            table.classList.add("num-aggregates-2");
+        } else if (numAgg === 3) {
+            table.classList.add("num-aggregates-3");
+        }
+    }
     
     if (numAgg === 2) {
-        if (table) table.classList.add("num-aggregates-2");
         if (thCoarse1) thCoarse1.innerText = "Piedra (g)";
         if (thCoarse2) thCoarse2.style.display = "none";
+        if (thCoarse3) thCoarse3.style.display = "none";
         
         if (lblLabGravilla) lblLabGravilla.innerText = "Piedra";
         if (trLabGrava) trLabGrava.style.display = "none";
-    } else {
-        if (table) table.classList.remove("num-aggregates-2");
+        if (trLabGrava2) trLabGrava2.style.display = "none";
+        if (lblTotalGrava2Sample) lblTotalGrava2Sample.style.display = "none";
+    } else if (numAgg === 3) {
         if (thCoarse1) thCoarse1.innerText = "Gravilla (g)";
-        if (thCoarse2) thCoarse2.style.display = "";
+        if (thCoarse2) {
+            thCoarse2.style.display = "";
+            thCoarse2.innerText = "Grava (g)";
+        }
+        if (thCoarse3) thCoarse3.style.display = "none";
         
         if (lblLabGravilla) lblLabGravilla.innerText = "Gravilla";
         if (trLabGrava) trLabGrava.style.display = "";
+        if (trLabGrava2) trLabGrava2.style.display = "none";
+        if (lblTotalGrava2Sample) lblTotalGrava2Sample.style.display = "none";
+    } else if (numAgg === 4) {
+        if (thCoarse1) thCoarse1.innerText = "Gravilla (g)";
+        if (thCoarse2) {
+            thCoarse2.style.display = "";
+            thCoarse2.innerText = "Grava 1 (g)";
+        }
+        if (thCoarse3) thCoarse3.style.display = "";
+        
+        if (lblLabGravilla) lblLabGravilla.innerText = "Gravilla";
+        if (trLabGrava) trLabGrava.style.display = "";
+        if (trLabGrava2) trLabGrava2.style.display = "";
+        if (lblTotalGrava2Sample) lblTotalGrava2Sample.style.display = "";
     }
 }
 
@@ -1808,7 +1865,7 @@ function setupEventListeners() {
                 console.error("Error saving support ticket to local storage:", err);
             }
             
-            // Post ticket details to Python backend API to send email to hormixia@gmail.com
+            // Post ticket details to Python backend API to log ticket
             fetch('/api/support', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1831,6 +1888,253 @@ function setupEventListeners() {
             if (supportIdContainer) supportIdContainer.innerText = supportId;
             supportForm.style.display = "none";
             if (supportSuccessScreen) supportSuccessScreen.style.display = "block";
+        });
+    }
+
+    // --- ADMIN SUPPORT PANEL SYSTEM ---
+    let adminTicketsList = [];
+    let activeAdminTicketId = null;
+
+    const loadAdminTicketsList = () => {
+        const listContainer = document.getElementById("adminTicketsListContainer");
+        if (listContainer) {
+            listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 20px 0;">Cargando tickets...</div>';
+        }
+        
+        fetch('/api/support/list')
+            .then(res => {
+                if (!res.ok) throw new Error("Error cargando tickets de soporte");
+                return res.json();
+            })
+            .then(data => {
+                // Sort by date descending (newest first)
+                adminTicketsList = data.sort((a, b) => (b.date || 0) - (a.date || 0));
+                renderAdminTickets();
+                
+                // If a ticket is currently active, re-select it to update details
+                if (activeAdminTicketId) {
+                    const activeTicket = adminTicketsList.find(t => t.ticket_id === activeAdminTicketId);
+                    if (activeTicket) {
+                        renderAdminTicketDetail(activeTicket);
+                    } else {
+                        resetAdminTicketDetail();
+                    }
+                } else {
+                    resetAdminTicketDetail();
+                }
+            })
+            .catch(err => {
+                console.error("Error loading tickets:", err);
+                if (listContainer) {
+                    listContainer.innerHTML = `<div style="text-align: center; color: var(--error); font-size: 0.85rem; padding: 20px 0;">❌ Error al conectar con el servidor: ${err.message}</div>`;
+                }
+            });
+    };
+
+    const renderAdminTickets = () => {
+        const listContainer = document.getElementById("adminTicketsListContainer");
+        if (!listContainer) return;
+        
+        const searchQuery = document.getElementById("inputSearchAdminTickets")?.value.toLowerCase().trim() || "";
+        const statusFilter = document.getElementById("selectFilterAdminTicketsStatus")?.value || "todos";
+        
+        // Filter tickets
+        const filtered = adminTicketsList.filter(t => {
+            const matchesSearch = 
+                (t.ticket_id || "").toLowerCase().includes(searchQuery) ||
+                (t.email || "").toLowerCase().includes(searchQuery) ||
+                (t.subject || "").toLowerCase().includes(searchQuery) ||
+                (t.message || "").toLowerCase().includes(searchQuery);
+                
+            const matchesStatus = statusFilter === "todos" || t.status === statusFilter;
+            
+            return matchesSearch && matchesStatus;
+        });
+        
+        if (filtered.length === 0) {
+            listContainer.innerHTML = '<div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 20px 0;">No se encontraron tickets.</div>';
+            return;
+        }
+        
+        listContainer.innerHTML = "";
+        filtered.forEach(t => {
+            const ticketDiv = document.createElement("div");
+            ticketDiv.style.padding = "12px";
+            ticketDiv.style.borderRadius = "8px";
+            ticketDiv.style.border = "1px solid var(--border-color)";
+            ticketDiv.style.cursor = "pointer";
+            ticketDiv.style.transition = "all 0.2s ease";
+            ticketDiv.style.backgroundColor = t.ticket_id === activeAdminTicketId ? "rgba(16, 185, 129, 0.08)" : "rgba(255, 255, 255, 0.01)";
+            if (t.ticket_id === activeAdminTicketId) {
+                ticketDiv.style.borderColor = "var(--accent)";
+            }
+            
+            ticketDiv.addEventListener("mouseenter", () => {
+                if (t.ticket_id !== activeAdminTicketId) {
+                    ticketDiv.style.backgroundColor = "rgba(255,255,255,0.03)";
+                }
+            });
+            ticketDiv.addEventListener("mouseleave", () => {
+                if (t.ticket_id !== activeAdminTicketId) {
+                    ticketDiv.style.backgroundColor = "rgba(255,255,255,0.01)";
+                }
+            });
+            
+            ticketDiv.addEventListener("click", () => {
+                activeAdminTicketId = t.ticket_id;
+                renderAdminTickets(); // Redraw list to update active highlight
+                renderAdminTicketDetail(t);
+            });
+            
+            const dateStr = t.date ? new Date(t.date).toLocaleString('es-AR', { dateStyle: 'short', timeStyle: 'short' }) : "S/D";
+            
+            // Determine status badge class
+            let badgeClass = "badge-muted";
+            if (t.status === "Abierto") badgeClass = "badge-warning";
+            else if (t.status === "En Proceso") badgeClass = "badge-info";
+            else if (t.status === "Resuelto") badgeClass = "badge-success";
+            
+            ticketDiv.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                    <strong style="font-size: 0.8rem; color: var(--accent); font-family: monospace;">${t.ticket_id || 'S/D'}</strong>
+                    <span class="badge-container ${badgeClass}" style="margin: 0; padding: 2px 8px; font-size: 0.7rem; border-radius: 4px; font-weight: bold;">${t.status || 'Abierto'}</span>
+                </div>
+                <div style="font-weight: 600; font-size: 0.82rem; color: var(--text-main); margin-bottom: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${t.subject || 'Sin Asunto'}</div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: var(--text-muted);">
+                    <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 150px;">${t.email || 'Anónimo'}</span>
+                    <span>${dateStr}</span>
+                </div>
+            `;
+            
+            listContainer.appendChild(ticketDiv);
+        });
+    };
+
+    const resetAdminTicketDetail = () => {
+        const detailContainer = document.getElementById("adminTicketDetailContainer");
+        if (detailContainer) {
+            detailContainer.innerHTML = `
+                <div style="text-align: center; color: var(--text-muted); font-size: 0.85rem; padding: 40px 0; margin: auto;">
+                    Selecciona un ticket de la lista para ver su información y gestionar su estado.
+                </div>
+            `;
+        }
+    };
+
+    const renderAdminTicketDetail = (ticket) => {
+        const detailContainer = document.getElementById("adminTicketDetailContainer");
+        if (!detailContainer) return;
+        
+        const dateStr = ticket.date ? new Date(ticket.date).toLocaleString('es-AR', { dateStyle: 'medium', timeStyle: 'short' }) : "S/D";
+        
+        // Options for status select
+        const statuses = ["Abierto", "En Proceso", "Resuelto", "Cerrado"];
+        const optionsHtml = statuses.map(s => `
+            <option value="${s}" ${ticket.status === s ? 'selected' : ''}>${s}</option>
+        `).join("");
+
+        detailContainer.innerHTML = `
+            <div style="display: flex; flex-direction: column; gap: 15px; height: 100%;">
+                <div style="border-bottom: 1px solid var(--border-color); padding-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 10px;">
+                    <div>
+                        <span style="font-size: 0.75rem; color: var(--text-muted); font-family: monospace;">TICKET ID</span>
+                        <h3 style="font-family: monospace; font-size: 1.2rem; color: var(--accent); font-weight: bold; margin: 2px 0 0 0;">${ticket.ticket_id}</h3>
+                    </div>
+                    <div style="text-align: right;">
+                        <span style="font-size: 0.75rem; color: var(--text-muted);">FECHA DE RECEPCIÓN</span>
+                        <div style="font-size: 0.82rem; color: var(--text-main); font-weight: 500; margin-top: 2px;">${dateStr}</div>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr; gap: 12px; background: rgba(255,255,255,0.01); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px;">
+                    <div>
+                        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold;">REMITENTE:</span>
+                        <div style="font-size: 0.88rem; color: var(--text-main); font-weight: 600; word-break: break-all; margin-top: 2px;">${ticket.email}</div>
+                    </div>
+                    <div>
+                        <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold;">ASUNTO:</span>
+                        <div style="font-size: 0.88rem; color: var(--text-main); font-weight: 600; margin-top: 2px;">${ticket.subject || 'Sin Asunto'}</div>
+                    </div>
+                </div>
+
+                <div style="flex: 1; min-height: 150px; display: flex; flex-direction: column;">
+                    <span style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; margin-bottom: 6px;">MENSAJE:</span>
+                    <div style="flex: 1; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; font-size: 0.88rem; color: var(--text-main); line-height: 1.5; white-space: pre-wrap; overflow-y: auto;">${ticket.message}</div>
+                </div>
+
+                <div style="border-top: 1px solid var(--border-color); padding-top: 15px; display: flex; align-items: flex-end; justify-content: space-between; gap: 15px; flex-wrap: wrap;">
+                    <div class="form-group" style="margin: 0; flex: 1; min-width: 150px;">
+                        <label for="selectAdminTicketStatusUpdate" style="font-weight: bold; font-size: 0.75rem;">GESTIONAR ESTADO:</label>
+                        <select id="selectAdminTicketStatusUpdate" class="form-select" style="margin-top: 5px; height: 36px; padding: 4px 8px; font-size: 0.85rem;">
+                            ${optionsHtml}
+                        </select>
+                    </div>
+                    <button type="button" id="btnSaveAdminTicketStatus" class="btn btn-primary" style="height: 36px; font-weight: bold; padding: 0 20px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                        <span>💾</span> Guardar Estado
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Bind click on Save Status
+        const btnSave = document.getElementById("btnSaveAdminTicketStatus");
+        const selectStatus = document.getElementById("selectAdminTicketStatusUpdate");
+        
+        if (btnSave && selectStatus) {
+            btnSave.addEventListener("click", () => {
+                const newStatus = selectStatus.value;
+                btnSave.disabled = true;
+                btnSave.innerText = "Guardando...";
+                
+                fetch('/api/support/update_status', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        ticket_id: ticket.ticket_id,
+                        status: newStatus
+                    })
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error("Error del servidor al actualizar estado");
+                    return res.json();
+                })
+                .then(data => {
+                    showToast("Estado actualizado correctamente", "success");
+                    loadAdminTicketsList(); // Reload lists
+                })
+                .catch(err => {
+                    console.error("Error updating ticket status:", err);
+                    showToast("Error al guardar estado: " + err.message, "error");
+                    btnSave.disabled = false;
+                    btnSave.innerHTML = "<span>💾</span> Guardar Estado";
+                });
+            });
+        }
+    };
+
+    // Bind Admin tab search and filter listeners
+    const searchInput = document.getElementById("inputSearchAdminTickets");
+    if (searchInput) {
+        searchInput.addEventListener("input", renderAdminTickets);
+    }
+    
+    const filterSelect = document.getElementById("selectFilterAdminTicketsStatus");
+    if (filterSelect) {
+        filterSelect.addEventListener("change", renderAdminTickets);
+    }
+    
+    const btnRefresh = document.getElementById("btnRefreshAdminTickets");
+    if (btnRefresh) {
+        btnRefresh.addEventListener("click", () => {
+            loadAdminTicketsList();
+            showToast("Lista de tickets actualizada", "info");
+        });
+    }
+
+    const tabNavAdminSoporte = document.getElementById("tabNavAdminSoporte");
+    if (tabNavAdminSoporte) {
+        tabNavAdminSoporte.addEventListener("click", () => {
+            loadAdminTicketsList();
         });
     }
 
@@ -2085,13 +2389,14 @@ function setupEventListeners() {
     // Material properties inputs
     ["densCement", "coefCement", "densSand", "coefSand", "moistSand", "absSand", 
      "densGravilla", "coefGravilla", "moistGravilla", "absGravilla", 
-     "densGrava", "coefGrava", "moistGrava", "absGrava"].forEach(id => {
+     "densGrava", "coefGrava", "moistGrava", "absGrava",
+     "densGrava2", "coefGrava2", "moistGrava2", "absGrava2"].forEach(id => {
         const el = document.getElementById(id);
         if (el) el.addEventListener("input", calculateAndUpdate);
     });
 
     // Sieve inputs change
-    document.querySelectorAll(".sand-sieve, .gravilla-sieve, .grava-sieve").forEach(input => {
+    document.querySelectorAll(".sand-sieve, .gravilla-sieve, .grava-sieve, .grava2-sieve").forEach(input => {
         input.addEventListener("input", calculateAndUpdate);
     });
 
@@ -2786,6 +3091,8 @@ async function calculateAndUpdate() {
     const coefGravilla = parseFloat(document.getElementById("coefGravilla")?.value || 1.0);
     const densGrava = parseFloat(document.getElementById("densGrava")?.value || 2.70);
     const coefGrava = parseFloat(document.getElementById("coefGrava")?.value || 1.0);
+    const densGrava2 = parseFloat(document.getElementById("densGrava2")?.value || 2.70);
+    const coefGrava2 = parseFloat(document.getElementById("coefGrava2")?.value || 1.0);
     
     const moistSand = parseFloat(document.getElementById("moistSand")?.value || 0.0);
     const absSand = parseFloat(document.getElementById("absSand")?.value || 0.0);
@@ -2793,6 +3100,8 @@ async function calculateAndUpdate() {
     const absGravilla = parseFloat(document.getElementById("absGravilla")?.value || 0.0);
     const moistGrava = parseFloat(document.getElementById("moistGrava")?.value || 0.0);
     const absGrava = parseFloat(document.getElementById("absGrava")?.value || 0.0);
+    const moistGrava2 = parseFloat(document.getElementById("moistGrava2")?.value || 0.0);
+    const absGrava2 = parseFloat(document.getElementById("absGrava2")?.value || 0.0);
     
     const customCement = parseFloat(document.getElementById("inputCustomCement")?.value || 350.0);
     
@@ -2800,25 +3109,31 @@ async function calculateAndUpdate() {
     const sandInputs = document.querySelectorAll(".sand-sieve");
     const gravillaInputs = document.querySelectorAll(".gravilla-sieve");
     const gravaInputs = document.querySelectorAll(".grava-sieve");
+    const grava2Inputs = document.querySelectorAll(".grava2-sieve");
     
     const sandRetained = [];
     const gravillaRetained = [];
     const gravaRetained = [];
+    const grava2Retained = [];
     
     let totalSandWt = 0;
     let totalGravillaWt = 0;
     let totalGravaWt = 0;
+    let totalGrava2Wt = 0;
     
     for (let i = 0; i < sandInputs.length; i++) {
         const sandVal = parseFloat(sandInputs[i].value) || 0;
         const gravillaVal = parseFloat(gravillaInputs[i].value) || 0;
         const gravaVal = parseFloat(gravaInputs[i].value) || 0;
+        const grava2Val = parseFloat(grava2Inputs[i]?.value) || 0;
         sandRetained.push(sandVal);
         gravillaRetained.push(gravillaVal);
         gravaRetained.push(gravaVal);
+        grava2Retained.push(grava2Val);
         totalSandWt += sandVal;
         totalGravillaWt += gravillaVal;
         totalGravaWt += gravaVal;
+        totalGrava2Wt += grava2Val;
     }
     
     // Display totals in UI
@@ -2828,20 +3143,25 @@ async function calculateAndUpdate() {
     if (totalGravillaEl) totalGravillaEl.innerText = Math.round(totalGravillaWt);
     const totalGravaEl = document.getElementById("totalGravaSample");
     if (totalGravaEl) totalGravaEl.innerText = Math.round(totalGravaWt);
+    const totalGrava2El = document.getElementById("totalGrava2Sample");
+    if (totalGrava2El) totalGrava2El.innerText = Math.round(totalGrava2Wt);
     
     // Prevent division by zero
     const cleanSandTotal = totalSandWt > 0 ? totalSandWt : 1000;
     const cleanGravillaTotal = totalGravillaWt > 0 ? totalGravillaWt : 1000;
     const cleanGravaTotal = totalGravaWt > 0 ? totalGravaWt : 1000;
+    const cleanGrava2Total = totalGrava2Wt > 0 ? totalGrava2Wt : 1000;
     
     // Calculate cumulative passing percentages
     const sandPassing = [];
     const gravillaPassing = [];
     const gravaPassing = [];
+    const grava2Passing = [];
     
     let cumRetainedSand = 0;
     let cumRetainedGravilla = 0;
     let cumRetainedGrava = 0;
+    let cumRetainedGrava2 = 0;
     
     for (let i = 0; i < sandInputs.length; i++) {
         const pctSand = (sandRetained[i] / cleanSandTotal) * 100;
@@ -2856,20 +3176,27 @@ async function calculateAndUpdate() {
         cumRetainedGrava += pctGrava;
         const passingGravaVal = Math.max(0, 100 - cumRetainedGrava);
         
+        const pctGrava2 = (grava2Retained[i] / cleanGrava2Total) * 100;
+        cumRetainedGrava2 += pctGrava2;
+        const passingGrava2Val = Math.max(0, 100 - cumRetainedGrava2);
+        
         // Save passing values for all sizes except Fondo
         if (i < SIEVE_SIZES.length) {
             sandPassing.push(passingSandVal);
             gravillaPassing.push(passingGravillaVal);
             gravaPassing.push(passingGravaVal);
+            grava2Passing.push(passingGrava2Val);
         }
     }
 
     lastCalculatedPassingSand = [...sandPassing];
     lastCalculatedPassingGravilla = [...gravillaPassing];
     lastCalculatedPassingGrava = [...gravaPassing];
+    lastCalculatedPassingGrava2 = [...grava2Passing];
     window.lastCalculatedPassingSand = lastCalculatedPassingSand;
     window.lastCalculatedPassingGravilla = lastCalculatedPassingGravilla;
     window.lastCalculatedPassingGrava = lastCalculatedPassingGrava;
+    window.lastCalculatedPassingGrava2 = lastCalculatedPassingGrava2;
     
     const activeAdditives = additives.map(add => ({
         id: add.id,
@@ -2906,12 +3233,18 @@ async function calculateAndUpdate() {
         coefGravilla: coefGravilla,
         densGrava: densGrava,
         coefGrava: coefGrava,
+        densGrava2: densGrava2,
+        coefGrava2: coefGrava2,
         moistSand: moistSand,
         absSand: absSand,
         moistGravilla: moistGravilla,
         absGravilla: absGravilla,
         moistGrava: moistGrava,
         absGrava: absGrava,
+        moistGrava2: moistGrava2,
+        absGrava2: absGrava2,
+        grava2Passing: grava2Passing,
+        grava2Ratio: grava2Ratio,
         customCement: customCement,
         additives: activeAdditives
     };
@@ -2934,8 +3267,9 @@ async function calculateAndUpdate() {
         
         gravillaRatio = data.gravillaRatio;
         gravaRatio = data.gravaRatio;
+        grava2Ratio = data.grava2Ratio || 0.0;
         sandRatio = data.sandRatio;
-        stoneRatio = gravillaRatio + gravaRatio;
+        stoneRatio = gravillaRatio + gravaRatio + grava2Ratio;
         
         const combinedSievePassing = data.combinedSievePassing;
         const bolomeyIdealPassing = data.bolomeyIdealPassing;
@@ -2947,10 +3281,12 @@ async function calculateAndUpdate() {
         const sandDryWeight = data.sandDryWeight;
         const gravillaDryWeight = data.gravillaDryWeight;
         const gravaDryWeight = data.gravaDryWeight;
+        const grava2DryWeight = data.grava2DryWeight || 0.0;
         
         const sandWetWeight = data.sandWetWeight;
         const gravillaWetWeight = data.gravillaWetWeight;
         const gravaWetWeight = data.gravaWetWeight;
+        const grava2WetWeight = data.grava2WetWeight || 0.0;
         
         const netWaterFinal = data.netWaterFinal;
         const netWaterTheoretical = data.netWaterTheoretical;
@@ -2971,7 +3307,7 @@ async function calculateAndUpdate() {
         if (resFcm) resFcm.innerText = theoreticalStr.fcm.toFixed(1);
         
         // Dynamic update of densityRealHelpText and auto pre-fill
-        const theoreticalDensity = cementBaseM3 + sandDryWeight + gravillaDryWeight + (numAggregates === 3 ? gravaDryWeight : 0) + waterTargetM3;
+        const theoreticalDensity = cementBaseM3 + sandDryWeight + gravillaDryWeight + (numAggregates >= 3 ? gravaDryWeight : 0) + (numAggregates === 4 ? grava2DryWeight : 0) + waterTargetM3;
         const densityHelpTextEl = document.getElementById("densityRealHelpText");
         if (densityHelpTextEl) {
             densityHelpTextEl.innerText = `(Teórica: ${Math.round(theoreticalDensity)} kg/m³)`;
@@ -2993,8 +3329,6 @@ async function calculateAndUpdate() {
         const resWaterTheoreticalEl = document.getElementById("resWaterTheoretical");
         if (resWaterTheoreticalEl) resWaterTheoreticalEl.innerText = netWaterTheoretical.toFixed(2);
         
-
-        
         const resSandEl = document.getElementById("resSand");
         if (resSandEl) resSandEl.innerText = sandWetWeight.toFixed(1);
         const resSandRatioEl = document.getElementById("resSandRatio");
@@ -3010,13 +3344,33 @@ async function calculateAndUpdate() {
         const resGravaRatioEl = document.getElementById("resGravaRatio");
         if (resGravaRatioEl) resGravaRatioEl.innerText = (gravaRatio * 100).toFixed(1);
         
+        const resGrava2El = document.getElementById("resGrava2");
+        if (resGrava2El) resGrava2El.innerText = grava2WetWeight.toFixed(1);
+        const resGrava2RatioEl = document.getElementById("resGrava2Ratio");
+        if (resGrava2RatioEl) resGrava2RatioEl.innerText = (grava2Ratio * 100).toFixed(1);
+        
         const gravaCard = document.querySelector(".item-grava");
+        const grava2Card = document.querySelector(".item-grava2");
         const gravillaCardLabel = document.querySelector(".item-gravilla .card-label");
-        if (numAggregates === 2) {
+        
+        if (numAggregates === 4) {
+            if (grava2Card) grava2Card.style.display = "flex";
+            if (gravaCard) {
+                gravaCard.style.display = "flex";
+                gravaCard.querySelector(".card-label").innerText = "Piedra 1";
+            }
+            if (gravillaCardLabel) gravillaCardLabel.innerText = "Gravilla";
+        } else if (numAggregates === 3) {
+            if (grava2Card) grava2Card.style.display = "none";
+            if (gravaCard) {
+                gravaCard.style.display = "flex";
+                gravaCard.querySelector(".card-label").innerText = "Piedra";
+            }
+            if (gravillaCardLabel) gravillaCardLabel.innerText = "Gravilla";
+        } else {
+            if (grava2Card) grava2Card.style.display = "none";
             if (gravaCard) gravaCard.style.display = "none";
             if (gravillaCardLabel) gravillaCardLabel.innerText = "Piedra";
-        } else {
-            if (gravaCard) gravaCard.style.display = "flex";
             if (gravillaCardLabel) gravillaCardLabel.innerText = "Gravilla";
         }
         
@@ -3155,7 +3509,7 @@ async function calculateAndUpdate() {
             }
         }
         
-        updateChart(combinedSievePassing, sandPassing, gravillaPassing, gravaPassing, fullerIdealPassing, bolomeyIdealPassing, delapenaIdealPassing);
+        updateChart(combinedSievePassing, sandPassing, gravillaPassing, gravaPassing, lastCalculatedPassingGrava2, fullerIdealPassing, bolomeyIdealPassing, delapenaIdealPassing);
         updateCounterUI();
         
         if (typeof isRestoringHistory !== "undefined" && !isRestoringHistory) {
@@ -3173,7 +3527,7 @@ async function calculateAndUpdate() {
 }
 
 
-function updateChart(combined, sand, gravilla, grava, fullerIdeal, bolomeyIdeal, delapenaIdeal) {
+function updateChart(combined, sand, gravilla, grava, grava2, fullerIdeal, bolomeyIdeal, delapenaIdeal) {
     const ctx = document.getElementById("sieveChart").getContext("2d");
 
     // Dynamic Chart Title Update
@@ -3298,6 +3652,25 @@ function updateChart(combined, sand, gravilla, grava, fullerIdeal, bolomeyIdeal,
                 fill: false,
                 hidden: true
             });
+        } else if (numAggregates === 4) {
+            datasets.push({
+                label: "Grava 1",
+                data: [...grava].reverse(),
+                borderColor: "#f59e0b",
+                borderWidth: 1.5,
+                tension: 0.1,
+                fill: false,
+                hidden: true
+            });
+            datasets.push({
+                label: "Grava 2",
+                data: [...grava2].reverse(),
+                borderColor: "#a855f7",
+                borderWidth: 1.5,
+                tension: 0.1,
+                fill: false,
+                hidden: true
+            });
         }
 
         const chartData = {
@@ -3351,13 +3724,19 @@ function updateChart(combined, sand, gravilla, grava, fullerIdeal, bolomeyIdeal,
         if (adviceBox) adviceBox.style.display = "none";
 
     } else {
-        // Combine gravilla and grava to form stone for Larrard packing analysis
+        // Combine gravilla, grava and grava2 to form stone for Larrard packing analysis
         const stone = [];
-        const g_plus_G = gravillaRatio + gravaRatio;
-        const w_g = g_plus_G > 0 ? (gravillaRatio / g_plus_G) : 0.5;
-        const w_G = g_plus_G > 0 ? (gravaRatio / g_plus_G) : 0.5;
+        const numAggregates = document.getElementById("selectNumAggregates") ? parseInt(document.getElementById("selectNumAggregates").value) : 3;
+        const g_plus_G = gravillaRatio + gravaRatio + (numAggregates === 4 ? grava2Ratio : 0.0);
+        const w_g = g_plus_G > 0 ? (gravillaRatio / g_plus_G) : 0.33;
+        const w_G = g_plus_G > 0 ? (gravaRatio / g_plus_G) : 0.33;
+        const w_G2 = g_plus_G > 0 ? (grava2Ratio / g_plus_G) : 0.34;
         for (let i = 0; i < SIEVE_SIZES.length; i++) {
-            stone.push(w_g * gravilla[i] + w_G * grava[i]);
+            if (numAggregates === 4) {
+                stone.push(w_g * gravilla[i] + w_G * grava[i] + w_G2 * grava2[i]);
+            } else {
+                stone.push(w_g * gravilla[i] + w_G * grava[i]);
+            }
         }
 
         // RENDER LARRARD PACKING CURVE CHART
@@ -4031,6 +4410,17 @@ function initOrUpdateMap() {
                 coordsInput.value = `${roundedLat}, ${roundedLon}`;
             }
             // Trigger weather fetch automatically
+            fetchLocalWeatherManual();
+        });
+
+        // Click on map to relocate marker
+        curingMapInstance.on('click', function (e) {
+            const roundedLat = e.latlng.lat.toFixed(6);
+            const roundedLon = e.latlng.lng.toFixed(6);
+            curingMarkerInstance.setLatLng(e.latlng);
+            if (coordsInput) {
+                coordsInput.value = `${roundedLat}, ${roundedLon}`;
+            }
             fetchLocalWeatherManual();
         });
     } else {
@@ -4716,7 +5106,19 @@ function updatePrintCalcMemory(customName = null) {
     
     let gravaHumidity = 0.0;
     let gravaAbsorption = 0.0;
-    if (numAgg === 3) {
+    let grava2Humidity = 0.0;
+    let grava2Absorption = 0.0;
+    if (numAgg === 4) {
+        const moistGravaEl = document.getElementById("moistGrava");
+        gravaHumidity = moistGravaEl ? parseFloat(moistGravaEl.value) || 0.0 : 0.0;
+        const absGravaEl = document.getElementById("absGrava");
+        gravaAbsorption = absGravaEl ? parseFloat(absGravaEl.value) || 0.0 : 0.0;
+        
+        const moistGrava2El = document.getElementById("moistGrava2");
+        grava2Humidity = moistGrava2El ? parseFloat(moistGrava2El.value) || 0.0 : 0.0;
+        const absGrava2El = document.getElementById("absGrava2");
+        grava2Absorption = absGrava2El ? parseFloat(absGrava2El.value) || 0.0 : 0.0;
+    } else if (numAgg === 3) {
         const moistGravaEl = document.getElementById("moistGrava");
         gravaHumidity = moistGravaEl ? parseFloat(moistGravaEl.value) || 0.0 : 0.0;
         const absGravaEl = document.getElementById("absGrava");
@@ -4733,6 +5135,8 @@ function updatePrintCalcMemory(customName = null) {
     const resGravillaRatio = document.getElementById("resGravillaRatio").innerText;
     const resGrava = document.getElementById("resGrava").innerText;
     const resGravaRatio = document.getElementById("resGravaRatio").innerText;
+    const resGrava2 = document.getElementById("resGrava2") ? document.getElementById("resGrava2").innerText : "0.0";
+    const resGrava2Ratio = document.getElementById("resGrava2Ratio") ? document.getElementById("resGrava2Ratio").innerText : "0.0";
     
     const resSlump = document.getElementById("resSlump").innerText;
     const resMF = document.getElementById("resMF").innerText;
@@ -4778,6 +5182,7 @@ function updatePrintCalcMemory(customName = null) {
     const cementDensitySolid = parseFloat(document.getElementById("densCement")?.value || 3.10);
     const sandDensitySolid = parseFloat(document.getElementById("densSand")?.value || 2.65);
     const stoneDensitySolid = parseFloat(document.getElementById("densGrava")?.value || document.getElementById("densGravilla")?.value || 2.70);
+    const grava2DensitySolid = parseFloat(document.getElementById("densGrava2")?.value || 2.70);
     
     const volCement = parseFloat(resCementPerM3) / cementDensitySolid;
     const volWater = waterDemandPerM3;
@@ -4797,14 +5202,17 @@ function updatePrintCalcMemory(customName = null) {
     const sRatio = parseFloat(resSandRatio) / 100;
     const gRatio = parseFloat(resGravillaRatio) / 100;
     const G_Ratio = parseFloat(resGravaRatio) / 100;
+    const G2_Ratio = parseFloat(resGrava2Ratio) / 100;
     
     const volSand = volAggregates * sRatio;
     const volGravilla = volAggregates * gRatio;
     const volGrava = volAggregates * G_Ratio;
+    const volGrava2 = volAggregates * G2_Ratio;
     
     const drySandPerM3 = volAggregates * sRatio * sandDensitySolid;
     const dryGravillaPerM3 = volAggregates * gRatio * stoneDensitySolid;
     const dryGravaPerM3 = volAggregates * G_Ratio * stoneDensitySolid;
+    const dryGrava2PerM3 = volAggregates * G2_Ratio * grava2DensitySolid;
     
     const volM3 = batchVol / 1000;
     
@@ -4902,12 +5310,14 @@ function updatePrintCalcMemory(customName = null) {
                     <tr><td><strong>Arena Fina</strong></td><td>${resSandRatio}%</td><td>${volSand.toFixed(1)} L</td><td>${sandDensitySolid.toFixed(2)}</td><td>${drySandPerM3.toFixed(1)} kg</td></tr>
                     <tr><td><strong>Gravilla (Árido Grueso 1)</strong></td><td>${resGravillaRatio}%</td><td>${volGravilla.toFixed(1)} L</td><td>${stoneDensitySolid.toFixed(2)}</td><td>${dryGravillaPerM3.toFixed(1)} kg</td></tr>
                     ${numAgg === 3 ? `<tr><td><strong>Grava (Árido Grueso 2)</strong></td><td>${resGravaRatio}%</td><td>${volGrava.toFixed(1)} L</td><td>${stoneDensitySolid.toFixed(2)}</td><td>${dryGravaPerM3.toFixed(1)} kg</td></tr>` : ""}
+                    ${numAgg === 4 ? `<tr><td><strong>Grava 1 (Árido Grueso 2)</strong></td><td>${resGravaRatio}%</td><td>${volGrava.toFixed(1)} L</td><td>${stoneDensitySolid.toFixed(2)}</td><td>${dryGravaPerM3.toFixed(1)} kg</td></tr>
+                    <tr><td><strong>Grava 2 (Árido Grueso 3)</strong></td><td>${resGrava2Ratio}%</td><td>${volGrava2.toFixed(1)} L</td><td>${grava2DensitySolid.toFixed(2)}</td><td>${dryGrava2PerM3.toFixed(1)} kg</td></tr>` : ""}
                     <tr style="font-weight: bold; background-color: #f8fafc;">
                         <td>Total Mezcla</td>
                         <td>100%</td>
                         <td>1000.0 L</td>
                         <td>-</td>
-                        <td>${(parseFloat(resCementPerM3) + waterDemandPerM3 + drySandPerM3 + dryGravillaPerM3 + (numAgg === 3 ? dryGravaPerM3 : 0)).toFixed(1)} kg/m³</td>
+                        <td>${(parseFloat(resCementPerM3) + waterDemandPerM3 + drySandPerM3 + dryGravillaPerM3 + (numAgg >= 3 ? dryGravaPerM3 : 0) + (numAgg === 4 ? dryGrava2PerM3 : 0)).toFixed(1)} kg/m³</td>
                     </tr>
                 </tbody>
             </table>
@@ -4937,6 +5347,8 @@ function updatePrintCalcMemory(customName = null) {
                     <tr><td><strong>Arena Fina</strong></td><td>${sandHumidity}%</td><td>${sandAbsorption}%</td><td>${drySandPerM3.toFixed(1)}</td><td><strong>${resSand} kg</strong></td></tr>
                     <tr><td><strong>Gravilla</strong></td><td>${gravillaHumidity}%</td><td>${gravillaAbsorption}%</td><td>${dryGravillaPerM3.toFixed(1)}</td><td><strong>${resGravilla} kg</strong></td></tr>
                     ${numAgg === 3 ? `<tr><td><strong>Grava</strong></td><td>${gravaHumidity}%</td><td>${gravaAbsorption}%</td><td>${dryGravaPerM3.toFixed(1)}</td><td><strong>${resGrava} kg</strong></td></tr>` : ""}
+                    ${numAgg === 4 ? `<tr><td><strong>Grava 1</strong></td><td>${gravaHumidity}%</td><td>${gravaAbsorption}%</td><td>${dryGravaPerM3.toFixed(1)}</td><td><strong>${resGrava} kg</strong></td></tr>
+                    <tr><td><strong>Grava 2</strong></td><td>${grava2Humidity}%</td><td>${grava2Absorption}%</td><td>${dryGrava2PerM3.toFixed(1)}</td><td><strong>${resGrava2} kg</strong></td></tr>` : ""}
                     <tr style="font-weight: bold; background-color: #f8fafc;">
                         <td>Agua de Amasado Neta</td>
                         <td colspan="2" style="text-align: center; font-weight: normal; font-size: 0.75rem;">Ajustada por humedad libre de áridos</td>
@@ -5612,9 +6024,10 @@ async function runRheologyAdjustment() {
     const cementBaseM3 = inputCustomCement;
     const waterTargetM3 = cementBaseM3 * inputCustomWC;
     
-    const sandDryWeight = 850.0;
-    const gravillaDryWeight = 350.0;
-    const gravaDryWeight = 650.0;
+    const sandDryWeight = lastDosificarResponse ? lastDosificarResponse.sandDryWeight : 850.0;
+    const gravillaDryWeight = lastDosificarResponse ? lastDosificarResponse.gravillaDryWeight : 350.0;
+    const gravaDryWeight = lastDosificarResponse ? lastDosificarResponse.gravaDryWeight : 650.0;
+    const grava2DryWeight = (lastDosificarResponse && lastDosificarResponse.grava2DryWeight) ? lastDosificarResponse.grava2DryWeight : 0.0;
     
     const payload = {
         sTarget,
@@ -5626,6 +6039,7 @@ async function runRheologyAdjustment() {
         sandDryWeight,
         gravillaDryWeight,
         gravaDryWeight,
+        grava2DryWeight,
         waterTargetM3,
         wcMax: inputCustomWC,
         k20: 0.01,
@@ -5730,9 +6144,10 @@ async function validateAndRescaleFormula() {
         
         const payload = {
             cementBaseM3: inputCustomCement,
-            sandDryWeight: 850.0,
-            gravillaDryWeight: 350.0,
-            gravaDryWeight: 650.0,
+            sandDryWeight: lastDosificarResponse ? lastDosificarResponse.sandDryWeight : 850.0,
+            gravillaDryWeight: lastDosificarResponse ? lastDosificarResponse.gravillaDryWeight : 350.0,
+            gravaDryWeight: lastDosificarResponse ? lastDosificarResponse.gravaDryWeight : 650.0,
+            grava2DryWeight: (lastDosificarResponse && lastDosificarResponse.grava2DryWeight) ? lastDosificarResponse.grava2DryWeight : 0.0,
             waterTargetM3: inputCustomCement * inputCustomWC,
             deltaW: dW,
             deltaC: dC,
@@ -5807,7 +6222,9 @@ function importActivePhysicalMix() {
     document.getElementById("inputIaGravilla").value = Math.round(lastDosificarResponse.gravillaDryWeight);
     
     const numAgg = parseInt(document.getElementById("selectNumAggregates")?.value || 3);
-    if (numAgg === 3) {
+    if (numAgg === 4) {
+        document.getElementById("inputIaGrava").value = Math.round(lastDosificarResponse.gravaDryWeight + lastDosificarResponse.grava2DryWeight);
+    } else if (numAgg === 3) {
         document.getElementById("inputIaGrava").value = Math.round(lastDosificarResponse.gravaDryWeight);
     } else {
         document.getElementById("inputIaGrava").value = 0;
