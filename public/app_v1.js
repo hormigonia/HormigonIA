@@ -315,6 +315,14 @@ function initLoginSystem() {
                         document.getElementById("selectUnifiedRole").value = userRole;
                     }
                     applyUserProfileFilter(userRole);
+                    
+                    // Sync to Supabase if not present in metadata
+                    if (!session.user.user_metadata?.role && window.supabase) {
+                        window.supabase.auth.updateUser({
+                            data: { role: userRole }
+                        }).catch(err => console.error("Error updating user role metadata:", err));
+                    }
+
                     if (btnAuthModal) btnAuthModal.style.display = "none";
                     if (userProfileWidget) userProfileWidget.style.display = "flex";
                     if (userNameLabel) userNameLabel.innerText = activeUser.split("@")[0];
@@ -509,13 +517,12 @@ function initLoginSystem() {
             }
 
             const selectedRole = document.getElementById("selectUnifiedRole")?.value || "completo";
-            if (authMode === "signup") {
-                localStorage.setItem("hormigonia_user_role_" + email, selectedRole);
-                if (document.getElementById("selectUserProfileRole")) {
-                    document.getElementById("selectUserProfileRole").value = selectedRole;
-                }
-                applyUserProfileFilter(selectedRole);
+            // Pre-save the chosen role locally for this email to prevent race conditions during sign-in
+            localStorage.setItem("hormigonia_user_role_" + email, selectedRole);
+            if (document.getElementById("selectUserProfileRole")) {
+                document.getElementById("selectUserProfileRole").value = selectedRole;
             }
+            applyUserProfileFilter(selectedRole);
 
             if (window.supabase) {
                 try {
@@ -528,7 +535,7 @@ function initLoginSystem() {
                         await window.signIn(email, password);
                         if (authModal) authModal.classList.remove("open");
                     } else {
-                        await window.signUp(email, password);
+                        await window.signUp(email, password, selectedRole);
                         if (authSuccessMsg) {
                             authSuccessMsg.innerText = "¡Registro enviado! Te enviamos un correo de confirmación.";
                             authSuccessMsg.style.display = "block";
@@ -1948,9 +1955,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const link = generateSharingLink();
         inputShareLink.value = link;
         
-        // Setup WhatsApp link
+        // Setup WhatsApp link with a beautiful preview card structure
         if (btnShareWhatsApp) {
-            const text = encodeURIComponent(`¡Hola! Te comparto este diseño de mezcla en HormigónIA: ${link}`);
+            const text = encodeURIComponent(
+`👷 *HormigónIA - Diseño de Mezcla* 🧪\n` +
+`¡Hola! Te comparto un nuevo diseño de dosificación optimizado.\n\n` +
+`🔗 *Enlace para abrir e importar:* ${link}`
+            );
             btnShareWhatsApp.href = `https://api.whatsapp.com/send?text=${text}`;
         }
         
@@ -2092,6 +2103,26 @@ function applyUserProfileFilter(role) {
     
     const allowedTabs = roleVisibilities[role] || roleVisibilities["completo"];
     
+    // Hide/show the advanced QC panel (GPS coordinates, map, slump tests, rheology) for the operator (albañil) role
+    const qcPanel = document.getElementById("qualityControlPanelUnified");
+    if (qcPanel) {
+        if (role === "operador") {
+            qcPanel.style.display = "none";
+        } else {
+            qcPanel.style.display = "block";
+        }
+    }
+    
+    // Hide/show the additives configuration panel depending on the role (only show for completo/servicios)
+    const additivesPanel = document.getElementById("additivesPanel");
+    if (additivesPanel) {
+        if (role === "completo" || role === "proveedor-servicios") {
+            additivesPanel.style.display = "block";
+        } else {
+            additivesPanel.style.display = "none";
+        }
+    }
+    
     let activeTabStillVisible = false;
     let firstVisibleTab = null;
     
@@ -2126,28 +2157,225 @@ function applyUserProfileFilter(role) {
     }
 }
 
+function packState(state, name) {
+    const packed = {
+        _v: 2, // version indicator
+        n: name || "", // Saved mix name
+        c: { // config
+            m: state.config.designMethod,
+            c: state.config.customCement,
+            w: state.config.customWC,
+            a: state.config.customBolomeyA,
+            ms: state.config.maxSieveSize,
+            ap: state.config.airPercentage,
+            s: state.config.manualStrength,
+            cc: state.config.cementCategory
+        },
+        ad: state.additives.map(a => ({
+            id: a.id,
+            tk: a.typeKey,
+            n: a.name,
+            d: a.dosage,
+            mn: a.minDosage,
+            mx: a.maxDosage,
+            dn: a.density,
+            t: a.type
+        })),
+        l: { // lab
+            n: state.lab.numAggregates,
+            ss: state.lab.sandSieves,
+            gvs: state.lab.gravillaSieves,
+            gvs1: state.lab.gravaSieves,
+            gvs2: state.lab.grava2Sieves,
+            dc: state.lab.densCement,
+            cc: state.lab.coefCement,
+            ds: state.lab.densSand,
+            cs: state.lab.coefSand,
+            ms: state.lab.moistSand,
+            as: state.lab.absSand,
+            dg: state.lab.densGravilla,
+            cg: state.lab.coefGravilla,
+            mg: state.lab.moistGravilla,
+            ag: state.lab.absGravilla,
+            d1: state.lab.densGrava,
+            c1: state.lab.coefGrava,
+            m1: state.lab.moistGrava,
+            a1: state.lab.absGrava,
+            d2: state.lab.densGrava2,
+            c2: state.lab.coefGrava2,
+            m2: state.lab.moistGrava2,
+            a2: state.lab.absGrava2
+        }
+    };
+    return packed;
+}
+
+function unpackState(packed) {
+    if (packed._v === 2) {
+        return {
+            name: packed.n || "",
+            config: {
+                designMethod: packed.c.m,
+                customCement: packed.c.c,
+                customWC: packed.c.w,
+                customBolomeyA: packed.c.a,
+                maxSieveSize: packed.c.ms,
+                airPercentage: packed.c.ap,
+                manualStrength: packed.c.s,
+                cementCategory: packed.c.cc
+            },
+            additives: packed.ad.map(a => ({
+                id: a.id,
+                typeKey: a.tk,
+                name: a.n,
+                dosage: a.d,
+                minDosage: a.mn,
+                maxDosage: a.mx,
+                density: a.dn,
+                type: a.t
+            })),
+            lab: {
+                numAggregates: packed.l.n,
+                sandSieves: packed.l.ss,
+                gravillaSieves: packed.l.gvs,
+                gravaSieves: packed.l.gvs1,
+                grava2Sieves: packed.l.gvs2,
+                densCement: packed.l.dc,
+                coefCement: packed.l.cc,
+                densSand: packed.l.ds,
+                coefSand: packed.l.cs,
+                moistSand: packed.l.ms,
+                absSand: packed.l.as,
+                densGravilla: packed.l.dg,
+                coefGravilla: packed.l.cg,
+                moistGravilla: packed.l.mg,
+                absGravilla: packed.l.ag,
+                densGrava: packed.l.d1,
+                coefGrava: packed.l.c1,
+                moistGrava: packed.l.m1,
+                absGrava: packed.l.a1,
+                densGrava2: packed.l.d2,
+                coefGrava2: packed.l.c2,
+                moistGrava2: packed.l.m2,
+                absGrava2: packed.l.a2
+            }
+        };
+    }
+    return packed; // Fallback for old version
+}
+
 function generateSharingLink() {
-    const state = {
+    const rawState = {
         config: historyManager.config.getState(),
         additives: historyManager.additives.getState(),
         lab: historyManager.lab.getState()
     };
-    const jsonString = JSON.stringify(state);
+    const packed = packState(rawState, activeSharedMixName || "Diseño Compartido");
+    const jsonString = JSON.stringify(packed);
     const base64 = btoa(unescape(encodeURIComponent(jsonString)));
     const sharingUrl = window.location.origin + window.location.pathname + "?compartir=" + base64;
     return sharingUrl;
 }
 
-function importSharedMixFromUrl() {
+async function saveMixProgrammatically(name, importedState) {
+    const { supabase, saveConcreteMix, deleteMix } = window;
+    const concreteClass = `H${importedState.config.manualStrength || 21}`;
+    
+    const newMix = {
+        name: name,
+        concreteClass: concreteClass,
+        config: importedState.config,
+        savedDate: Date.now(),
+        state: {
+            structuralElement: "plate", // default
+            exposureClass: "a1", // default
+            concreteClass: concreteClass,
+            batchVolume: "80", // default
+            currentClassIndex: 0,
+            config: importedState.config,
+            additives: importedState.additives,
+            lab: importedState.lab,
+            currentMixIteration: 0,
+            mixIterationHistory: []
+        },
+        location: { lat: null, lon: null, displayName: "Importada por Enlace" },
+        weather: null
+    };
+
+    try {
+        if (currentUserSession && supabase) {
+            // Save to Cloud (Supabase)
+            const mixData = {
+                name: newMix.name,
+                concrete_class: newMix.concreteClass,
+                design_method: newMix.config.designMethod || "bolomey",
+                exposure_class: "a1",
+                batch_volume: 80,
+                wc_ratio: parseFloat(newMix.config.customWC) || 0.45,
+                cement_base: parseFloat(newMix.config.customCement) || 350,
+                sieve_data: {
+                    sandPassing: newMix.state.lab.sandSieves,
+                    gravillaPassing: newMix.state.lab.gravillaSieves,
+                    gravaPassing: newMix.state.lab.gravaSieves
+                },
+                additives: newMix.state.additives,
+                materials: {
+                    config: newMix.config,
+                    lab: newMix.state.lab,
+                    state: newMix.state,
+                    location: newMix.location,
+                    weather: newMix.weather
+                }
+            };
+            
+            // Check if a mix with this name already exists in Cloud
+            try {
+                const { data: existingMixes } = await supabase
+                    .from("concrete_mixes")
+                    .select("id, name")
+                    .eq("name", name);
+                    
+                if (existingMixes && existingMixes.length > 0) {
+                    await deleteMix(existingMixes[0].id);
+                }
+            } catch (e) {
+                console.warn("Could not query existing mix to overwrite:", e);
+            }
+            await saveConcreteMix(mixData);
+        } else {
+            // Save to LocalStorage
+            const existingIdx = savedMixes.findIndex(m => m.name.toLowerCase() === name.toLowerCase());
+            if (existingIdx !== -1) {
+                savedMixes[existingIdx] = newMix;
+            } else {
+                savedMixes.push(newMix);
+            }
+            saveSavedMixesToLocalStorage();
+        }
+        await loadSavedMixes();
+    } catch (err) {
+        console.error("Error al guardar la mezcla importada automáticamente:", err);
+    }
+}
+
+async function importSharedMixFromUrl() {
     const urlParams = new URLSearchParams(window.location.search);
     const sharePayload = urlParams.get("compartir") || urlParams.get("mix");
     if (!sharePayload) return;
     
     try {
         const jsonString = decodeURIComponent(escape(atob(sharePayload)));
-        const state = JSON.parse(jsonString);
+        let state = JSON.parse(jsonString);
         
-        activeSharedMixName = "Mezcla Importada (por Enlace)";
+        let importedName = "Mezcla Importada";
+        if (state._v === 2 || state.c) {
+            if (state.n) {
+                importedName = state.n;
+            }
+            state = unpackState(state);
+        }
+        
+        activeSharedMixName = importedName;
         
         if (state.config) historyManager.config.restoreState(state.config);
         if (state.additives) historyManager.additives.restoreState(state.additives);
@@ -2164,7 +2392,10 @@ function importSharedMixFromUrl() {
         // Re-calculate results
         calculateAndUpdate();
         
-        showToast("¡Mezcla compartida importada con éxito!", "success");
+        // Auto-save the imported mix to the receiver's saved mixes list!
+        await saveMixProgrammatically(importedName, state);
+        
+        showToast(`¡Mezcla "${importedName}" importada y guardada con éxito!`, "success");
         
         // Clean URL query parameter
         const cleanUrl = window.location.origin + window.location.pathname;
@@ -5139,8 +5370,9 @@ function renderSavedMixesTable() {
             <td style="padding: 8px;">${wcVal}</td>
             <td style="padding: 8px;">${maxSieve} mm</td>
             <td style="padding: 8px; color: var(--text-muted); font-size: 0.75rem;">${dateStr}</td>
-            <td style="padding: 8px; text-align: center;">
+            <td style="padding: 8px; text-align: center; white-space: nowrap;">
                 <button type="button" class="saved-mix-btn-load" data-index="${index}">📂 Cargar</button>
+                <button type="button" class="saved-mix-btn-share" data-index="${index}">🔗 Compartir</button>
                 <button type="button" class="saved-mix-btn-del" data-index="${index}">🗑️ Borrar</button>
             </td>
         `;
@@ -5148,12 +5380,60 @@ function renderSavedMixesTable() {
         tr.querySelector(".saved-mix-btn-load").addEventListener("click", () => {
             loadSavedMixByIndex(index);
         });
+        tr.querySelector(".saved-mix-btn-share").addEventListener("click", () => {
+            shareSavedMixByIndex(index);
+        });
         tr.querySelector(".saved-mix-btn-del").addEventListener("click", () => {
             deleteSavedMixByIndex(index);
         });
         
         tableBody.appendChild(tr);
     });
+}
+
+function shareSavedMixByIndex(index) {
+    const mix = savedMixes[index];
+    if (!mix) return;
+    
+    const mixState = {
+        config: mix.config,
+        additives: mix.additives,
+        lab: mix.lab
+    };
+    
+    const packed = packState(mixState);
+    const jsonString = JSON.stringify(packed);
+    const base64 = btoa(unescape(encodeURIComponent(jsonString)));
+    const link = window.location.origin + window.location.pathname + "?compartir=" + base64;
+    
+    activeSharedMixName = mix.name;
+    
+    const shareModal = document.getElementById("shareModal");
+    const inputShareLink = document.getElementById("inputShareLink");
+    const btnShareWhatsApp = document.getElementById("btnShareWhatsApp");
+    const btnShareEmail = document.getElementById("btnShareEmail");
+    
+    if (inputShareLink) inputShareLink.value = link;
+    
+    if (btnShareWhatsApp) {
+        const text = encodeURIComponent(
+`👷 *HormigónIA - Diseño de Mezcla* 🧪\n` +
+`Te comparto la mezcla guardada: *${mix.name}*\n\n` +
+`🔗 *Enlace para abrir e importar:* ${link}`
+        );
+        btnShareWhatsApp.href = `https://api.whatsapp.com/send?text=${text}`;
+    }
+    
+    if (btnShareEmail) {
+        const subject = encodeURIComponent(`Diseño de Mezcla: ${mix.name} - HormigónIA`);
+        const body = encodeURIComponent(`Te comparto la mezcla guardada "${mix.name}". Haz clic en el siguiente enlace para abrirla e importarla en la calculadora:\n\n${link}`);
+        btnShareEmail.href = `mailto:?subject=${subject}&body=${body}`;
+    }
+    
+    if (shareModal) {
+        shareModal.open = true;
+        shareModal.classList.add("open");
+    }
 }
 
 
