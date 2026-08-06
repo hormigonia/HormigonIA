@@ -2,6 +2,7 @@ let currentUserSession = null;
 let curingInterval = null;
 let curingMapInstance = null;
 let curingMarkerInstance = null;
+let activeSharedMixName = "";
 
 function updateTabVisibility() {
     const optTabBtn = document.querySelector('.nav-tab[data-tab="optimizacion-ia"]');
@@ -305,13 +306,13 @@ function initLoginSystem() {
                 currentUserSession = session;
                 if (session) {
                     activeUser = session.user.email;
-                    const userRole = session.user.user_metadata?.role || localStorage.getItem("hormigonia_user_role") || "completo";
-                    localStorage.setItem("hormigonia_user_role", userRole);
+                    const userRole = session.user.user_metadata?.role || localStorage.getItem("hormigonia_user_role_" + activeUser) || "completo";
+                    localStorage.setItem("hormigonia_user_role_" + activeUser, userRole);
                     if (document.getElementById("selectUserProfileRole")) {
                         document.getElementById("selectUserProfileRole").value = userRole;
                     }
-                    if (document.getElementById("selectLocalUserRole")) {
-                        document.getElementById("selectLocalUserRole").value = userRole;
+                    if (document.getElementById("selectUnifiedRole")) {
+                        document.getElementById("selectUnifiedRole").value = userRole;
                     }
                     applyUserProfileFilter(userRole);
                     if (btnAuthModal) btnAuthModal.style.display = "none";
@@ -329,6 +330,12 @@ function initLoginSystem() {
                     if (authOfflineAndForms) authOfflineAndForms.style.display = "none";
                 } else {
                     activeUser = null;
+                    const guestRole = localStorage.getItem("hormigonia_user_role_guest") || "completo";
+                    if (document.getElementById("selectUnifiedRole")) {
+                        document.getElementById("selectUnifiedRole").value = guestRole;
+                    }
+                    applyUserProfileFilter(guestRole);
+                    
                     if (btnAuthModal) btnAuthModal.style.display = "inline-flex";
                     if (userProfileWidget) userProfileWidget.style.display = "none";
                     LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes";
@@ -343,6 +350,16 @@ function initLoginSystem() {
             const savedUser = localStorage.getItem("hormigonmix_active_user");
             if (savedUser) {
                 activeUser = savedUser;
+                const userRole = localStorage.getItem("hormigonia_user_role_" + activeUser) || "completo";
+                localStorage.setItem("hormigonia_user_role_" + activeUser, userRole);
+                if (document.getElementById("selectUserProfileRole")) {
+                    document.getElementById("selectUserProfileRole").value = userRole;
+                }
+                if (document.getElementById("selectUnifiedRole")) {
+                    document.getElementById("selectUnifiedRole").value = userRole;
+                }
+                applyUserProfileFilter(userRole);
+                
                 if (btnAuthModal) btnAuthModal.style.display = "none";
                 if (userProfileWidget) userProfileWidget.style.display = "flex";
                 if (userNameLabel) userNameLabel.innerText = activeUser.split("@")[0];
@@ -355,6 +372,12 @@ function initLoginSystem() {
                 if (authOfflineAndForms) authOfflineAndForms.style.display = "none";
             } else {
                 activeUser = null;
+                const guestRole = localStorage.getItem("hormigonia_user_role_guest") || "completo";
+                if (document.getElementById("selectUnifiedRole")) {
+                    document.getElementById("selectUnifiedRole").value = guestRole;
+                }
+                applyUserProfileFilter(guestRole);
+                
                 if (btnAuthModal) btnAuthModal.style.display = "inline-flex";
                 if (userProfileWidget) userProfileWidget.style.display = "none";
                 LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes";
@@ -423,7 +446,7 @@ function initLoginSystem() {
                 
                 const selectUserProfileRole = document.getElementById("selectUserProfileRole");
                 if (selectUserProfileRole) {
-                    selectUserProfileRole.value = localStorage.getItem("hormigonia_user_role") || "completo";
+                    selectUserProfileRole.value = localStorage.getItem("hormigonia_user_role_" + activeUser) || "completo";
                 }
             }
         });
@@ -485,9 +508,9 @@ function initLoginSystem() {
                 return;
             }
 
-            const selectedRole = document.getElementById("selectAuthRole")?.value || "completo";
+            const selectedRole = document.getElementById("selectUnifiedRole")?.value || "completo";
             if (authMode === "signup") {
-                localStorage.setItem("hormigonia_user_role", selectedRole);
+                localStorage.setItem("hormigonia_user_role_" + email, selectedRole);
                 if (document.getElementById("selectUserProfileRole")) {
                     document.getElementById("selectUserProfileRole").value = selectedRole;
                 }
@@ -1605,23 +1628,27 @@ document.addEventListener("DOMContentLoaded", () => {
         if (qcAccordionArrow) {
             qcAccordionArrow.innerText = "🔼";
         }
+        // Initialize map because container is now active and appended!
+        setTimeout(() => {
+            initOrUpdateMap();
+        }, 150);
     }
 
     // Setup Profile Role Selectors (inside authModal)
     const selectUserProfileRole = document.getElementById("selectUserProfileRole");
-    const selectLocalUserRole = document.getElementById("selectLocalUserRole");
+    const selectUnifiedRole = document.getElementById("selectUnifiedRole");
     const btnApplyLocalProfile = document.getElementById("btnApplyLocalProfile");
     const btnSaveModalProfile = document.getElementById("btnSaveModalProfile");
 
-    const savedRole = localStorage.getItem("hormigonia_user_role") || "completo";
+    const savedRole = localStorage.getItem("hormigonia_user_role_guest") || "completo";
     if (selectUserProfileRole) selectUserProfileRole.value = savedRole;
-    if (selectLocalUserRole) selectLocalUserRole.value = savedRole;
+    if (selectUnifiedRole) selectUnifiedRole.value = savedRole;
     setTimeout(() => applyUserProfileFilter(savedRole), 0);
 
-    if (btnApplyLocalProfile && selectLocalUserRole) {
+    if (btnApplyLocalProfile && selectUnifiedRole) {
         btnApplyLocalProfile.addEventListener("click", () => {
-            const role = selectLocalUserRole.value;
-            localStorage.setItem("hormigonia_user_role", role);
+            const role = selectUnifiedRole.value;
+            localStorage.setItem("hormigonia_user_role_guest", role);
             if (selectUserProfileRole) selectUserProfileRole.value = role;
             applyUserProfileFilter(role);
             if (authModal) {
@@ -1635,8 +1662,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnSaveModalProfile && selectUserProfileRole) {
         btnSaveModalProfile.addEventListener("click", () => {
             const role = selectUserProfileRole.value;
-            localStorage.setItem("hormigonia_user_role", role);
-            if (selectLocalUserRole) selectLocalUserRole.value = role;
+            const targetKey = activeUser ? "hormigonia_user_role_" + activeUser : "hormigonia_user_role_guest";
+            localStorage.setItem(targetKey, role);
+            if (selectUnifiedRole) selectUnifiedRole.value = role;
             applyUserProfileFilter(role);
             
             // If logged in, save it to Supabase metadata if available
@@ -1965,6 +1993,58 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
         });
     }
+
+    // Setup Operator Volume Controls bidirectional synchronization
+    const inputProdVolumeValue = document.getElementById("inputProdVolumeValue");
+    const selectProdVolumeUnit = document.getElementById("selectProdVolumeUnit");
+    
+    const syncProdVolumeToCalculator = () => {
+        if (!inputProdVolumeValue || !selectProdVolumeUnit) return;
+        const val = parseFloat(inputProdVolumeValue.value) || 80;
+        const unit = selectProdVolumeUnit.value;
+        
+        const calcVal = document.getElementById("inputBatchVolumeValue");
+        const calcUnit = document.getElementById("selectBatchVolumeUnit");
+        
+        if (calcVal) calcVal.value = val;
+        if (calcUnit) calcUnit.value = unit;
+        
+        // Sync active class on operator badges
+        document.querySelectorAll(".btn-vol-badge-prod").forEach(btn => {
+            if (parseFloat(btn.dataset.value) === val && btn.dataset.unit === unit) {
+                btn.classList.add("active");
+            } else {
+                btn.classList.remove("active");
+            }
+        });
+        
+        // Sync active class on calculator badges
+        document.querySelectorAll(".btn-vol-badge").forEach(btn => {
+            if (parseFloat(btn.dataset.value) === val && btn.dataset.unit === unit) {
+                btn.classList.add("active");
+            } else {
+                btn.classList.remove("active");
+            }
+        });
+        
+        syncLitersFromUI();
+    };
+
+    if (inputProdVolumeValue) {
+        inputProdVolumeValue.addEventListener("input", syncProdVolumeToCalculator);
+        inputProdVolumeValue.addEventListener("change", syncProdVolumeToCalculator);
+    }
+    if (selectProdVolumeUnit) {
+        selectProdVolumeUnit.addEventListener("change", syncProdVolumeToCalculator);
+    }
+    
+    document.querySelectorAll(".btn-vol-badge-prod").forEach(btn => {
+        btn.addEventListener("click", () => {
+            if (inputProdVolumeValue) inputProdVolumeValue.value = btn.dataset.value;
+            if (selectProdVolumeUnit) selectProdVolumeUnit.value = btn.dataset.unit;
+            syncProdVolumeToCalculator();
+        });
+    });
 });
 
 function switchTab(tabName) {
@@ -1988,11 +2068,15 @@ function switchTab(tabName) {
         calculateAndUpdate();
     }
     
-    // Invalidate map size if entering Producción tab to fix Leaflet layout
-    if (tabName === "produccion" && typeof curingMapInstance !== 'undefined' && curingMapInstance) {
+    // Invalidate map size or initialize map if entering Producción tab to fix Leaflet layout
+    if (tabName === "produccion") {
         setTimeout(() => {
-            curingMapInstance.invalidateSize();
-        }, 100);
+            if (typeof curingMapInstance !== 'undefined' && curingMapInstance) {
+                curingMapInstance.invalidateSize();
+            } else if (typeof initOrUpdateMap === 'function') {
+                initOrUpdateMap();
+            }
+        }, 150);
     }
 }
 
@@ -2062,6 +2146,8 @@ function importSharedMixFromUrl() {
     try {
         const jsonString = decodeURIComponent(escape(atob(sharePayload)));
         const state = JSON.parse(jsonString);
+        
+        activeSharedMixName = "Mezcla Importada (por Enlace)";
         
         if (state.config) historyManager.config.restoreState(state.config);
         if (state.additives) historyManager.additives.restoreState(state.additives);
@@ -3836,6 +3922,58 @@ async function calculateAndUpdate() {
         }
         
         saveActiveDraft();
+
+        // Update active mix name and Operator's Materials Table
+        const activeMixNameDisplay = document.getElementById("activeMixNameDisplay");
+        if (activeMixNameDisplay) {
+            activeMixNameDisplay.innerText = activeSharedMixName || `Dosificación Estándar: ${concreteClass}`;
+        }
+        
+        const tableBody = document.getElementById("prodMaterialsTableBody");
+        if (tableBody) {
+            tableBody.innerHTML = "";
+            
+            const cementVal = Math.round(cementBaseM3 * volM3);
+            const waterVal = netWaterFinal; 
+            const sandVal = sandWetWeight; 
+            const gravillaVal = gravillaWetWeight; 
+            const gravaVal = gravaWetWeight; 
+            const grava2Val = grava2WetWeight; 
+            
+            const materials = [
+                { name: "Cemento", value: cementVal, unit: "kg", desc: `${(cementVal / 50).toFixed(1)} bolsas de 50kg` },
+                { name: "Agua de Amasado", value: waterVal.toFixed(1), unit: "L", desc: `${(waterVal / 10).toFixed(1)} baldes de 10L` },
+                { name: "Arena Húmeda", value: sandVal.toFixed(1), unit: "kg", desc: `${(sandVal / 1.6 / 20).toFixed(1)} baldes de 20L` }
+            ];
+            
+            if (numAggregates === 2) {
+                materials.push({ name: "Piedra Húmeda (Grava)", value: gravillaVal.toFixed(1), unit: "kg", desc: `${(gravillaVal / 1.5 / 20).toFixed(1)} baldes de 20L` });
+            } else {
+                materials.push({ name: "Gravilla Húmeda", value: gravillaVal.toFixed(1), unit: "kg", desc: `${(gravillaVal / 1.5 / 20).toFixed(1)} baldes de 20L` });
+            }
+            
+            if (numAggregates >= 3) {
+                materials.push({ name: "Piedra/Grava 1 Húmeda", value: gravaVal.toFixed(1), unit: "kg", desc: `${(gravaVal / 1.5 / 20).toFixed(1)} baldes de 20L` });
+            }
+            if (numAggregates === 4) {
+                materials.push({ name: "Piedra/Grava 2 Húmeda", value: grava2Val.toFixed(1), unit: "kg", desc: `${(grava2Val / 1.5 / 20).toFixed(1)} baldes de 20L` });
+            }
+            
+            admixtureRecipes.forEach(rec => {
+                materials.push({ name: `Aditivo: ${rec.name}`, value: rec.wetWeight.toFixed(2), unit: "kg / L", desc: `${(rec.wetWeight * 1000).toFixed(0)} ml` });
+            });
+            
+            materials.forEach(mat => {
+                const tr = document.createElement("tr");
+                tr.style.borderBottom = "1px solid rgba(255,255,255,0.05)";
+                tr.innerHTML = `
+                    <td style="padding: 12px; font-weight: 600; color: var(--text);">${mat.name}</td>
+                    <td style="padding: 12px; text-align: right; font-weight: 700; color: var(--accent);">${mat.value} ${mat.unit}</td>
+                    <td style="padding: 12px; text-align: right; color: var(--text-muted); font-size: 0.78rem;">${mat.desc}</td>
+                `;
+                tableBody.appendChild(tr);
+            });
+        }
     } catch (err) {
         console.error("Error de comunicaciÃ³n con el servidor:", err);
         showServerErrorOverlay();
