@@ -1247,6 +1247,22 @@ label {
     color: #fff;
 }
 
+.saved-mix-btn-share {
+    background-color: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    cursor: pointer;
+    margin-right: 4px;
+    transition: all 0.2s;
+}
+.saved-mix-btn-share:hover {
+    background-color: #3b82f6;
+    color: #fff;
+}
+
 .saved-mix-btn-del {
     background-color: rgba(239, 68, 68, 0.15);
     color: #f87171;
