@@ -302,6 +302,12 @@ function initLoginSystem() {
                 currentUserSession = session;
                 if (session) {
                     activeUser = session.user.email;
+                    const userRole = session.user.user_metadata?.role || localStorage.getItem("hormigonia_user_role") || "completo";
+                    localStorage.setItem("hormigonia_user_role", userRole);
+                    if (document.getElementById("selectUserProfileRole")) {
+                        document.getElementById("selectUserProfileRole").value = userRole;
+                    }
+                    applyUserProfileFilter(userRole);
                     if (btnAuthModal) btnAuthModal.style.display = "none";
                     if (userProfileWidget) userProfileWidget.style.display = "flex";
                     if (userNameLabel) userNameLabel.innerText = activeUser.split("@")[0];
@@ -382,6 +388,7 @@ function initLoginSystem() {
                 if (authModalTitle) authModalTitle.innerText = "Registrarse";
                 if (authModalSubtitle) authModalSubtitle.innerText = "Creá una cuenta en HormigonIA para sincronizar tus mezclas.";
                 if (groupConfirmPassword) groupConfirmPassword.style.display = "block";
+                if (document.getElementById("groupAuthRole")) document.getElementById("groupAuthRole").style.display = "block";
                 if (btnSubmitAuth) btnSubmitAuth.innerText = "Registrarse";
                 btnToggleAuthMode.innerText = "¿Ya tenés cuenta? Iniciá Sesión";
             } else {
@@ -389,6 +396,7 @@ function initLoginSystem() {
                 if (authModalTitle) authModalTitle.innerText = "Iniciar Sesión";
                 if (authModalSubtitle) authModalSubtitle.innerText = "Accedé a tu cuenta de HormigonIA para sincronizar tus dosificaciones.";
                 if (groupConfirmPassword) groupConfirmPassword.style.display = "none";
+                if (document.getElementById("groupAuthRole")) document.getElementById("groupAuthRole").style.display = "none";
                 if (btnSubmitAuth) btnSubmitAuth.innerText = "Entrar";
                 btnToggleAuthMode.innerText = "¿No tenés cuenta? Registrate";
             }
@@ -414,6 +422,15 @@ function initLoginSystem() {
                     authErrorMsg.style.display = "block";
                 }
                 return;
+            }
+
+            const selectedRole = document.getElementById("selectAuthRole")?.value || "completo";
+            if (authMode === "signup") {
+                localStorage.setItem("hormigonia_user_role", selectedRole);
+                if (document.getElementById("selectUserProfileRole")) {
+                    document.getElementById("selectUserProfileRole").value = selectedRole;
+                }
+                applyUserProfileFilter(selectedRole);
             }
 
             if (window.supabase) {
@@ -1514,6 +1531,35 @@ function loadActiveDraft() {
 
 // Initialise Application
 document.addEventListener("DOMContentLoaded", () => {
+    // Relocate Quality Control Panel to Producción Tab dynamically
+    const qcPanel = document.getElementById("qualityControlPanelUnified");
+    const prodGrid = document.getElementById("produccionWorkspaceGrid");
+    if (qcPanel && prodGrid) {
+        prodGrid.appendChild(qcPanel);
+        const qcAccordionBody = document.getElementById("qcAccordionBody");
+        if (qcAccordionBody) {
+            qcAccordionBody.style.display = "flex";
+        }
+        const qcAccordionArrow = document.getElementById("qcAccordionArrow");
+        if (qcAccordionArrow) {
+            qcAccordionArrow.innerText = "🔼";
+        }
+    }
+
+    // Setup Profile Role Selector
+    const selectUserProfileRole = document.getElementById("selectUserProfileRole");
+    if (selectUserProfileRole) {
+        selectUserProfileRole.addEventListener("change", () => {
+            const role = selectUserProfileRole.value;
+            applyUserProfileFilter(role);
+            localStorage.setItem("hormigonia_user_role", role);
+        });
+        
+        const savedRole = localStorage.getItem("hormigonia_user_role") || "completo";
+        selectUserProfileRole.value = savedRole;
+        setTimeout(() => applyUserProfileFilter(savedRole), 0);
+    }
+
     // Intercept inputBatchVolume value setting to sync custom UI
     const inputBatchVolume = document.getElementById("inputBatchVolume");
     if (inputBatchVolume) {
@@ -1671,25 +1717,8 @@ document.addEventListener("DOMContentLoaded", () => {
     // Tab switching logic
     document.querySelectorAll(".nav-tab").forEach(tab => {
         tab.addEventListener("click", () => {
-            if (tab.classList.contains("disabled")) return;
-            
-            document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
-            tab.classList.add("active");
-            
             const tabName = tab.getAttribute("data-tab");
-            document.querySelectorAll(".tab-content").forEach(content => {
-                content.classList.remove("active");
-            });
-            
-            const activeContent = document.getElementById(`tab-${tabName}`);
-            if (activeContent) {
-                activeContent.classList.add("active");
-            }
-            
-            // Redraw chart if entering Laboratorio de Hormigón
-            if (tabName === "laboratorio-hormigon") {
-                calculateAndUpdate();
-            }
+            switchTab(tabName);
         });
     });
 
@@ -1777,6 +1806,81 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initial tab visibility update based on restored user session
     updateTabVisibility();
 });
+
+function switchTab(tabName) {
+    const tab = document.querySelector(`.nav-tab[data-tab="${tabName}"]`);
+    if (!tab || tab.classList.contains("disabled")) return;
+    
+    document.querySelectorAll(".nav-tab").forEach(t => t.classList.remove("active"));
+    tab.classList.add("active");
+    
+    document.querySelectorAll(".tab-content").forEach(content => {
+        content.classList.remove("active");
+    });
+    
+    const activeContent = document.getElementById(`tab-${tabName}`);
+    if (activeContent) {
+        activeContent.classList.add("active");
+    }
+    
+    // Redraw chart if entering Laboratorio de Hormigón
+    if (tabName === "laboratorio-hormigon") {
+        calculateAndUpdate();
+    }
+    
+    // Invalidate map size if entering Producción tab to fix Leaflet layout
+    if (tabName === "produccion" && typeof curingMapInstance !== 'undefined' && curingMapInstance) {
+        setTimeout(() => {
+            curingMapInstance.invalidateSize();
+        }, 100);
+    }
+}
+
+function applyUserProfileFilter(role) {
+    const tabButtons = document.querySelectorAll(".nav-tab");
+    
+    const roleVisibilities = {
+        "completo": ["hormigon", "laboratorio-hormigon", "laboratorio-aridos", "optimizacion-ia", "produccion"],
+        "proveedor-materiales": ["hormigon", "laboratorio-aridos"],
+        "proveedor-servicios": ["hormigon", "laboratorio-hormigon", "optimizacion-ia"],
+        "operador": ["produccion"]
+    };
+    
+    const allowedTabs = roleVisibilities[role] || roleVisibilities["completo"];
+    
+    let activeTabStillVisible = false;
+    let firstVisibleTab = null;
+    
+    tabButtons.forEach(btn => {
+        const tabName = btn.getAttribute("data-tab");
+        
+        if (tabName === "admin-soporte") {
+            const isAdmin = (typeof currentUserSession !== 'undefined' && currentUserSession && currentUserSession.user?.email === 'admin@hormigonia.com');
+            if (isAdmin) {
+                btn.style.display = "inline-block";
+                if (!firstVisibleTab) firstVisibleTab = tabName;
+            } else {
+                btn.style.display = "none";
+            }
+            return;
+        }
+        
+        if (allowedTabs.includes(tabName)) {
+            btn.style.display = "inline-block";
+            if (!firstVisibleTab) firstVisibleTab = tabName;
+            if (btn.classList.contains("active")) {
+                activeTabStillVisible = true;
+            }
+        } else {
+            btn.style.display = "none";
+            btn.classList.remove("active");
+        }
+    });
+    
+    if (!activeTabStillVisible && firstVisibleTab) {
+        switchTab(firstVisibleTab);
+    }
+}
 
 // Event Listeners Setup
 function setupEventListeners() {
