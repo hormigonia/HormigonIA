@@ -555,7 +555,7 @@
                                 </div>
 
                                 <!-- SECCIÓN 2: CONTROL DE CALIDAD Y OPTIMIZACIÓN REOLÓGICA (DOBLE COLUMNA ORIGINAL) -->
-                                <div class="panel-body panel-quality-body" style="padding: 0; display: grid; grid-template-columns: 1fr 1.2fr; gap: 15px; width: 100%;">
+                                <div class="panel-body panel-quality-body" style="padding: 0; width: 100%;">
                                     <!-- Columna Izquierda: Ingreso de Resultados de Ensayos Realizados -->
                                     <div style="background-color: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px;">
                                         <h3 style="font-size: 0.88rem; font-weight: 600; color: var(--accent); margin-bottom: 2px;">🧪 Ensayos del Pastón (Laboratorio / Obra)</h3>
@@ -603,9 +603,9 @@
                                     </div>
                                     
                                     <!-- Columna Derecha: Pestañas de Acción e Historial -->
-                                    <div style="display: flex; flex-direction: column; gap: 8px; background-color: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                    <div style="display: flex; flex-direction: column; gap: 8px; background-color: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); min-width: 0; flex: 1;">
                                         <!-- Encabezado de Pestañas -->
-                                        <div class="tab-header" style="display: flex; gap: 4px; border-bottom: 1px solid var(--border-color); padding-bottom: 2px;">
+                                        <div class="tab-header" style="display: flex; flex-wrap: wrap; gap: 4px; border-bottom: 1px solid var(--border-color); padding-bottom: 2px;">
                                             <button type="button" id="tabBtnRheology" class="tab-btn active" style="padding: 6px 12px; font-size: 0.78rem; font-weight: bold; background: none; border: none; border-bottom: 2px solid var(--accent); color: var(--accent); cursor: pointer;">🧪 Ajuste Reológico (Fresco)</button>
                                             <button type="button" id="tabBtnStrength" class="tab-btn" style="padding: 6px 12px; font-size: 0.78rem; font-weight: bold; background: none; border: none; color: var(--text-muted); cursor: pointer;">📈 Reformulación de Resistencia</button>
                                         </div>
@@ -696,7 +696,61 @@
 
             <!-- TAB CONTENT: PRODUCCIÓN -->
             <div id="tab-produccion" class="tab-content">
-                <div class="workspace-grid" style="margin-top: 20px;" id="produccionWorkspaceGrid">
+                <!-- PANEL DE DOSIFICACIÓN Y VOLUMEN PARA EL OPERADOR -->
+                <section class="panel" id="operatorBatchVolumePanel" style="margin-top: 20px; background: var(--bg-panel); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 15px;">
+                        <h3 style="font-size: 1.05rem; font-weight: 700; color: var(--primary); margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 1.2rem;">🚜</span> Dosificación y Volumen del Pastón
+                        </h3>
+                        <span class="badge" style="background-color: var(--accent); color: #000; font-size: 0.72rem; font-weight: 700; padding: 3px 8px; border-radius: 4px;">Vista Operador</span>
+                    </div>
+                    
+                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap; margin-bottom: 15px;">
+                        <div style="flex: 1; min-width: 200px;">
+                            <label style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 6px;">Volumen a Preparar:</label>
+                            <div style="display: flex; gap: 8px;">
+                                <input type="number" id="inputProdVolumeValue" class="form-input" value="80" min="1" step="any" style="flex: 1; text-align: center; height: 38px; font-size: 0.95rem; font-weight: 600; color: var(--text);">
+                                <select id="selectProdVolumeUnit" class="form-select" style="width: auto; min-width: 90px; height: 38px; padding: 4px 8px; font-weight: 600;">
+                                    <option value="L" selected>L (Litros)</option>
+                                    <option value="m3">m³ (Metros)</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div style="flex: 1.5; min-width: 220px;">
+                            <label style="font-size: 0.8rem; color: var(--text-muted); font-weight: bold; display: block; margin-bottom: 6px;">Diseño de Mezcla Cargado:</label>
+                            <div id="activeMixNameDisplay" style="font-size: 0.9rem; font-weight: bold; color: var(--accent); padding: 8px 12px; background: rgba(0,0,0,0.2); border-radius: 6px; border: 1px solid var(--border-color); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 20px; height: 38px; box-sizing: border-box;">
+                                Dosificación H-21 IA
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Badges Rápidos para el Operador -->
+                    <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px;">
+                        <button type="button" class="btn-vol-badge-prod active" data-value="80" data-unit="L" style="font-size: 0.75rem; padding: 6px 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); border-radius: 6px; color: var(--text); cursor: pointer; font-weight: bold; transition: all 0.2s;">80 L</button>
+                        <button type="button" class="btn-vol-badge-prod" data-value="110" data-unit="L" style="font-size: 0.75rem; padding: 6px 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); border-radius: 6px; color: var(--text); cursor: pointer; font-weight: bold; transition: all 0.2s;">110 L</button>
+                        <button type="button" class="btn-vol-badge-prod" data-value="200" data-unit="L" style="font-size: 0.75rem; padding: 6px 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); border-radius: 6px; color: var(--text); cursor: pointer; font-weight: bold; transition: all 0.2s;">200 L</button>
+                        <button type="button" class="btn-vol-badge-prod" data-value="6" data-unit="m3" style="font-size: 0.75rem; padding: 6px 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); border-radius: 6px; color: var(--text); cursor: pointer; font-weight: bold; transition: all 0.2s;">6 m³</button>
+                        <button type="button" class="btn-vol-badge-prod" data-value="8" data-unit="m3" style="font-size: 0.75rem; padding: 6px 12px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.03); border-radius: 6px; color: var(--text); cursor: pointer; font-weight: bold; transition: all 0.2s;">8 m³</button>
+                    </div>
+
+                    <!-- Tabla de Cantidades de Materiales -->
+                    <div style="border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: rgba(0,0,0,0.15);">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+                            <thead>
+                                <tr style="background: rgba(255,255,255,0.04); border-bottom: 1px solid var(--border-color);">
+                                    <th style="padding: 12px; color: var(--text-muted); font-weight: 600;">Material a Agregar</th>
+                                    <th style="padding: 12px; color: var(--text-muted); text-align: right; font-weight: 600;">Peso Exacto para Pastón</th>
+                                    <th style="padding: 12px; color: var(--text-muted); text-align: right; font-weight: 600;">Proporción Práctica Recomendada</th>
+                                </tr>
+                            </thead>
+                            <tbody id="prodMaterialsTableBody">
+                                <!-- Relleno dinámico en JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+                
+                <div class="workspace-grid" style="margin-top: 15px;" id="produccionWorkspaceGrid">
                 </div>
             </div>
 
@@ -1666,19 +1720,24 @@
 
                 <!-- Contenedor de Autenticación / Modo Local -->
                 <div id="authOfflineAndFormsContainer">
-                    <div id="authLocalContainer" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06);">
-                        <h2 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 2px;">🚜 Modo de Uso Local</h2>
-                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Selecciona tu rol si deseas usar la app localmente sin registrarte:</p>
-                        
-                        <div class="form-group" style="margin-bottom: 8px;">
-                            <select id="selectLocalUserRole" class="form-input" style="background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px; font-weight: bold;">
-                                <option value="completo">👷 Ingeniero Civil / Arquitecto / Hormigonera</option>
-                                <option value="proveedor-materiales">🏭 Proveedor de Materiales</option>
-                                <option value="proveedor-servicios">🛠️ Proveedor de Servicios</option>
-                                <option value="operador">🚜 Constructor / Albañil (Producción)</option>
-                            </select>
-                        </div>
-                        <button type="button" id="btnApplyLocalProfile" class="btn btn-secondary" style="width: 100%; justify-content: center; height: 36px; font-size: 0.8rem; font-weight: bold;">Aplicar Rol Local</button>
+                    <h2 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 5px;">👤 Perfil de Uso</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.4;">Elige tu perfil antes de continuar localmente o iniciar sesión:</p>
+                    
+                    <div class="form-group" style="margin-bottom: 15px;">
+                        <select id="selectUnifiedRole" class="form-input" style="background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px; font-weight: bold;">
+                            <option value="completo">👷 Ingeniero Civil / Arquitecto / Hormigonera</option>
+                            <option value="proveedor-materiales">🏭 Proveedor de Materiales</option>
+                            <option value="proveedor-servicios">🛠️ Proveedor de Servicios</option>
+                            <option value="operador">🚜 Constructor / Albañil (Producción)</option>
+                        </select>
+                    </div>
+                    
+                    <button type="button" id="btnApplyLocalProfile" class="btn btn-secondary" style="width: 100%; justify-content: center; height: 38px; font-size: 0.85rem; font-weight: bold; margin-bottom: 15px;">🚜 Continuar como Invitado (Modo Local)</button>
+                    
+                    <div style="display: flex; align-items: center; text-align: center; margin: 15px 0; color: var(--text-muted); font-size: 0.8rem;">
+                        <hr style="flex-grow: 1; border: none; border-top: 1px solid rgba(255,255,255,0.08); margin-right: 10px;">
+                        <span>o Iniciar Sesión / Registrarse</span>
+                        <hr style="flex-grow: 1; border: none; border-top: 1px solid rgba(255,255,255,0.08); margin-left: 10px;">
                     </div>
 
                     <h2 id="authModalTitle" style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 8px;">Iniciar Sesión</h2>

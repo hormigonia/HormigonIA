@@ -1816,4 +1816,22 @@ body.printing-active .print-only {
     transition: all 0.2s ease;
 }
 
+/* Operator Volume Badges */
+.btn-vol-badge-prod {
+    border: 1px solid var(--border-color);
+    background: rgba(255,255,255,0.03);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: bold;
+    transition: all 0.2s ease;
+}
+.btn-vol-badge-prod:hover {
+    background: rgba(255,255,255,0.08) !important;
+}
+.btn-vol-badge-prod.active {
+    background-color: var(--accent) !important;
+    color: #000 !important;
+    border-color: var(--accent) !important;
+}
+
 
