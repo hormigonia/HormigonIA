@@ -47,16 +47,6 @@
             </div>
             
             <div class="header-actions">
-                <!-- Selector de Perfil Profesional -->
-                <div class="profile-role-selector" style="margin-right: 8px; display: flex; align-items: center; gap: 6px;">
-                    <label for="selectUserProfileRole" style="font-size: 0.72rem; color: var(--text-muted); font-weight: bold; white-space: nowrap;">Perfil:</label>
-                    <select id="selectUserProfileRole" class="form-select" style="height: 32px; padding: 2px 8px; font-size: 0.78rem; width: auto; background-color: var(--bg-panel); font-weight: bold; border-color: var(--border-color); border-radius: 6px; color: var(--text);">
-                        <option value="completo">👷 Completo (Ing. / Arq.)</option>
-                        <option value="proveedor-materiales">🏭 Proveedor Materiales</option>
-                        <option value="proveedor-servicios">🛠️ Proveedor Servicios</option>
-                        <option value="operador">🚜 Operador de Mezcla</option>
-                    </select>
-                </div>
                 <!-- Simulación Config -->
                 <button id="btnAuthModal" class="btn btn-secondary btn-icon" style="margin-right: 8px;">
                     <span class="icon">👤</span> <span id="userSessionText">Iniciar Sesión</span>
@@ -96,6 +86,9 @@
                     <span class="icon">💬</span> Soporte
                 </button>
 
+                <button type="button" id="btnShareMix" class="btn btn-secondary btn-icon" style="margin-right: 8px;">
+                    <span class="icon">🔗</span> Compartir Mezcla
+                </button>
                 <button id="btnExportPDF" class="btn btn-primary btn-icon">
                     <span class="icon">📥</span> Salvar e Imprimir Reporte
                 </button>
@@ -495,7 +488,10 @@
                                         <div style="background-color: rgba(255, 255, 255, 0.02); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box;">
                                             <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); padding-bottom: 8px; margin-bottom: 2px;">
                                                 <strong style="color: var(--accent); font-size: 0.85rem; display: flex; align-items: center; gap: 6px;">📅 Planificación de Curado</strong>
-                                                <button type="button" id="btnRequestNotify" class="btn btn-primary" style="font-size: 0.75rem; padding: 6px 12px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s; font-weight: 500;">🔔 Alertas Riego</button>
+                                                <div style="display: flex; gap: 6px;">
+                                                    <button type="button" id="btnShareMixObra" class="btn btn-secondary" style="font-size: 0.75rem; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s; font-weight: 500;">🔗 Compartir</button>
+                                                    <button type="button" id="btnRequestNotify" class="btn btn-primary" style="font-size: 0.75rem; padding: 6px 10px; border-radius: 6px; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; transition: all 0.2s; font-weight: 500;">🔔 Alertas Riego</button>
+                                                </div>
                                             </div>
                                             
                                             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.72rem; box-sizing: border-box;">
@@ -1640,56 +1636,101 @@
                 <img src="/logo_full.jpg" alt="HormigónIA" style="width: 100%; height: auto; display: block;">
                 <span class="modal-close" id="btnCloseAuthModal" style="position: absolute; top: 10px; right: 15px; color: white; background: rgba(0,0,0,0.5); width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; line-height: 1; cursor: pointer; z-index: 10;">&times;</span>
             </div>
-            <div style="padding: 0 25px 25px 25px;">
-                <h2 id="authModalTitle" style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 10px;">Iniciar Sesión</h2>
-                <p id="authModalSubtitle" style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">Accedé a tu cuenta de HormigonIA para sincronizar tus dosificaciones.</p>
-            
-            <form id="authForm">
-                <div class="form-group">
-                    <label for="inputAuthEmail">Correo Electrónico:</label>
-                    <input type="email" id="inputAuthEmail" required placeholder="correo@ejemplo.com" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label for="inputAuthPassword">Contraseña:</label>
-                    <input type="password" id="inputAuthPassword" required placeholder="••••••••" class="form-input">
-                </div>
-                <div class="form-group" id="groupConfirmPassword" style="display: none;">
-                    <label for="inputAuthConfirmPassword">Confirmar Contraseña:</label>
-                    <input type="password" id="inputAuthConfirmPassword" placeholder="••••••••" class="form-input">
-                </div>
-                <div class="form-group" id="groupAuthRole" style="display: none;">
-                    <label for="selectAuthRole">Rol / Perfil Profesional:</label>
-                    <select id="selectAuthRole" class="form-input" style="background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px;">
-                        <option value="completo">👷 Ingeniero Civil / Arquitecto / Hormigonera</option>
-                        <option value="proveedor-materiales">🏭 Proveedor de Materiales</option>
-                        <option value="proveedor-servicios">🛠️ Proveedor de Servicios</option>
-                        <option value="operador">🚜 Constructor / Albañil (Producción)</option>
-                    </select>
-                </div>
-                <div class="auth-error-msg" id="authErrorMsg" style="color: var(--error); margin-top: 10px; font-size: 0.85rem; display: none; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.2);"></div>
-                <div class="auth-success-msg" id="authSuccessMsg" style="color: var(--accent); margin-top: 10px; font-size: 0.85rem; display: none; background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2);"></div>
-                
-                <div class="modal-footer" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
-                    <button type="submit" id="btnSubmitAuth" class="btn btn-primary" style="width: 100%; justify-content: center;">Entrar</button>
-                    <button type="button" id="btnToggleAuthMode" class="btn btn-secondary" style="font-size: 0.85rem; width: 100%; justify-content: center; background: transparent; border: none; text-decoration: underline;">¿No tenés cuenta? Registrate</button>
+            <div style="padding: 25px;">
+                <!-- Perfil de Usuario Conectado -->
+                <div id="userProfileDetailsContainer" style="display: none; flex-direction: column; gap: 15px;">
+                    <h2 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 5px; color: var(--primary);">👤 Mi Perfil Profesional</h2>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 5px;">Tu cuenta y rol de usuario activo.</p>
                     
-                    <div style="display: flex; align-items: center; text-align: center; margin: 10px 0; color: var(--text-muted); font-size: 0.8rem;">
-                        <hr style="flex-grow: 1; border: none; border-top: 1px solid rgba(255,255,255,0.08); margin-right: 10px;">
-                        <span>o continuar con</span>
-                        <hr style="flex-grow: 1; border: none; border-top: 1px solid rgba(255,255,255,0.08); margin-left: 10px;">
+                    <div style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                        <div id="modalUserAvatar" style="width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.2rem; color: #000; background-color: var(--accent);">U</div>
+                        <div style="display: flex; flex-direction: column; min-width: 0; flex: 1;">
+                            <strong id="modalUserName" style="font-size: 0.95rem; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">usuario@ejemplo.com</strong>
+                            <span style="font-size: 0.72rem; color: var(--text-muted);">Sesión Sincronizada</span>
+                        </div>
                     </div>
                     
-                    <button type="button" id="btnGoogleAuth" class="btn btn-secondary btn-icon" style="width: 100%; justify-content: center; background-color: #ffffff; color: #1f2937; border-color: #e5e7eb; transition: background-color 0.2s;">
-                        <svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 8px;">
-                            <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                            <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                            <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
-                            <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                        </svg>
-                        Google
-                    </button>
+                    <div class="form-group">
+                        <label for="selectUserProfileRole">Perfil / Rol Profesional:</label>
+                        <select id="selectUserProfileRole" class="form-input" style="background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px; font-weight: bold;">
+                            <option value="completo">👷 Ingeniero Civil / Arquitecto / Hormigonera</option>
+                            <option value="proveedor-materiales">🏭 Proveedor de Materiales</option>
+                            <option value="proveedor-servicios">🛠️ Proveedor de Servicios</option>
+                            <option value="operador">🚜 Constructor / Albañil (Producción)</option>
+                        </select>
+                        <p style="font-size: 0.68rem; color: var(--text-muted); margin-top: 5px; line-height: 1.35;">El perfil seleccionado filtra las funciones y pestañas visibles de la aplicación.</p>
+                    </div>
+                    
+                    <button type="button" id="btnSaveModalProfile" class="btn btn-primary" style="width: 100%; justify-content: center; font-weight: 700; background-color: var(--accent); border-color: var(--accent); color: #000;">💾 Aplicar y Cerrar</button>
                 </div>
-            </form>
+
+                <!-- Contenedor de Autenticación / Modo Local -->
+                <div id="authOfflineAndFormsContainer">
+                    <div id="authLocalContainer" style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.06);">
+                        <h2 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 2px;">🚜 Modo de Uso Local</h2>
+                        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Selecciona tu rol si deseas usar la app localmente sin registrarte:</p>
+                        
+                        <div class="form-group" style="margin-bottom: 8px;">
+                            <select id="selectLocalUserRole" class="form-input" style="background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); border-radius: 6px; padding: 8px 12px; font-weight: bold;">
+                                <option value="completo">👷 Ingeniero Civil / Arquitecto / Hormigonera</option>
+                                <option value="proveedor-materiales">🏭 Proveedor de Materiales</option>
+                                <option value="proveedor-servicios">🛠️ Proveedor de Servicios</option>
+                                <option value="operador">🚜 Constructor / Albañil (Producción)</option>
+                            </select>
+                        </div>
+                        <button type="button" id="btnApplyLocalProfile" class="btn btn-secondary" style="width: 100%; justify-content: center; height: 36px; font-size: 0.8rem; font-weight: bold;">Aplicar Rol Local</button>
+                    </div>
+
+                    <h2 id="authModalTitle" style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 8px;">Iniciar Sesión</h2>
+                    <p id="authModalSubtitle" style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 15px;">Accedé para guardar tus dosificaciones en la nube.</p>
+                
+                    <form id="authForm">
+                        <div class="form-group">
+                            <label for="inputAuthEmail">Correo Electrónico:</label>
+                            <input type="email" id="inputAuthEmail" required placeholder="correo@ejemplo.com" class="form-input">
+                        </div>
+                        <div class="form-group">
+                            <label for="inputAuthPassword">Contraseña:</label>
+                            <input type="password" id="inputAuthPassword" required placeholder="••••••••" class="form-input">
+                        </div>
+                        <div class="form-group" id="groupConfirmPassword" style="display: none;">
+                            <label for="inputAuthConfirmPassword">Confirmar Contraseña:</label>
+                            <input type="password" id="inputAuthConfirmPassword" placeholder="••••••••" class="form-input">
+                        </div>
+                        <div class="form-group" id="groupAuthRole" style="display: none;">
+                            <label for="selectAuthRole">Rol / Perfil Profesional:</label>
+                            <select id="selectAuthRole" class="form-input" style="background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); border-radius: 6px; padding: 6px 10px;">
+                                <option value="completo">👷 Ingeniero Civil / Arquitecto / Hormigonera</option>
+                                <option value="proveedor-materiales">🏭 Proveedor de Materiales</option>
+                                <option value="proveedor-servicios">🛠️ Proveedor de Servicios</option>
+                                <option value="operador">🚜 Constructor / Albañil (Producción)</option>
+                            </select>
+                        </div>
+                        <div class="auth-error-msg" id="authErrorMsg" style="color: var(--error); margin-top: 10px; font-size: 0.85rem; display: none; background: rgba(239, 68, 68, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.2);"></div>
+                        <div class="auth-success-msg" id="authSuccessMsg" style="color: var(--accent); margin-top: 10px; font-size: 0.85rem; display: none; background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.2);"></div>
+                        
+                        <div class="modal-footer" style="margin-top: 20px; display: flex; flex-direction: column; gap: 10px;">
+                            <button type="submit" id="btnSubmitAuth" class="btn btn-primary" style="width: 100%; justify-content: center;">Entrar</button>
+                            <button type="button" id="btnToggleAuthMode" class="btn btn-secondary" style="font-size: 0.85rem; width: 100%; justify-content: center; background: transparent; border: none; text-decoration: underline;">¿No tenés cuenta? Registrate</button>
+                            
+                            <div style="display: flex; align-items: center; text-align: center; margin: 10px 0; color: var(--text-muted); font-size: 0.8rem;">
+                                <hr style="flex-grow: 1; border: none; border-top: 1px solid rgba(255,255,255,0.08); margin-right: 10px;">
+                                <span>o continuar con</span>
+                                <hr style="flex-grow: 1; border: none; border-top: 1px solid rgba(255,255,255,0.08); margin-left: 10px;">
+                            </div>
+                            
+                            <button type="button" id="btnGoogleAuth" class="btn btn-secondary btn-icon" style="width: 100%; justify-content: center; background-color: #ffffff; color: #1f2937; border-color: #e5e7eb; transition: background-color 0.2s;">
+                                <svg viewBox="0 0 24 24" width="16" height="16" style="margin-right: 8px;">
+                                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z" fill="#FBBC05"/>
+                                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                                </svg>
+                                Google
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div> <!-- Close padding div -->
         </div>
     </div>
@@ -1736,6 +1777,41 @@
                     Nos pondremos en contacto contigo en tu correo a la brevedad. Cualquier consulta adicional, podés responder al mail escribiendo a <strong>hormixia@gmail.com</strong>.
                 </p>
                 <button type="button" id="btnSupportSuccessClose" class="btn btn-secondary" style="margin-top: 20px; width: 100%; justify-content: center;">Cerrar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHARE MODAL -->
+    <div id="shareModal" class="modal">
+        <div class="modal-content" style="max-width: 420px; padding: 25px; border-radius: 12px;">
+            <span class="modal-close" id="btnCloseShareModal" style="position: absolute; top: 15px; right: 20px; font-size: 1.5rem; cursor: pointer; color: var(--text-muted);">&times;</span>
+            <h2 style="font-family: 'Outfit', sans-serif; font-weight: 700; margin-bottom: 5px; color: var(--primary);">🔗 Compartir Diseño de Mezcla</h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 15px; line-height: 1.4;">Crea un enlace para compartir esta dosificación exacta de forma instantánea.</p>
+            
+            <div class="form-group">
+                <label for="inputShareLink">Enlace para compartir:</label>
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="inputShareLink" readonly class="form-input" style="font-size: 0.75rem; background-color: rgba(0,0,0,0.2); border-color: var(--border-color); flex: 1; height: 36px; color: var(--text);">
+                    <button type="button" id="btnCopyShareLink" class="btn btn-primary" style="height: 36px; padding: 0 12px; font-size: 0.8rem; font-weight: bold; background-color: var(--accent); border-color: var(--accent); color: #000;">Copiar</button>
+                </div>
+            </div>
+            
+            <div style="margin-top: 15px; display: flex; flex-direction: column; gap: 10px;">
+                <strong style="font-size: 0.78rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; display: block; margin-bottom: 2px;">Accesos Rápidos:</strong>
+                
+                <a href="#" id="btnShareWhatsApp" target="_blank" class="btn" style="background-color: #25D366; color: #fff; border-color: #25D366; font-weight: 600; text-decoration: none; justify-content: center; height: 38px; display: flex; align-items: center; gap: 8px; border-radius: 6px; font-size: 0.82rem;">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946C.06 5.348 5.397.01 12.008.01c3.202.001 6.212 1.246 8.477 3.513 2.262 2.268 3.507 5.28 3.505 8.484-.004 6.657-5.34 11.997-11.953 11.997-2.005-.001-3.973-.5-5.813-1.45L0 24zm6.59-4.846c1.785 1.059 3.548 1.611 5.372 1.613 5.483 0 9.943-4.461 9.947-9.95.002-2.658-1.03-5.158-2.906-7.037C17.186 1.896 14.697 1.06 12.016 1.06c-5.49 0-9.95 4.46-9.954 9.95-.001 1.897.514 3.743 1.493 5.375l-1.01 3.69 3.793-.995.232.137zm11.367-7.46c-.083-.139-.304-.222-.637-.388-.333-.167-1.968-.973-2.273-1.084-.306-.112-.528-.167-.749.167-.222.334-.861 1.084-1.055 1.306-.194.222-.389.25-.722.083-.333-.167-1.406-.518-2.677-1.653-.99-.883-1.657-1.977-1.85-2.311-.194-.333-.021-.513.146-.68.149-.149.333-.389.5-.583.166-.194.222-.334.333-.556.111-.222.056-.417-.028-.583-.083-.167-.749-1.806-1.026-2.473-.27-.648-.543-.56-.749-.56-.194-.008-.417-.01-.639-.01-.222 0-.583.083-.889.417-.306.333-1.167 1.139-1.167 2.779 0 1.64 1.194 3.223 1.361 3.445.167.222 2.35 3.589 5.694 5.038.795.345 1.417.55 1.902.705.8.254 1.528.218 2.102.132.64-.096 1.968-.806 2.246-1.583.278-.778.278-1.445.194-1.583z"/>
+                    </svg>
+                    <span>Compartir por WhatsApp</span>
+                </a>
+                
+                <a href="#" id="btnShareEmail" target="_blank" class="btn" style="background-color: var(--primary); color: #fff; border-color: var(--primary); font-weight: 600; text-decoration: none; justify-content: center; height: 38px; display: flex; align-items: center; gap: 8px; border-radius: 6px; font-size: 0.82rem;">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor">
+                        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+                    </svg>
+                    <span>Compartir por Correo Electrónico</span>
+                </a>
             </div>
         </div>
     </div>

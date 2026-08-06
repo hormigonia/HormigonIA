@@ -1805,4 +1805,15 @@ body.printing-active .print-only {
     }
 }
 
+/* Sharing Buttons Hover Effects */
+#btnShareWhatsApp:hover,
+#btnShareEmail:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+#btnShareWhatsApp,
+#btnShareEmail {
+    transition: all 0.2s ease;
+}
+
 
