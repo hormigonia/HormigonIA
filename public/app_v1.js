@@ -297,6 +297,9 @@ function initLoginSystem() {
     const authModal = document.getElementById("authModal");
 
     const setupAuthListeners = () => {
+        const profileDetails = document.getElementById("userProfileDetailsContainer");
+        const authOfflineAndForms = document.getElementById("authOfflineAndFormsContainer");
+        
         if (window.supabase) {
             window.onAuthStateChange((event, session) => {
                 currentUserSession = session;
@@ -306,6 +309,9 @@ function initLoginSystem() {
                     localStorage.setItem("hormigonia_user_role", userRole);
                     if (document.getElementById("selectUserProfileRole")) {
                         document.getElementById("selectUserProfileRole").value = userRole;
+                    }
+                    if (document.getElementById("selectLocalUserRole")) {
+                        document.getElementById("selectLocalUserRole").value = userRole;
                     }
                     applyUserProfileFilter(userRole);
                     if (btnAuthModal) btnAuthModal.style.display = "none";
@@ -318,11 +324,17 @@ function initLoginSystem() {
                         userAvatarCircle.style.backgroundColor = `hsl(${charSum % 360}, 70%, 45%)`;
                     }
                     LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
+                    
+                    if (profileDetails) profileDetails.style.display = "flex";
+                    if (authOfflineAndForms) authOfflineAndForms.style.display = "none";
                 } else {
                     activeUser = null;
                     if (btnAuthModal) btnAuthModal.style.display = "inline-flex";
                     if (userProfileWidget) userProfileWidget.style.display = "none";
                     LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes";
+                    
+                    if (profileDetails) profileDetails.style.display = "none";
+                    if (authOfflineAndForms) authOfflineAndForms.style.display = "block";
                 }
                 loadSavedMixes();
             });
@@ -338,11 +350,17 @@ function initLoginSystem() {
                     userAvatarCircle.innerText = activeUser.charAt(0).toUpperCase();
                 }
                 LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes_" + activeUser;
+                
+                if (profileDetails) profileDetails.style.display = "flex";
+                if (authOfflineAndForms) authOfflineAndForms.style.display = "none";
             } else {
                 activeUser = null;
                 if (btnAuthModal) btnAuthModal.style.display = "inline-flex";
                 if (userProfileWidget) userProfileWidget.style.display = "none";
                 LOCAL_STORAGE_MIXES_KEY = "hormigonmix_saved_mixes";
+                
+                if (profileDetails) profileDetails.style.display = "none";
+                if (authOfflineAndForms) authOfflineAndForms.style.display = "block";
             }
             loadSavedMixes();
         }
@@ -366,14 +384,57 @@ function initLoginSystem() {
     // Modal triggers
     if (btnAuthModal) {
         btnAuthModal.addEventListener("click", () => {
-            if (authModal) authModal.classList.add("open");
+            if (authModal) {
+                authModal.open = true;
+                authModal.classList.add("open");
+                const profileDetails = document.getElementById("userProfileDetailsContainer");
+                const authOfflineAndForms = document.getElementById("authOfflineAndFormsContainer");
+                if (profileDetails) profileDetails.style.display = "none";
+                if (authOfflineAndForms) authOfflineAndForms.style.display = "block";
+            }
             if (authErrorMsg) authErrorMsg.style.display = "none";
             if (authSuccessMsg) authSuccessMsg.style.display = "none";
         });
     }
+    
+    if (userProfileWidget) {
+        userProfileWidget.style.cursor = "pointer";
+        userProfileWidget.addEventListener("click", (e) => {
+            if (e.target.id === "btnLogout") return;
+            
+            if (authModal) {
+                authModal.open = true;
+                authModal.classList.add("open");
+                const profileDetails = document.getElementById("userProfileDetailsContainer");
+                const authOfflineAndForms = document.getElementById("authOfflineAndFormsContainer");
+                if (profileDetails) profileDetails.style.display = "flex";
+                if (authOfflineAndForms) authOfflineAndForms.style.display = "none";
+                
+                // Populate session fields in modal
+                const modalUserName = document.getElementById("modalUserName");
+                const modalUserAvatar = document.getElementById("modalUserAvatar");
+                if (modalUserName) modalUserName.innerText = activeUser || "Usuario Local";
+                if (modalUserAvatar && activeUser) {
+                    modalUserAvatar.innerText = activeUser.charAt(0).toUpperCase();
+                    let charSum = 0;
+                    for (let i = 0; i < activeUser.length; i++) charSum += activeUser.charCodeAt(i);
+                    modalUserAvatar.style.backgroundColor = `hsl(${charSum % 360}, 70%, 45%)`;
+                }
+                
+                const selectUserProfileRole = document.getElementById("selectUserProfileRole");
+                if (selectUserProfileRole) {
+                    selectUserProfileRole.value = localStorage.getItem("hormigonia_user_role") || "completo";
+                }
+            }
+        });
+    }
+
     if (btnCloseAuthModal) {
         btnCloseAuthModal.addEventListener("click", () => {
-            if (authModal) authModal.classList.remove("open");
+            if (authModal) {
+                authModal.open = false;
+                authModal.classList.remove("open");
+            }
         });
     }
 
@@ -1546,18 +1607,53 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 
-    // Setup Profile Role Selector
+    // Setup Profile Role Selectors (inside authModal)
     const selectUserProfileRole = document.getElementById("selectUserProfileRole");
-    if (selectUserProfileRole) {
-        selectUserProfileRole.addEventListener("change", () => {
-            const role = selectUserProfileRole.value;
-            applyUserProfileFilter(role);
+    const selectLocalUserRole = document.getElementById("selectLocalUserRole");
+    const btnApplyLocalProfile = document.getElementById("btnApplyLocalProfile");
+    const btnSaveModalProfile = document.getElementById("btnSaveModalProfile");
+
+    const savedRole = localStorage.getItem("hormigonia_user_role") || "completo";
+    if (selectUserProfileRole) selectUserProfileRole.value = savedRole;
+    if (selectLocalUserRole) selectLocalUserRole.value = savedRole;
+    setTimeout(() => applyUserProfileFilter(savedRole), 0);
+
+    if (btnApplyLocalProfile && selectLocalUserRole) {
+        btnApplyLocalProfile.addEventListener("click", () => {
+            const role = selectLocalUserRole.value;
             localStorage.setItem("hormigonia_user_role", role);
+            if (selectUserProfileRole) selectUserProfileRole.value = role;
+            applyUserProfileFilter(role);
+            if (authModal) {
+                authModal.open = false;
+                authModal.classList.remove("open");
+            }
+            showToast("Perfil de uso local aplicado.", "success");
         });
-        
-        const savedRole = localStorage.getItem("hormigonia_user_role") || "completo";
-        selectUserProfileRole.value = savedRole;
-        setTimeout(() => applyUserProfileFilter(savedRole), 0);
+    }
+
+    if (btnSaveModalProfile && selectUserProfileRole) {
+        btnSaveModalProfile.addEventListener("click", () => {
+            const role = selectUserProfileRole.value;
+            localStorage.setItem("hormigonia_user_role", role);
+            if (selectLocalUserRole) selectLocalUserRole.value = role;
+            applyUserProfileFilter(role);
+            
+            // If logged in, save it to Supabase metadata if available
+            if (currentUserSession && window.supabase) {
+                window.supabase.auth.updateUser({
+                    data: { role: role }
+                }).then(({ error }) => {
+                    if (error) console.error("Error al actualizar rol en base de datos:", error.message);
+                });
+            }
+            
+            if (authModal) {
+                authModal.open = false;
+                authModal.classList.remove("open");
+            }
+            showToast("Perfil profesional actualizado.", "success");
+        });
     }
 
     // Intercept inputBatchVolume value setting to sync custom UI
@@ -1805,6 +1901,70 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Initial tab visibility update based on restored user session
     updateTabVisibility();
+    
+    // Import shared mix from URL if present
+    importSharedMixFromUrl();
+    
+    // Setup Share Modal Triggers
+    const btnShareMix = document.getElementById("btnShareMix");
+    const btnShareMixObra = document.getElementById("btnShareMixObra");
+    const shareModal = document.getElementById("shareModal");
+    const btnCloseShareModal = document.getElementById("btnCloseShareModal");
+    const inputShareLink = document.getElementById("inputShareLink");
+    const btnCopyShareLink = document.getElementById("btnCopyShareLink");
+    const btnShareWhatsApp = document.getElementById("btnShareWhatsApp");
+    const btnShareEmail = document.getElementById("btnShareEmail");
+
+    const openShareModal = () => {
+        if (!shareModal || !inputShareLink) return;
+        const link = generateSharingLink();
+        inputShareLink.value = link;
+        
+        // Setup WhatsApp link
+        if (btnShareWhatsApp) {
+            const text = encodeURIComponent(`¡Hola! Te comparto este diseño de mezcla en HormigónIA: ${link}`);
+            btnShareWhatsApp.href = `https://api.whatsapp.com/send?text=${text}`;
+        }
+        
+        // Setup Email link
+        if (btnShareEmail) {
+            const subject = encodeURIComponent("Diseño de Mezcla - HormigónIA");
+            const body = encodeURIComponent(`Te comparto el diseño de mezcla adjunto. Haz clic en el siguiente enlace para abrirlo e importarlo en la calculadora:\n\n${link}`);
+            btnShareEmail.href = `mailto:?subject=${subject}&body=${body}`;
+        }
+        
+        if (shareModal) {
+            shareModal.open = true;
+            shareModal.classList.add("open");
+        }
+    };
+
+    if (btnShareMix) btnShareMix.addEventListener("click", openShareModal);
+    if (btnShareMixObra) btnShareMixObra.addEventListener("click", openShareModal);
+    
+    if (btnCloseShareModal) {
+        btnCloseShareModal.addEventListener("click", () => {
+            if (shareModal) {
+                shareModal.open = false;
+                shareModal.classList.remove("open");
+            }
+        });
+    }
+    
+    if (btnCopyShareLink && inputShareLink) {
+        btnCopyShareLink.addEventListener("click", () => {
+            inputShareLink.select();
+            inputShareLink.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(inputShareLink.value)
+                .then(() => {
+                    showToast("Enlace de mezcla copiado al portapapeles.", "success");
+                })
+                .catch(() => {
+                    document.execCommand("copy");
+                    showToast("Enlace de mezcla copiado.", "success");
+                });
+        });
+    }
 });
 
 function switchTab(tabName) {
@@ -1879,6 +2039,53 @@ function applyUserProfileFilter(role) {
     
     if (!activeTabStillVisible && firstVisibleTab) {
         switchTab(firstVisibleTab);
+    }
+}
+
+function generateSharingLink() {
+    const state = {
+        config: historyManager.config.getState(),
+        additives: historyManager.additives.getState(),
+        lab: historyManager.lab.getState()
+    };
+    const jsonString = JSON.stringify(state);
+    const base64 = btoa(unescape(encodeURIComponent(jsonString)));
+    const sharingUrl = window.location.origin + window.location.pathname + "?compartir=" + base64;
+    return sharingUrl;
+}
+
+function importSharedMixFromUrl() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const sharePayload = urlParams.get("compartir") || urlParams.get("mix");
+    if (!sharePayload) return;
+    
+    try {
+        const jsonString = decodeURIComponent(escape(atob(sharePayload)));
+        const state = JSON.parse(jsonString);
+        
+        if (state.config) historyManager.config.restoreState(state.config);
+        if (state.additives) historyManager.additives.restoreState(state.additives);
+        if (state.lab) historyManager.lab.restoreState(state.lab);
+        
+        // Clear history to prevent undo/redo issues with imported mix
+        historyManager.config.undo = [];
+        historyManager.config.redo = [];
+        historyManager.additives.undo = [];
+        historyManager.additives.redo = [];
+        historyManager.lab.undo = [];
+        historyManager.lab.redo = [];
+        
+        // Re-calculate results
+        calculateAndUpdate();
+        
+        showToast("¡Mezcla compartida importada con éxito!", "success");
+        
+        // Clean URL query parameter
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+    } catch (err) {
+        console.error("Error al importar la mezcla compartida:", err);
+        showToast("No se pudo cargar la mezcla compartida. El enlace es inválido.", "error");
     }
 }
 
