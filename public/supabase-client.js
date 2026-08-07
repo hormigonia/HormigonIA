@@ -56,11 +56,13 @@ export const supabase = client;
  * @param {string} email 
  * @param {string} password 
  */
-export async function signUp(email, password) {
+export async function signUp(email, password, role) {
     if (!supabase) throw new Error("Supabase client is not initialized.");
+    const options = role ? { data: { role } } : undefined;
     const { data, error } = await supabase.auth.signUp({
         email,
-        password
+        password,
+        options
     });
     if (error) throw error;
     return data;
@@ -195,6 +197,23 @@ export async function deleteMix(mixId) {
     if (error) throw error;
 }
 
+/**
+ * Obtiene una dosificación específica por su ID
+ * @param {string} mixId 
+ */
+export async function getMixById(mixId) {
+    if (!supabase) throw new Error("Supabase client is not initialized.");
+
+    const { data, error } = await supabase
+        .from('saved_mixes')
+        .select('*')
+        .eq('id', mixId)
+        .single();
+
+    if (error) throw error;
+    return data;
+}
+
 // Bind to window for standard scripts integration
 window.supabase = supabase;
 window.signUp = signUp;
@@ -206,3 +225,4 @@ window.onAuthStateChange = onAuthStateChange;
 window.saveConcreteMix = saveConcreteMix;
 window.getUserMixes = getUserMixes;
 window.deleteMix = deleteMix;
+window.getMixById = getMixById;

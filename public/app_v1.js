@@ -3,6 +3,7 @@ let curingInterval = null;
 let curingMapInstance = null;
 let curingMarkerInstance = null;
 let activeSharedMixName = "";
+let activeSharedMixId = "";
 
 function updateTabVisibility() {
     const optTabBtn = document.querySelector('.nav-tab[data-tab="optimizacion-ia"]');
@@ -306,7 +307,9 @@ function initLoginSystem() {
                 currentUserSession = session;
                 if (session) {
                     activeUser = session.user.email;
-                    const userRole = session.user.user_metadata?.role || localStorage.getItem("hormigonia_user_role_" + activeUser) || "completo";
+                    const localRole = localStorage.getItem("hormigonia_user_role_" + activeUser);
+                    const dbRole = session.user.user_metadata?.role;
+                    const userRole = localRole || dbRole || "completo";
                     localStorage.setItem("hormigonia_user_role_" + activeUser, userRole);
                     if (document.getElementById("selectUserProfileRole")) {
                         document.getElementById("selectUserProfileRole").value = userRole;
@@ -316,8 +319,8 @@ function initLoginSystem() {
                     }
                     applyUserProfileFilter(userRole);
                     
-                    // Sync to Supabase if not present in metadata
-                    if (!session.user.user_metadata?.role && window.supabase) {
+                    // Sync to Supabase if it differs or is not present in metadata
+                    if (dbRole !== userRole && window.supabase) {
                         window.supabase.auth.updateUser({
                             data: { role: userRole }
                         }).catch(err => console.error("Error updating user role metadata:", err));
@@ -1290,15 +1293,6 @@ const PREDEFINED_ADDITIVES = {
         density: 1.18,
         type: "plasticizer",
         getReduction: (dosage) => 0
-    },
-    "personalizado": {
-        name: "[Personalizado / Otro]",
-        minDosage: 0.00,
-        maxDosage: 15.00,
-        defaultDosage: 0.50,
-        density: 1.00,
-        type: "plasticizer",
-        getReduction: (dosage) => dosage * 12.3
     }
 };
 
@@ -1940,46 +1934,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Import shared mix from URL if present
     importSharedMixFromUrl();
     
-    // Setup Share Modal Triggers
-    const btnShareMix = document.getElementById("btnShareMix");
-    const btnShareMixObra = document.getElementById("btnShareMixObra");
+    // Setup Share Modal (close and copy only, triggers are inside saved mixes list)
     const shareModal = document.getElementById("shareModal");
     const btnCloseShareModal = document.getElementById("btnCloseShareModal");
     const inputShareLink = document.getElementById("inputShareLink");
     const btnCopyShareLink = document.getElementById("btnCopyShareLink");
-    const btnShareWhatsApp = document.getElementById("btnShareWhatsApp");
-    const btnShareEmail = document.getElementById("btnShareEmail");
-
-    const openShareModal = () => {
-        if (!shareModal || !inputShareLink) return;
-        const link = generateSharingLink();
-        inputShareLink.value = link;
-        
-        // Setup WhatsApp link with a beautiful preview card structure
-        if (btnShareWhatsApp) {
-            const text = encodeURIComponent(
-`👷 *HormigónIA - Diseño de Mezcla* 🧪\n` +
-`¡Hola! Te comparto un nuevo diseño de dosificación optimizado.\n\n` +
-`🔗 *Enlace para abrir e importar:* ${link}`
-            );
-            btnShareWhatsApp.href = `https://api.whatsapp.com/send?text=${text}`;
-        }
-        
-        // Setup Email link
-        if (btnShareEmail) {
-            const subject = encodeURIComponent("Diseño de Mezcla - HormigónIA");
-            const body = encodeURIComponent(`Te comparto el diseño de mezcla adjunto. Haz clic en el siguiente enlace para abrirlo e importarlo en la calculadora:\n\n${link}`);
-            btnShareEmail.href = `mailto:?subject=${subject}&body=${body}`;
-        }
-        
-        if (shareModal) {
-            shareModal.open = true;
-            shareModal.classList.add("open");
-        }
-    };
-
-    if (btnShareMix) btnShareMix.addEventListener("click", openShareModal);
-    if (btnShareMixObra) btnShareMixObra.addEventListener("click", openShareModal);
     
     if (btnCloseShareModal) {
         btnCloseShareModal.addEventListener("click", () => {
@@ -2264,18 +2223,6 @@ function unpackState(packed) {
     return packed; // Fallback for old version
 }
 
-function generateSharingLink() {
-    const rawState = {
-        config: historyManager.config.getState(),
-        additives: historyManager.additives.getState(),
-        lab: historyManager.lab.getState()
-    };
-    const packed = packState(rawState, activeSharedMixName || "Diseño Compartido");
-    const jsonString = JSON.stringify(packed);
-    const base64 = btoa(unescape(encodeURIComponent(jsonString)));
-    const sharingUrl = window.location.origin + window.location.pathname + "?compartir=" + base64;
-    return sharingUrl;
-}
 
 async function saveMixProgrammatically(name, importedState) {
     const { supabase, saveConcreteMix, deleteMix } = window;
@@ -2360,20 +2307,49 @@ async function saveMixProgrammatically(name, importedState) {
 
 async function importSharedMixFromUrl() {
     const urlParams = new URLSearchParams(window.location.search);
+    const mixId = urlParams.get("mixId") || urlParams.get("mix_id");
     const sharePayload = urlParams.get("compartir") || urlParams.get("mix");
-    if (!sharePayload) return;
+    
+    if (!mixId && !sharePayload) return;
     
     try {
-        const jsonString = decodeURIComponent(escape(atob(sharePayload)));
-        let state = JSON.parse(jsonString);
-        
+        let state = null;
         let importedName = "Mezcla Importada";
-        if (state._v === 2 || state.c) {
-            if (state.n) {
-                importedName = state.n;
+        
+        if (mixId) {
+            if (!window.supabase || typeof window.getMixById !== "function") {
+                throw new Error("El sistema de base de datos de Supabase no está listo.");
             }
-            state = unpackState(state);
+            
+            showToast("Descargando mezcla compartida desde la nube...", "info");
+            const dbMix = await window.getMixById(mixId);
+            if (!dbMix) {
+                throw new Error("La mezcla no existe o fue eliminada por su creador.");
+            }
+            
+            importedName = dbMix.name;
+            state = {
+                config: dbMix.materials.config,
+                additives: dbMix.additives,
+                lab: dbMix.materials.lab
+            };
+            
+            // Set global active ID
+            activeSharedMixId = dbMix.id;
+        } else if (sharePayload) {
+            const jsonString = decodeURIComponent(escape(atob(sharePayload)));
+            state = JSON.parse(jsonString);
+            
+            if (state._v === 2 || state.c) {
+                if (state.n) {
+                    importedName = state.n;
+                }
+                state = unpackState(state);
+            }
+            activeSharedMixId = "";
         }
+        
+        if (!state) return;
         
         activeSharedMixName = importedName;
         
@@ -2402,7 +2378,7 @@ async function importSharedMixFromUrl() {
         window.history.replaceState({}, document.title, cleanUrl);
     } catch (err) {
         console.error("Error al importar la mezcla compartida:", err);
-        showToast("No se pudo cargar la mezcla compartida. El enlace es inválido.", "error");
+        showToast("No se pudo cargar la mezcla compartida: " + err.message, "error");
     }
 }
 
@@ -5395,16 +5371,12 @@ function shareSavedMixByIndex(index) {
     const mix = savedMixes[index];
     if (!mix) return;
     
-    const mixState = {
-        config: mix.config,
-        additives: mix.additives,
-        lab: mix.lab
-    };
+    if (!mix.id) {
+        showToast("Para poder compartir esta mezcla, debes estar conectado e iniciar sesión para que se guarde en tu perfil en la nube.", "warning");
+        return;
+    }
     
-    const packed = packState(mixState);
-    const jsonString = JSON.stringify(packed);
-    const base64 = btoa(unescape(encodeURIComponent(jsonString)));
-    const link = window.location.origin + window.location.pathname + "?compartir=" + base64;
+    const link = window.location.origin + window.location.pathname + "?mixId=" + mix.id;
     
     activeSharedMixName = mix.name;
     
@@ -5484,6 +5456,9 @@ function restoreFullState(state) {
 function loadSavedMixByIndex(index) {
     const mix = savedMixes[index];
     if (!mix) return;
+    
+    activeSharedMixId = mix.id || "";
+    activeSharedMixName = mix.name || "";
     
     if (mix.concreteClass === "Personalizado") {
         currentCustomName = mix.name;
@@ -5651,7 +5626,10 @@ async function saveCurrentMix(onSaveSuccess) {
                 try {
                     if (isCloud) {
                         if (idToDelete) await deleteMix(idToDelete);
-                        await saveConcreteMix(mDetails);
+                        const savedRows = await saveConcreteMix(mDetails);
+                        if (savedRows && savedRows.length > 0) {
+                            activeSharedMixId = savedRows[0].id;
+                        }
                         showToast(`Mezcla "${name}" guardada correctamente en la nube.`);
                     } else {
                         const existingIdx = savedMixes.findIndex(m => m.name.toLowerCase() === name.toLowerCase());
@@ -5687,7 +5665,10 @@ async function saveCurrentMix(onSaveSuccess) {
                     }
                 );
             } else {
-                await saveConcreteMix(mixData);
+                const savedRows = await saveConcreteMix(mixData);
+                if (savedRows && savedRows.length > 0) {
+                    activeSharedMixId = savedRows[0].id;
+                }
                 currentCustomName = name;
                 showToast(`Mezcla "${name}" guardada correctamente en la nube.`);
                 await loadSavedMixes();
