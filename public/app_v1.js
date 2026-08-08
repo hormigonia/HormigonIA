@@ -3114,7 +3114,7 @@ function setupEventListeners() {
             setTimeout(() => {
                 document.body.classList.remove("printing-active");
                 document.title = originalTitle;
-            }, 300);
+            }, 4000);
         });
     });
     window.addEventListener("afterprint", () => {
