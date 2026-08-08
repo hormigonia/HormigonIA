@@ -281,24 +281,31 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     grava2_ratio_in = params.get("grava2Ratio", 0.20)
     
     concrete_class = params.get("concreteClass", "H25")
-    vol_m3 = params.get("batchVolume", 1.0)
+    vol_raw = float(params.get("batchVolume", 1.0))
+    vol_m3 = vol_raw / 1000.0 if vol_raw > 10.0 else vol_raw
     target_wc = params.get("targetWC", 0.50)
     air_pct = params.get("airPct", 1.5)
     
     dens_cement = params.get("densCement", 1400.0)
+    if dens_cement < 10.0: dens_cement *= 1000.0
     coef_cement = params.get("coefCement", 0.47)
     
     dens_sand = params.get("densSand", 1650.0)
+    if dens_sand < 10.0: dens_sand *= 1000.0
     coef_sand = params.get("coefSand", 0.63)
     
     dens_gravilla = params.get("densGravilla", 1600.0)
+    if dens_gravilla < 10.0: dens_gravilla *= 1000.0
     coef_gravilla = params.get("coefGravilla", 0.51)
     
     dens_grava = params.get("densGrava", 1600.0)
+    if dens_grava < 10.0: dens_grava *= 1000.0
     coef_grava = params.get("coefGrava", 0.51)
     
     dens_grava2 = params.get("densGrava2", 1600.0)
+    if dens_grava2 < 10.0: dens_grava2 *= 1000.0
     coef_grava2 = params.get("coefGrava2", 0.51)
+
     
     moist_sand = params.get("moistSand", 4.0)
     abs_sand = params.get("absSand", 1.0)
@@ -598,32 +605,34 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     vs_grava = vs_aggregates * grava_ratio
     vs_grava2 = vs_aggregates * grava2_ratio if num_aggregates == 4 else 0.0
     
-    # Moisture & Free Water Correction
-    w_sand_total = (vs_sand / coef_sand) * moist_sand
-    w_gravilla_total = (vs_gravilla / coef_gravilla) * moist_gravilla
-    w_grava_total = (vs_grava / coef_grava) * moist_grava
-    w_grava2_total = (vs_grava2 / coef_grava2) * moist_grava2 if num_aggregates == 4 else 0.0
-    
-    w_sand_free = (vs_sand / coef_sand) * (moist_sand - (dens_sand * abs_sand / 100.0))
-    w_gravilla_free = (vs_gravilla / coef_gravilla) * (moist_gravilla - (dens_gravilla * abs_gravilla / 100.0))
-    w_grava_free = (vs_grava / coef_grava) * (moist_grava - (dens_grava * abs_grava / 100.0))
-    w_grava2_free = (vs_grava2 / coef_grava2) * (moist_grava2 - (dens_grava2 * abs_grava2 / 100.0)) if num_aggregates == 4 else 0.0
-    
-    net_water_final = max(0.0, (target_water_batch - w_sand_free - w_gravilla_free - w_grava_free - w_grava2_free) / 1.1)
-    net_water_theoretical = max(0.0, target_water_batch / 1.1)
-    
-    # Aggregate weights
+    # Aggregate dry weights for the batch (kg)
     sand_dry_weight = (vs_sand / coef_sand) * dens_sand
-    sand_wet_weight = sand_dry_weight + w_sand_total
-    
     gravilla_dry_weight = (vs_gravilla / coef_gravilla) * dens_gravilla
-    gravilla_wet_weight = gravilla_dry_weight + w_gravilla_total
-    
     grava_dry_weight = (vs_grava / coef_grava) * dens_grava
-    grava_wet_weight = grava_dry_weight + w_grava_total
-    
     grava2_dry_weight = (vs_grava2 / coef_grava2) * dens_grava2 if num_aggregates == 4 else 0.0
+
+    # Total moisture weight (kg)
+    w_sand_total = sand_dry_weight * (moist_sand / 100.0)
+    w_gravilla_total = gravilla_dry_weight * (moist_gravilla / 100.0)
+    w_grava_total = grava_dry_weight * (moist_grava / 100.0)
+    w_grava2_total = grava2_dry_weight * (moist_grava2 / 100.0) if num_aggregates == 4 else 0.0
+
+    # Free water contributed by aggregates to mixing water (kg)
+    w_sand_free = sand_dry_weight * ((moist_sand - abs_sand) / 100.0)
+    w_gravilla_free = gravilla_dry_weight * ((moist_gravilla - abs_gravilla) / 100.0)
+    w_grava_free = grava_dry_weight * ((moist_grava - abs_grava) / 100.0)
+    w_grava2_free = grava2_dry_weight * ((moist_grava2 - abs_grava2) / 100.0) if num_aggregates == 4 else 0.0
+
+    total_free_water = w_sand_free + w_gravilla_free + w_grava_free + w_grava2_free
+    net_water_final = max(0.0, (target_water_batch - total_free_water) / 1.1)
+    net_water_theoretical = max(0.0, target_water_batch / 1.1)
+
+    # Aggregate wet weights (kg)
+    sand_wet_weight = sand_dry_weight + w_sand_total
+    gravilla_wet_weight = gravilla_dry_weight + w_gravilla_total
+    grava_wet_weight = grava_dry_weight + w_grava_total
     grava2_wet_weight = grava2_dry_weight + w_grava2_total
+
     
     # Slump prediction
     slump_pred = predict_slump_from_water(combined_fm, water_target_m3, water_reduction, factor_g, True)
