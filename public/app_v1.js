@@ -271,10 +271,38 @@ function showServerErrorOverlay() {
         const el = document.getElementById(id);
         if (el) el.innerText = "---";
     });
+
+    const errorHTML = `<div style="margin-bottom: 12px; padding: 14px 18px; font-size: 0.85rem; border-radius: 8px; border-left: 5px solid var(--error); background-color: rgba(239, 68, 68, 0.15); color: var(--text); line-height: 1.5; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">⚠️ <strong>Servicio temporalmente no disponible:</strong> No se pudo conectar con el servidor de cálculo de dosificación. Por favor, verifique su conexión a internet e intente de nuevo en unos minutos. Si el inconveniente persiste, contacte al soporte técnico de la plataforma.</div>`;
+
     const manualAlertsDiv = document.getElementById("manualDesignAlerts");
     if (manualAlertsDiv) {
-        manualAlertsDiv.innerHTML = `<div style="margin-top: 6px; padding: 12px; font-size: 0.8rem; border-radius: 6px; border-left: 4px solid var(--error); background-color: rgba(239, 68, 68, 0.12); color: var(--text); line-height: 1.5;">⚠️ <strong>Servicio temporalmente no disponible:</strong> No se pudo conectar con el servidor de cálculo de dosificación. Por favor, verifique su conexión a internet e intente de nuevo en unos minutos. Si el inconveniente persiste, contacte al soporte técnico de la plataforma.</div>`;
+        manualAlertsDiv.innerHTML = errorHTML;
         manualAlertsDiv.style.display = "block";
+    }
+
+    let globalBanner = document.getElementById("globalServerErrorBanner");
+    if (!globalBanner) {
+        globalBanner = document.createElement("div");
+        globalBanner.id = "globalServerErrorBanner";
+        globalBanner.style.cssText = "margin: 10px 20px 0 20px;";
+        const mainEl = document.querySelector(".app-main") || document.body;
+        if (mainEl.parentNode) {
+            mainEl.parentNode.insertBefore(globalBanner, mainEl);
+        }
+    }
+    globalBanner.innerHTML = errorHTML;
+    globalBanner.style.display = "block";
+
+    if (typeof showToast === "function") {
+        showToast("Error de conexión con el servidor de dosificación. Verifique su internet.", "error", 6000);
+    }
+}
+
+function hideServerErrorOverlay() {
+    const globalBanner = document.getElementById("globalServerErrorBanner");
+    if (globalBanner) {
+        globalBanner.innerHTML = "";
+        globalBanner.style.display = "none";
     }
 }
 
@@ -4157,6 +4185,7 @@ async function calculateAndUpdate() {
         consistencyBadge.innerText = consistencyText;
         consistencyBadge.className = `badge ${consistencyClass}`;
         
+        hideServerErrorOverlay();
         const manualAlertsDiv = document.getElementById("manualDesignAlerts");
         if (manualAlertsDiv) {
             manualAlertsDiv.innerHTML = "";
@@ -4259,7 +4288,8 @@ async function calculateAndUpdate() {
             }
             
             admixtureRecipes.forEach(rec => {
-                materials.push({ name: `Aditivo: ${rec.name}`, value: rec.wetWeight.toFixed(2), unit: "kg / L", desc: `${(rec.wetWeight * 1000).toFixed(0)} ml` });
+                const addWeight = rec.weight !== undefined ? rec.weight : (rec.wetWeight || 0);
+                materials.push({ name: `Aditivo: ${rec.name}`, value: addWeight.toFixed(2), unit: "kg", desc: `${(addWeight * 1000).toFixed(0)} g (${((rec.volume || 0) * 1000).toFixed(0)} ml)` });
             });
             
             materials.forEach(mat => {
