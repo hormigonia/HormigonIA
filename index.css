@@ -7,6 +7,9 @@
     --border-color: #475569;
     --text-main: #f8fafc;
     --text-muted: #94a3b8;
+    --toast-bg: rgba(30, 41, 59, 0.95);
+    --toast-color: #f8fafc;
+    --toast-shadow: rgba(0, 0, 0, 0.4);
 }
 
 :root.light-mode {
@@ -16,6 +19,9 @@
     --border-color: #cbd5e1;
     --text-main: #0f172a;
     --text-muted: #475569;
+    --toast-bg: rgba(255, 255, 255, 0.95);
+    --toast-color: #0f172a;
+    --toast-shadow: rgba(0, 0, 0, 0.12);
 }
 
 :root {
@@ -1715,12 +1721,13 @@ body.printing-active .print-only {
 }
 
 .toast {
-    background: rgba(30, 41, 59, 0.95);
-    color: var(--text-main);
+    background: var(--toast-bg);
+    color: var(--toast-color);
+    border: 1px solid var(--border-color);
     border-left: 4px solid var(--accent);
     padding: 14px 18px;
     border-radius: 8px;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 10px 25px var(--toast-shadow);
     backdrop-filter: blur(8px);
     font-size: 0.88rem;
     font-weight: 500;
