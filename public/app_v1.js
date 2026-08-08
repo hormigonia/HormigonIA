@@ -883,15 +883,16 @@ const historyManager = {
             };
         },
         restoreState: function(state) {
-            document.getElementById("selectDesignMethod").value = state.designMethod;
-            document.getElementById("inputCustomCement").value = state.customCement;
-            document.getElementById("inputCustomWC").value = state.customWC;
-            document.getElementById("inputCustomBolomeyA").value = state.customBolomeyA;
-            document.getElementById("inputMaxSieveSize").value = state.maxSieveSize;
-            document.getElementById("inputAirPercentage").value = state.airPercentage;
+            if (!state) return;
+            if (state.designMethod !== undefined && state.designMethod !== null) document.getElementById("selectDesignMethod").value = state.designMethod;
+            if (state.customCement !== undefined && state.customCement !== null) document.getElementById("inputCustomCement").value = state.customCement;
+            if (state.customWC !== undefined && state.customWC !== null) document.getElementById("inputCustomWC").value = state.customWC;
+            if (state.customBolomeyA !== undefined && state.customBolomeyA !== null) document.getElementById("inputCustomBolomeyA").value = state.customBolomeyA;
+            if (state.maxSieveSize !== undefined && state.maxSieveSize !== null) document.getElementById("inputMaxSieveSize").value = state.maxSieveSize;
+            if (state.airPercentage !== undefined && state.airPercentage !== null) document.getElementById("inputAirPercentage").value = state.airPercentage;
             const targetStrEl = document.getElementById("inputTargetStrength");
-            if (targetStrEl) targetStrEl.value = state.manualStrength;
-            document.getElementById("selectCementCategory").value = state.cementCategory;
+            if (targetStrEl && state.manualStrength !== undefined && state.manualStrength !== null) targetStrEl.value = state.manualStrength;
+            if (state.cementCategory !== undefined && state.cementCategory !== null) document.getElementById("selectCementCategory").value = state.cementCategory;
         }
     },
     additives: {
@@ -944,6 +945,7 @@ const historyManager = {
             };
         },
         restoreState: function(state) {
+            if (!state) return;
             if (state.numAggregates && document.getElementById("selectNumAggregates")) {
                 document.getElementById("selectNumAggregates").value = state.numAggregates;
                 updateAggregatesSelectorUI();
@@ -952,35 +954,56 @@ const historyManager = {
             const gravillaInputs = document.querySelectorAll(".gravilla-sieve");
             const gravaInputs = document.querySelectorAll(".grava-sieve");
             const grava2Inputs = document.querySelectorAll(".grava2-sieve");
-            state.sandSieves.forEach((val, i) => { if (sandInputs[i]) sandInputs[i].value = val; });
-            state.gravillaSieves.forEach((val, i) => { if (gravillaInputs[i]) gravillaInputs[i].value = val; });
-            state.gravaSieves.forEach((val, i) => { if (gravaInputs[i]) gravaInputs[i].value = val; });
+            
+            if (state.sandSieves) {
+                state.sandSieves.forEach((val, i) => { if (sandInputs[i]) sandInputs[i].value = val; });
+            }
+            if (state.gravillaSieves) {
+                state.gravillaSieves.forEach((val, i) => { if (gravillaInputs[i]) gravillaInputs[i].value = val; });
+            }
+            if (state.gravaSieves) {
+                state.gravaSieves.forEach((val, i) => { if (gravaInputs[i]) gravaInputs[i].value = val; });
+            }
             if (state.grava2Sieves) {
                 state.grava2Sieves.forEach((val, i) => { if (grava2Inputs[i]) grava2Inputs[i].value = val; });
             }
             
-            document.getElementById("densCement").value = state.densCement;
-            document.getElementById("coefCement").value = state.coefCement;
-            document.getElementById("densSand").value = state.densSand;
-            document.getElementById("coefSand").value = state.coefSand;
-            document.getElementById("moistSand").value = state.moistSand;
-            document.getElementById("absSand").value = state.absSand;
+            if (state.densCement !== undefined && state.densCement !== null) document.getElementById("densCement").value = state.densCement;
+            if (state.coefCement !== undefined && state.coefCement !== null) document.getElementById("coefCement").value = state.coefCement;
+            if (state.densSand !== undefined && state.densSand !== null) document.getElementById("densSand").value = state.densSand;
+            if (state.coefSand !== undefined && state.coefSand !== null) document.getElementById("coefSand").value = state.coefSand;
+            if (state.moistSand !== undefined && state.moistSand !== null) document.getElementById("moistSand").value = state.moistSand;
+            if (state.absSand !== undefined && state.absSand !== null) document.getElementById("absSand").value = state.absSand;
             
-            document.getElementById("densGravilla").value = state.densGravilla || state.densStone || 1600;
-            document.getElementById("coefGravilla").value = state.coefGravilla || state.coefStone || 0.51;
-            document.getElementById("moistGravilla").value = state.moistGravilla || state.moistStone || 50;
-            document.getElementById("absGravilla").value = state.absGravilla || state.absStone || 0.5;
+            if (state.densGravilla !== undefined && state.densGravilla !== null) document.getElementById("densGravilla").value = state.densGravilla;
+            else if (state.densStone !== undefined && state.densStone !== null) document.getElementById("densGravilla").value = state.densStone;
             
-            document.getElementById("densGrava").value = state.densGrava || state.densStone || 1600;
-            document.getElementById("coefGrava").value = state.coefGrava || state.coefStone || 0.51;
-            document.getElementById("moistGrava").value = state.moistGrava || state.moistStone || 50;
-            document.getElementById("absGrava").value = state.absGrava || state.absStone || 0.5;
-
+            if (state.coefGravilla !== undefined && state.coefGravilla !== null) document.getElementById("coefGravilla").value = state.coefGravilla;
+            else if (state.coefStone !== undefined && state.coefStone !== null) document.getElementById("coefGravilla").value = state.coefStone;
+            
+            if (state.moistGravilla !== undefined && state.moistGravilla !== null) document.getElementById("moistGravilla").value = state.moistGravilla;
+            else if (state.moistStone !== undefined && state.moistStone !== null) document.getElementById("moistGravilla").value = state.moistStone;
+            
+            if (state.absGravilla !== undefined && state.absGravilla !== null) document.getElementById("absGravilla").value = state.absGravilla;
+            else if (state.absStone !== undefined && state.absStone !== null) document.getElementById("absGravilla").value = state.absStone;
+            
+            if (state.densGrava !== undefined && state.densGrava !== null) document.getElementById("densGrava").value = state.densGrava;
+            else if (state.densStone !== undefined && state.densStone !== null) document.getElementById("densGrava").value = state.densStone;
+            
+            if (state.coefGrava !== undefined && state.coefGrava !== null) document.getElementById("coefGrava").value = state.coefGrava;
+            else if (state.coefStone !== undefined && state.coefStone !== null) document.getElementById("coefGrava").value = state.coefStone;
+            
+            if (state.moistGrava !== undefined && state.moistGrava !== null) document.getElementById("moistGrava").value = state.moistGrava;
+            else if (state.moistStone !== undefined && state.moistStone !== null) document.getElementById("moistGrava").value = state.moistStone;
+            
+            if (state.absGrava !== undefined && state.absGrava !== null) document.getElementById("absGrava").value = state.absGrava;
+            else if (state.absStone !== undefined && state.absStone !== null) document.getElementById("absGrava").value = state.absStone;
+            
             if (document.getElementById("densGrava2")) {
-                document.getElementById("densGrava2").value = state.densGrava2 || 1600;
-                document.getElementById("coefGrava2").value = state.coefGrava2 || 0.51;
-                document.getElementById("moistGrava2").value = state.moistGrava2 || 50;
-                document.getElementById("absGrava2").value = state.absGrava2 || 0.5;
+                if (state.densGrava2 !== undefined && state.densGrava2 !== null) document.getElementById("densGrava2").value = state.densGrava2;
+                if (state.coefGrava2 !== undefined && state.coefGrava2 !== null) document.getElementById("coefGrava2").value = state.coefGrava2;
+                if (state.moistGrava2 !== undefined && state.moistGrava2 !== null) document.getElementById("moistGrava2").value = state.moistGrava2;
+                if (state.absGrava2 !== undefined && state.absGrava2 !== null) document.getElementById("absGrava2").value = state.absGrava2;
             }
             if (state.aridosLabData) {
                 aridosLabData = JSON.parse(JSON.stringify(state.aridosLabData));
@@ -1296,6 +1319,16 @@ const PREDEFINED_ADDITIVES = {
     }
 };
 
+const fallbackSpec = {
+    name: "Aditivo Desconocido/Personalizado",
+    minDosage: 0.0,
+    maxDosage: 10.0,
+    defaultDosage: 0.0,
+    density: 1.0,
+    type: "unknown",
+    getReduction: () => 0.0
+};
+
 const CLASS_STRENGTHS = { 
     "H8": 8, 
     "H15": 15, 
@@ -1571,6 +1604,23 @@ function loadActiveDraft() {
         if (!stored) return false;
         const draft = JSON.parse(stored);
         
+        // Data Migration: Sanitise legacy specific gravity densities to bulk densities in active draft
+        if (draft.lab && parseFloat(draft.lab.densCement) < 100) {
+            draft.lab.densCement = "1400";
+            draft.lab.coefCement = "0.47";
+            draft.lab.densSand = "1650";
+            draft.lab.coefSand = "0.63";
+            draft.lab.densGravilla = "1600";
+            draft.lab.coefGravilla = "0.51";
+            draft.lab.densGrava = "1600";
+            draft.lab.coefGrava = "0.51";
+            if (draft.lab.densGrava2) {
+                draft.lab.densGrava2 = "1600";
+                draft.lab.coefGrava2 = "0.51";
+            }
+            localStorage.setItem("hormigonmix_active_draft", JSON.stringify(draft));
+        }
+        
         if (draft.config) historyManager.config.restoreState(draft.config);
         if (draft.additives) historyManager.additives.restoreState(draft.additives);
         if (draft.lab) historyManager.lab.restoreState(draft.lab);
@@ -1581,17 +1631,8 @@ function loadActiveDraft() {
         if (draft.exposureClass && document.getElementById("selectExposureClass")) {
             document.getElementById("selectExposureClass").value = draft.exposureClass;
         }
-        if (draft.batchVolume && document.getElementById("inputBatchVolume")) {
-            const selectVol = document.getElementById("inputBatchVolume");
-            if (selectVol) {
-                if (!Array.from(selectVol.options).some(o => o.value === draft.batchVolume)) {
-                    const opt = document.createElement("option");
-                    opt.value = draft.batchVolume;
-                    opt.text = parseFloat(draft.batchVolume) >= 0.1 && parseFloat(draft.batchVolume) <= 12 ? `${draft.batchVolume} m³` : `${draft.batchVolume} Litros`;
-                    selectVol.add(opt);
-                }
-                selectVol.value = draft.batchVolume;
-            }
+        if (draft.batchVolume) {
+            syncVolumeFields(parseFloat(draft.batchVolume));
         }
         if (draft.calcSlumpMeasured && document.getElementById("inputCalculatorSlumpMeasured")) {
             document.getElementById("inputCalculatorSlumpMeasured").value = draft.calcSlumpMeasured;
@@ -2312,6 +2353,20 @@ async function importSharedMixFromUrl() {
     
     if (!mixId && !sharePayload) return;
     
+    // Wait for Supabase to be ready (up to 3 seconds)
+    if (mixId && (!window.supabase || typeof window.getMixById !== "function")) {
+        let attempts = 0;
+        await new Promise((resolve) => {
+            const interval = setInterval(() => {
+                attempts++;
+                if ((window.supabase && typeof window.getMixById === "function") || attempts >= 60) {
+                    clearInterval(interval);
+                    resolve();
+                }
+            }, 50);
+        });
+    }
+    
     try {
         let state = null;
         let importedName = "Mezcla Importada";
@@ -2327,35 +2382,71 @@ async function importSharedMixFromUrl() {
                 throw new Error("La mezcla no existe o fue eliminada por su creador.");
             }
             
+            // Defensively parse materials and additives
+            let materials = dbMix.materials;
+            if (typeof materials === "string") {
+                try { materials = JSON.parse(materials); } catch (e) { materials = {}; }
+            }
+            materials = materials || {};
+            
+            let additives = dbMix.additives;
+            if (typeof additives === "string") {
+                try { additives = JSON.parse(additives); } catch (e) { additives = []; }
+            }
+            additives = additives || [];
+            
             importedName = dbMix.name;
+            
+            // Reconstruct the full state
+            const mState = materials.state || {};
             state = {
-                config: dbMix.materials.config,
-                additives: dbMix.additives,
-                lab: dbMix.materials.lab
+                structuralElement: mState.structuralElement || "",
+                exposureClass: mState.exposureClass || dbMix.exposure_class || "",
+                concreteClass: mState.concreteClass || dbMix.concrete_class || "H21",
+                batchVolume: mState.batchVolume || dbMix.batch_volume || "80",
+                config: mState.config || materials.config || {},
+                additives: mState.additives || additives,
+                lab: mState.lab || materials.lab || {}
             };
             
             // Set global active ID
             activeSharedMixId = dbMix.id;
         } else if (sharePayload) {
             const jsonString = decodeURIComponent(escape(atob(sharePayload)));
-            state = JSON.parse(jsonString);
+            let unpacked = JSON.parse(jsonString);
             
-            if (state._v === 2 || state.c) {
-                if (state.n) {
-                    importedName = state.n;
+            if (unpacked._v === 2 || unpacked.c) {
+                if (unpacked.n) {
+                    importedName = unpacked.n;
                 }
-                state = unpackState(state);
+                unpacked = unpackState(unpacked);
             }
+            state = unpacked;
             activeSharedMixId = "";
         }
         
         if (!state) return;
         
+        // Data Migration: Sanitise legacy specific gravity densities to bulk densities in shared state
+        if (state.lab && parseFloat(state.lab.densCement) < 100) {
+            state.lab.densCement = "1400";
+            state.lab.coefCement = "0.47";
+            state.lab.densSand = "1650";
+            state.lab.coefSand = "0.63";
+            state.lab.densGravilla = "1600";
+            state.lab.coefGravilla = "0.51";
+            state.lab.densGrava = "1600";
+            state.lab.coefGrava = "0.51";
+            if (state.lab.densGrava2) {
+                state.lab.densGrava2 = "1600";
+                state.lab.coefGrava2 = "0.51";
+            }
+        }
+        
         activeSharedMixName = importedName;
         
-        if (state.config) historyManager.config.restoreState(state.config);
-        if (state.additives) historyManager.additives.restoreState(state.additives);
-        if (state.lab) historyManager.lab.restoreState(state.lab);
+        // Restore everything using restoreFullState
+        restoreFullState(state);
         
         // Clear history to prevent undo/redo issues with imported mix
         historyManager.config.undo = [];
@@ -2364,9 +2455,6 @@ async function importSharedMixFromUrl() {
         historyManager.additives.redo = [];
         historyManager.lab.undo = [];
         historyManager.lab.redo = [];
-        
-        // Re-calculate results
-        calculateAndUpdate();
         
         // Auto-save the imported mix to the receiver's saved mixes list!
         await saveMixProgrammatically(importedName, state);
@@ -3229,7 +3317,7 @@ function renderAdditivesList() {
         const item = document.createElement("div");
         item.className = "additive-item";
         
-        const spec = PREDEFINED_ADDITIVES[add.typeKey] || PREDEFINED_ADDITIVES["personalizado"];
+        const spec = PREDEFINED_ADDITIVES[add.typeKey] || fallbackSpec;
         
         // Generate options for dropdown
         let selectOptions = "";
@@ -3619,7 +3707,7 @@ function autoAdjustCustomParamsFromStrength() {
     // Account for plasticizers reduction (consistent with design water)
     let waterReduction = 1.0;
     additives.forEach(add => {
-        const spec = PREDEFINED_ADDITIVES[add.typeKey] || PREDEFINED_ADDITIVES["personalizado"];
+        const spec = PREDEFINED_ADDITIVES[add.typeKey] || fallbackSpec;
         if (spec.type === "plasticizer" && add.dosage > 0) {
             const clampedDosage = Math.max(spec.minDosage, Math.min(spec.maxDosage, add.dosage));
             const reductionPct = spec.getReduction(clampedDosage);
@@ -3692,16 +3780,20 @@ async function calculateAndUpdate() {
     const targetWC = parseFloat(document.getElementById("inputCustomWC")?.value || 0.50);
     const airPct = parseFloat(document.getElementById("inputAirPercentage")?.value || 1.5);
     
-    const densCement = parseFloat(document.getElementById("densCement")?.value || 3.10);
-    const coefCement = parseFloat(document.getElementById("coefCement")?.value || 1.0);
-    const densSand = parseFloat(document.getElementById("densSand")?.value || 2.65);
-    const coefSand = parseFloat(document.getElementById("coefSand")?.value || 1.0);
-    const densGravilla = parseFloat(document.getElementById("densGravilla")?.value || 2.68);
-    const coefGravilla = parseFloat(document.getElementById("coefGravilla")?.value || 1.0);
-    const densGrava = parseFloat(document.getElementById("densGrava")?.value || 2.70);
-    const coefGrava = parseFloat(document.getElementById("coefGrava")?.value || 1.0);
-    const densGrava2 = parseFloat(document.getElementById("densGrava2")?.value || 2.70);
-    const coefGrava2 = parseFloat(document.getElementById("coefGrava2")?.value || 1.0);
+    const densCement = parseFloat(document.getElementById("densCement")?.value || 1400.0);
+    const coefCement = parseFloat(document.getElementById("coefCement")?.value || 0.47);
+    
+    const densSand = parseFloat(document.getElementById("densSand")?.value || 1650.0);
+    const coefSand = parseFloat(document.getElementById("coefSand")?.value || 0.63);
+    
+    const densGravilla = parseFloat(document.getElementById("densGravilla")?.value || 1600.0);
+    const coefGravilla = parseFloat(document.getElementById("coefGravilla")?.value || 0.51);
+    
+    const densGrava = parseFloat(document.getElementById("densGrava")?.value || 1600.0);
+    const coefGrava = parseFloat(document.getElementById("coefGrava")?.value || 0.51);
+    
+    const densGrava2 = parseFloat(document.getElementById("densGrava2")?.value || 1600.0);
+    const coefGrava2 = parseFloat(document.getElementById("coefGrava2")?.value || 0.51);
     
     const moistSand = parseFloat(document.getElementById("moistSand")?.value || 0.0);
     const absSand = parseFloat(document.getElementById("absSand")?.value || 0.0);
@@ -5257,24 +5349,57 @@ async function loadSavedMixes() {
     try {
         if (currentUserSession && supabase) {
             const mixes = await getUserMixes();
-            savedMixes = mixes.map(dbMix => ({
-                id: dbMix.id,
-                name: dbMix.name,
-                concreteClass: dbMix.concrete_class,
-                config: dbMix.materials.config,
-                savedDate: new Date(dbMix.created_at).getTime(),
-                state: dbMix.materials.state || {
-                    structuralElement: dbMix.materials.state.structuralElement || "",
-                    exposureClass: dbMix.exposure_class,
+            savedMixes = mixes.map(dbMix => {
+                let materials = dbMix.materials;
+                if (typeof materials === "string") {
+                    try { materials = JSON.parse(materials); } catch (e) { materials = {}; }
+                }
+                materials = materials || {};
+
+                let additives = dbMix.additives;
+                if (typeof additives === "string") {
+                    try { additives = JSON.parse(additives); } catch (e) { additives = []; }
+                }
+                additives = additives || [];
+
+                const mState = materials.state || {};
+                const lab = mState.lab || materials.lab || {};
+                
+                // Data Migration: Sanitise legacy specific gravity densities to bulk densities
+                if (lab.densCement && parseFloat(lab.densCement) < 100) {
+                    lab.densCement = "1400";
+                    lab.coefCement = "0.47";
+                    lab.densSand = "1650";
+                    lab.coefSand = "0.63";
+                    lab.densGravilla = "1600";
+                    lab.coefGravilla = "0.51";
+                    lab.densGrava = "1600";
+                    lab.coefGrava = "0.51";
+                    if (lab.densGrava2) {
+                        lab.densGrava2 = "1600";
+                        lab.coefGrava2 = "0.51";
+                    }
+                }
+                
+                return {
+                    id: dbMix.id,
+                    name: dbMix.name,
                     concreteClass: dbMix.concrete_class,
-                    batchVolume: dbMix.batch_volume,
-                    config: dbMix.materials.config,
-                    additives: dbMix.additives,
-                    lab: dbMix.materials.lab
-                },
-                location: dbMix.materials.location || { lat: null, lon: null, displayName: "" },
-                weather: dbMix.materials.weather || null
-            }));
+                    config: materials.config || {},
+                    savedDate: new Date(dbMix.created_at).getTime(),
+                    state: {
+                        structuralElement: mState.structuralElement || "",
+                        exposureClass: mState.exposureClass || dbMix.exposure_class || "",
+                        concreteClass: mState.concreteClass || dbMix.concrete_class || "",
+                        batchVolume: mState.batchVolume || dbMix.batch_volume || "80",
+                        config: mState.config || materials.config || {},
+                        additives: mState.additives || additives,
+                        lab: lab
+                    },
+                    location: materials.location || { lat: null, lon: null, displayName: "" },
+                    weather: materials.weather || null
+                };
+            });
         } else {
             const stored = localStorage.getItem(LOCAL_STORAGE_MIXES_KEY);
             savedMixes = stored ? JSON.parse(stored) : [];
@@ -5409,40 +5534,92 @@ function shareSavedMixByIndex(index) {
 }
 
 
+function syncVolumeFields(liters) {
+    const inputBatchVolume = document.getElementById("inputBatchVolume");
+    const inputBatchVolumeValue = document.getElementById("inputBatchVolumeValue");
+    const selectBatchVolumeUnit = document.getElementById("selectBatchVolumeUnit");
+    
+    const inputProdVolumeValue = document.getElementById("inputProdVolumeValue");
+    const selectProdVolumeUnit = document.getElementById("selectProdVolumeUnit");
+    
+    const val = liters >= 1000 ? liters / 1000 : liters;
+    const unit = liters >= 1000 ? "m3" : "L";
+    
+    if (inputBatchVolumeValue) inputBatchVolumeValue.value = val;
+    if (selectBatchVolumeUnit) selectBatchVolumeUnit.value = unit;
+    
+    if (inputProdVolumeValue) inputProdVolumeValue.value = val;
+    if (selectProdVolumeUnit) selectProdVolumeUnit.value = unit;
+    
+    if (inputBatchVolume) {
+        let exists = false;
+        for (let i = 0; i < inputBatchVolume.options.length; i++) {
+            if (parseFloat(inputBatchVolume.options[i].value) === liters) {
+                exists = true;
+                break;
+            }
+        }
+        if (!exists) {
+            const opt = document.createElement("option");
+            opt.value = liters.toString();
+            opt.text = liters >= 1000 ? `${(liters / 1000).toFixed(1)} m³` : `${liters} L`;
+            inputBatchVolume.add(opt);
+        }
+        inputBatchVolume.value = liters.toString();
+    }
+    
+    // Sync active class on badges
+    document.querySelectorAll(".btn-vol-badge").forEach(btn => {
+        const bVal = parseFloat(btn.dataset.value);
+        const bUnit = btn.dataset.unit;
+        const bLiters = bUnit === "m3" ? bVal * 1000 : bVal;
+        if (Math.abs(bLiters - liters) < 0.01) {
+            btn.classList.add("active");
+        } else {
+            btn.classList.remove("active");
+        }
+    });
+    
+    document.querySelectorAll(".btn-vol-badge-prod").forEach(btn => {
+        const bVal = parseFloat(btn.dataset.value);
+        const bUnit = btn.dataset.unit;
+        const bLiters = bUnit === "m3" ? bVal * 1000 : bVal;
+        if (Math.abs(bLiters - liters) < 0.01) {
+            btn.classList.add("active");
+        } else {
+            btn.classList.remove("active");
+        }
+    });
+}
+
 function restoreFullState(state) {
-    document.getElementById("selectStructuralElement").value = state.structuralElement;
-    document.getElementById("selectExposureClass").value = state.exposureClass;
+    if (!state) return;
+    
+    if (state.structuralElement && document.getElementById("selectStructuralElement")) {
+        document.getElementById("selectStructuralElement").value = state.structuralElement;
+    }
+    if (state.exposureClass && document.getElementById("selectExposureClass")) {
+        document.getElementById("selectExposureClass").value = state.exposureClass;
+    }
+    
     const targetStrengthInput = document.getElementById("inputTargetStrength");
-    if (targetStrengthInput) {
+    if (targetStrengthInput && state.concreteClass) {
         let val = state.concreteClass;
         if (typeof val === "string" && val.startsWith("H")) {
             val = CLASS_STRENGTHS[val] || 21;
         }
         targetStrengthInput.value = parseInt(val) || 21;
     }
-    const batchVolInput = document.getElementById("inputBatchVolume");
-    if (batchVolInput) {
-        let exists = false;
-        for (let i = 0; i < batchVolInput.options.length; i++) {
-            if (parseFloat(batchVolInput.options[i].value) === parseFloat(state.batchVolume)) {
-                exists = true;
-                break;
-            }
-        }
-        if (!exists) {
-            const newOpt = document.createElement("option");
-            const volL = parseFloat(state.batchVolume);
-            newOpt.value = volL;
-            newOpt.text = volL >= 1000 ? `${(volL / 1000).toFixed(1)} m³ (Cargado)` : `${volL} L (Cargado)`;
-            batchVolInput.add(newOpt);
-        }
-        batchVolInput.value = state.batchVolume;
-    }
-    currentClassIndex = state.currentClassIndex;
     
-    historyManager.config.restoreState(state.config);
-    historyManager.additives.restoreState(state.additives);
-        historyManager.lab.restoreState(state.lab);
+    if (state.batchVolume) {
+        syncVolumeFields(parseFloat(state.batchVolume));
+    }
+    
+    currentClassIndex = state.currentClassIndex !== undefined ? state.currentClassIndex : 0;
+    
+    if (state.config) historyManager.config.restoreState(state.config);
+    if (state.additives) historyManager.additives.restoreState(state.additives);
+    if (state.lab) historyManager.lab.restoreState(state.lab);
 
     // Load quality iteration state
     currentMixIteration = state.currentMixIteration || 0;
@@ -5894,12 +6071,21 @@ function updatePrintCalcMemory(customName = null) {
     }
     
     const waterDemandPerM3 = parseFloat(resWaterTheoretical) * (1000 / batchVol);
-    const cementDensitySolid = parseFloat(document.getElementById("densCement")?.value || 3.10);
-    const sandDensitySolid = parseFloat(document.getElementById("densSand")?.value || 2.65);
-    const stoneDensitySolid = parseFloat(document.getElementById("densGrava")?.value || document.getElementById("densGravilla")?.value || 2.70);
-    const grava2DensitySolid = parseFloat(document.getElementById("densGrava2")?.value || 2.70);
+    const densCement = parseFloat(document.getElementById("densCement")?.value || 1400.0);
+    const coefCement = parseFloat(document.getElementById("coefCement")?.value || 0.47);
+    const densSand = parseFloat(document.getElementById("densSand")?.value || 1650.0);
+    const coefSand = parseFloat(document.getElementById("coefSand")?.value || 0.63);
     
-    const volCement = parseFloat(resCementPerM3) / cementDensitySolid;
+    const densGravilla = parseFloat(document.getElementById("densGravilla")?.value || 1600.0);
+    const coefGravilla = parseFloat(document.getElementById("coefGravilla")?.value || 0.51);
+    
+    const densGrava = parseFloat(document.getElementById("densGrava")?.value || 1600.0);
+    const coefGrava = parseFloat(document.getElementById("coefGrava")?.value || 0.51);
+    
+    const densGrava2 = parseFloat(document.getElementById("densGrava2")?.value || 1600.0);
+    const coefGrava2 = parseFloat(document.getElementById("coefGrava2")?.value || 0.51);
+    
+    const volCement = (parseFloat(resCementPerM3) / densCement) * coefCement * 1000;
     const volWater = waterDemandPerM3;
     const volAir = airPct * 10;
     
@@ -5924,10 +6110,10 @@ function updatePrintCalcMemory(customName = null) {
     const volGrava = volAggregates * G_Ratio;
     const volGrava2 = volAggregates * G2_Ratio;
     
-    const drySandPerM3 = volAggregates * sRatio * sandDensitySolid;
-    const dryGravillaPerM3 = volAggregates * gRatio * stoneDensitySolid;
-    const dryGravaPerM3 = volAggregates * G_Ratio * stoneDensitySolid;
-    const dryGrava2PerM3 = volAggregates * G2_Ratio * grava2DensitySolid;
+    const drySandPerM3 = (volSand / 1000 / coefSand) * densSand;
+    const dryGravillaPerM3 = (volGravilla / 1000 / coefGravilla) * densGravilla;
+    const dryGravaPerM3 = (volGrava / 1000 / coefGrava) * densGrava;
+    const dryGrava2PerM3 = (volGrava2 / 1000 / coefGrava2) * densGrava2;
     
     const volM3 = batchVol / 1000;
     
