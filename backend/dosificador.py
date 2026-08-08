@@ -285,16 +285,20 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     target_wc = params.get("targetWC", 0.50)
     air_pct = params.get("airPct", 1.5)
     
-    dens_cement = params.get("densCement", 3.10)
-    coef_cement = params.get("coefCement", 1.0)
-    dens_sand = params.get("densSand", 2.65)
-    coef_sand = params.get("coefSand", 1.0)
-    dens_gravilla = params.get("densGravilla", 2.68)
-    coef_gravilla = params.get("coefGravilla", 1.0)
-    dens_grava = params.get("densGrava", 2.70)
-    coef_grava = params.get("coefGrava", 1.0)
-    dens_grava2 = params.get("densGrava2", 2.70)
-    coef_grava2 = params.get("coefGrava2", 1.0)
+    dens_cement = params.get("densCement", 1400.0)
+    coef_cement = params.get("coefCement", 0.47)
+    
+    dens_sand = params.get("densSand", 1650.0)
+    coef_sand = params.get("coefSand", 0.63)
+    
+    dens_gravilla = params.get("densGravilla", 1600.0)
+    coef_gravilla = params.get("coefGravilla", 0.51)
+    
+    dens_grava = params.get("densGrava", 1600.0)
+    coef_grava = params.get("coefGrava", 0.51)
+    
+    dens_grava2 = params.get("densGrava2", 1600.0)
+    coef_grava2 = params.get("coefGrava2", 0.51)
     
     moist_sand = params.get("moistSand", 4.0)
     abs_sand = params.get("absSand", 1.0)
