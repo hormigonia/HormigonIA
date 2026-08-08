@@ -266,7 +266,7 @@ function handleStartProductionClick(e) {
 }
 
 function showServerErrorOverlay() {
-    const els = ["resCement", "resWater", "resSand", "resSandRatio", "resGravilla", "resGravillaRatio", "resGrava", "resGravaRatio", "resGrava2", "resGrava2Ratio", "resLarrardMPT", "resLarrardMFP", "resSlump", "resMF", "resTotalDiff"];
+    const els = ["resCement", "resWaterCorrected", "resWaterTheoretical", "resSand", "resSandRatio", "resGravilla", "resGravillaRatio", "resGrava", "resGravaRatio", "resGrava2", "resGrava2Ratio", "resLarrardMPT", "resLarrardMFP", "resSlump", "resMF", "resTotalDiff"];
     els.forEach(id => {
         const el = document.getElementById(id);
         if (el) el.innerText = "---";
