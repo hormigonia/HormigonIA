@@ -286,35 +286,32 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     target_wc = params.get("targetWC", 0.50)
     air_pct = params.get("airPct", 1.5)
     
-    dens_cement = params.get("densCement", 1400.0)
-    if dens_cement < 10.0: dens_cement *= 1000.0
-    coef_cement = params.get("coefCement", 0.47)
+    dens_cement = float(params.get("densCement", 1400.0))
+    coef_cement = float(params.get("coefCement", 0.47))
     
-    dens_sand = params.get("densSand", 1650.0)
-    if dens_sand < 10.0: dens_sand *= 1000.0
-    coef_sand = params.get("coefSand", 0.63)
+    dens_sand = float(params.get("densSand", 1650.0))
+    coef_sand = float(params.get("coefSand", 0.63))
     
-    dens_gravilla = params.get("densGravilla", 1600.0)
-    if dens_gravilla < 10.0: dens_gravilla *= 1000.0
-    coef_gravilla = params.get("coefGravilla", 0.51)
+    dens_gravilla = float(params.get("densGravilla", 1600.0))
+    coef_gravilla = float(params.get("coefGravilla", 0.51))
     
-    dens_grava = params.get("densGrava", 1600.0)
-    if dens_grava < 10.0: dens_grava *= 1000.0
-    coef_grava = params.get("coefGrava", 0.51)
+    dens_grava = float(params.get("densGrava", 1600.0))
+    coef_grava = float(params.get("coefGrava", 0.51))
     
-    dens_grava2 = params.get("densGrava2", 1600.0)
-    if dens_grava2 < 10.0: dens_grava2 *= 1000.0
-    coef_grava2 = params.get("coefGrava2", 0.51)
+    dens_grava2 = float(params.get("densGrava2", 1600.0))
+    coef_grava2 = float(params.get("coefGrava2", 0.51))
 
+    moist_sand = float(params.get("moistSand", 4.0))
+    abs_sand = float(params.get("absSand", 1.0))
     
-    moist_sand = params.get("moistSand", 4.0)
-    abs_sand = params.get("absSand", 1.0)
-    moist_gravilla = params.get("moistGravilla", 1.5)
-    abs_gravilla = params.get("absGravilla", 0.8)
-    moist_grava = params.get("moistGrava", 1.0)
-    abs_grava = params.get("absGrava", 0.5)
-    moist_grava2 = params.get("moistGrava2", 1.0)
-    abs_grava2 = params.get("absGrava2", 0.5)
+    moist_gravilla = float(params.get("moistGravilla", 1.5))
+    abs_gravilla = float(params.get("absGravilla", 0.8))
+    
+    moist_grava = float(params.get("moistGrava", 1.0))
+    abs_grava = float(params.get("absGrava", 0.5))
+    
+    moist_grava2 = float(params.get("moistGrava2", 1.0))
+    abs_grava2 = float(params.get("absGrava2", 0.5))
     
     custom_cement = params.get("customCement", 350.0)
     
