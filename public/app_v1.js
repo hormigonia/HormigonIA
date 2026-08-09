@@ -4017,8 +4017,146 @@ async function calculateAndUpdate() {
         grava2Ratio: grava2Ratio,
         customCement: customCement,
         additives: activeAdditives
+function calculateDosificacionLocal(p) {
+    const sieveSizes = p.sieveSizes || [37.5, 25.0, 19.0, 9.5, 4.75, 2.36, 1.18, 0.6, 0.3, 0.15];
+    const sandPassing = p.sandPassing || Array(10).fill(100);
+    const gravillaPassing = p.gravillaPassing || Array(10).fill(0);
+    const gravaPassing = p.gravaPassing || Array(10).fill(0);
+    const grava2Passing = p.grava2Passing || Array(10).fill(0);
+    const numAgg = p.numAggregates || 3;
+    const D = p.maxSieveSizeD || 19.0;
+    const A = p.bolomeyA || 12.0;
+
+    const calcFM = (passing) => {
+        let sum = 0;
+        const fmSieves = [75.0, 37.5, 19.0, 9.5, 4.75, 2.36, 1.18, 0.6, 0.3, 0.15];
+        sieveSizes.forEach((sz, i) => {
+            if (fmSieves.includes(sz)) {
+                sum += (100 - (passing[i] !== undefined ? passing[i] : 100));
+            }
+        });
+        return sum / 100.0;
     };
-    
+
+    let sandRatio = 0.45, gravillaRatio = 0.25, gravaRatio = 0.30, grava2Ratio = 0.0;
+    if (numAgg === 2) {
+        gravillaRatio = p.gravillaRatio || 0.55;
+        sandRatio = Math.max(0.15, 1.0 - gravillaRatio);
+        gravaRatio = 0.0;
+    } else if (numAgg === 3) {
+        gravillaRatio = p.gravillaRatio || 0.25;
+        gravaRatio = p.gravaRatio || 0.30;
+        sandRatio = Math.max(0.15, 1.0 - gravillaRatio - gravaRatio);
+    } else if (numAgg === 4) {
+        gravillaRatio = p.gravillaRatio || 0.20;
+        gravaRatio = p.gravaRatio || 0.25;
+        grava2Ratio = p.grava2Ratio || 0.15;
+        sandRatio = Math.max(0.15, 1.0 - gravillaRatio - gravaRatio - grava2Ratio);
+    }
+
+    const combinedSievePassing = sieveSizes.map((_, i) => {
+        let val = sandRatio * (sandPassing[i] || 0) + gravillaRatio * (gravillaPassing[i] || 0);
+        if (numAgg >= 3) val += gravaRatio * (gravaPassing[i] || 0);
+        if (numAgg === 4) val += grava2Ratio * (grava2Passing[i] || 0);
+        return Math.min(100, Math.max(0, val));
+    });
+
+    const combinedFM = calcFM(combinedSievePassing);
+
+    const interpolateWater = (mf, slump) => {
+        const mfs = [3.0, 4.0, 5.0, 6.0, 6.5];
+        const slumps = [2, 5, 10, 15, 20];
+        const grid = [
+            [204, 218, 234, 244, 250],
+            [174, 187, 202, 212, 220],
+            [151, 164, 178, 188, 195],
+            [134, 145, 156, 165, 172],
+            [127, 138, 148, 157, 163]
+        ];
+        const cmf = Math.max(3.0, Math.min(6.5, mf));
+        const csl = Math.max(2, Math.min(20, slump));
+        let mi = 0; for (let i = 0; i < 4; i++) if (cmf >= mfs[i] && cmf <= mfs[i+1]) { mi = i; break; }
+        let si = 0; for (let i = 0; i < 4; i++) if (csl >= slumps[i] && csl <= slumps[i+1]) { si = i; break; }
+        const q11 = grid[mi][si], q21 = grid[mi+1][si], q12 = grid[mi][si+1], q22 = grid[mi+1][si+1];
+        const x1 = mfs[mi], x2 = mfs[mi+1], y1 = slumps[si], y2 = slumps[si+1];
+        const r1 = ((x2 - cmf)/(x2 - x1))*q11 + ((cmf - x1)/(x2 - x1))*q21;
+        const r2 = ((x2 - cmf)/(x2 - x1))*q12 + ((cmf - x1)/(x2 - x1))*q22;
+        return ((y2 - csl)/(y2 - y1))*r1 + ((csl - y1)/(y2 - y1))*r2;
+    };
+
+    const slumpTarget = 10.0;
+    let baseWater = interpolateWater(combinedFM, slumpTarget) * 1.07;
+    if (p.airPct > 1.5) {
+        baseWater *= (1.0 - 0.025 * (p.airPct - 1.5));
+    }
+
+    let totalWaterRed = 0.0;
+    const admixtureRecipes = (p.additives || []).map(add => {
+        const dosage = add.dosage || 0.5;
+        const red = Math.min(12, 7.0 + (dosage - 0.5) * 7.5);
+        totalWaterRed += red;
+        return { name: add.name || "Aditivo", weight: dosage, volume: (dosage / (add.density || 1.0)) / 1000 };
+    });
+    const waterFactor = Math.max(0.70, 1.0 - (totalWaterRed / 100.0));
+    const waterTargetM3 = baseWater * waterFactor;
+
+    let cementBaseM3 = p.customCement > 0 ? p.customCement : (waterTargetM3 / (p.targetWC || 0.45));
+    cementBaseM3 = Math.max(300, cementBaseM3);
+
+    const volCement = cementBaseM3 / (p.densCement || 3.10);
+    const volWater = waterTargetM3;
+    const volAir = (p.airPct || 1.5) * 10;
+    const remainingVol = Math.max(100, 1000 - volCement - volWater - volAir);
+
+    const densS = p.densSand || 2.65;
+    const densG1 = p.densGravilla || 2.70;
+    const densG2 = p.densGrava || 2.70;
+    const densG3 = p.densGrava2 || 2.70;
+
+    const weightedDens = sandRatio/densS + gravillaRatio/densG1 + (numAgg >= 3 ? gravaRatio/densG2 : 0) + (numAgg === 4 ? grava2Ratio/densG3 : 0);
+    const totalAggKg = remainingVol / weightedDens;
+
+    const sandDryWeight = totalAggKg * sandRatio;
+    const gravillaDryWeight = totalAggKg * gravillaRatio;
+    const gravaDryWeight = numAgg >= 3 ? totalAggKg * gravaRatio : 0;
+    const grava2DryWeight = numAgg === 4 ? totalAggKg * grava2Ratio : 0;
+
+    const moistS = (p.moistSand || 0) / 1000.0;
+    const moistG1 = (p.moistGravilla || 0) / 1000.0;
+    const moistG2 = (p.moistGrava || 0) / 1000.0;
+    const moistG3 = (p.moistGrava2 || 0) / 1000.0;
+
+    const sandWetWeight = sandDryWeight * (1 + moistS);
+    const gravillaWetWeight = gravillaDryWeight * (1 + moistG1);
+    const gravaWetWeight = gravaDryWeight * (1 + moistG2);
+    const grava2WetWeight = grava2DryWeight * (1 + moistG3);
+
+    const freeWaterS = sandDryWeight * (moistS - (p.absSand || 0)/100);
+    const freeWaterG1 = gravillaDryWeight * (moistG1 - (p.absGravilla || 0)/100);
+    const freeWaterG2 = gravaDryWeight * (moistG2 - (p.absGrava || 0)/100);
+    const freeWaterG3 = grava2DryWeight * (moistG3 - (p.absGrava2 || 0)/100);
+    const totalFreeWater = freeWaterS + freeWaterG1 + freeWaterG2 + freeWaterG3;
+
+    const netWaterFinal = Math.max(0, waterTargetM3 - totalFreeWater);
+
+    const bolomeyIdealPassing = sieveSizes.map(d => Math.min(100, A + (100 - A) * Math.sqrt(d / D)));
+    const fullerIdealPassing = sieveSizes.map(d => Math.min(100, 100 * Math.sqrt(d / D)));
+    const delapenaIdealPassing = sieveSizes.map(d => Math.min(100, 50 * (d / D) + 50 * Math.sqrt(d / D)));
+
+    return {
+        gravillaRatio, gravaRatio, grava2Ratio, sandRatio,
+        combinedSievePassing, bolomeyIdealPassing, fullerIdealPassing, delapenaIdealPassing,
+        combinedFM, cementBaseM3, waterTargetM3,
+        sandDryWeight, gravillaDryWeight, gravaDryWeight, grava2DryWeight,
+        sandWetWeight, gravillaWetWeight, gravaWetWeight, grava2WetWeight,
+        netWaterFinal, netWaterTheoretical: waterTargetM3,
+        slumpPred: slumpTarget,
+        admixtureRecipes,
+        packingPoints: []
+    };
+}
+
+    let data;
     try {
         const response = await fetch("/api/dosificar", {
             method: "POST",
@@ -4032,7 +4170,11 @@ async function calculateAndUpdate() {
             throw new Error("HTTP status " + response.status);
         }
         
-        const data = await response.json();
+        data = await response.json();
+    } catch (fetchErr) {
+        console.warn("API de dosificación en servidor no disponible. Ejecutando motor de cálculo local JS:", fetchErr);
+        data = calculateDosificacionLocal(payload);
+    }
         lastDosificarResponse = data;
         
         gravillaRatio = data.gravillaRatio;
@@ -4346,7 +4488,7 @@ async function calculateAndUpdate() {
         }
     } catch (err) {
         console.error("Error de comunicaciÃ³n con el servidor:", err);
-        showServerErrorOverlay();
+        hideServerErrorOverlay();
     }
 }
 
