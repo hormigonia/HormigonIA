@@ -1273,16 +1273,22 @@
 
                                         <!-- ASISTENTE DIGITAL EXPANDIBLE (PIE DE REY / CALIBRES INDIVIDUALES) -->
                                         <div id="caliperAssistantContainer" style="display: block; background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px dashed var(--accent);">
-                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; flex-wrap: wrap; gap: 8px;">
                                                 <div style="font-size: 0.78rem; font-weight: bold; color: var(--accent);">📏 Medición Grano por Grano (Pie de Rey / UNE 7104)</div>
-                                                <div style="display: flex; align-items: center; gap: 4px;">
-                                                    <label for="selectCaliperSampleSize" style="font-size: 0.7rem; color: var(--text-muted);">Muestra N:</label>
-                                                    <select id="selectCaliperSampleSize" class="form-input" style="height: 24px; padding: 2px 4px; font-size: 0.72rem; width: 90px; background: var(--bg-panel); color: var(--text);">
-                                                        <option value="5">5 Granos</option>
-                                                        <option value="10">10 Granos</option>
-                                                        <option value="15">15 Granos</option>
-                                                        <option value="20" selected>20 Granos</option>
-                                                    </select>
+                                                <div style="display: flex; align-items: center; gap: 8px;">
+                                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                                        <label for="inputCaliperMeasuredVol" style="font-size: 0.7rem; color: var(--text-muted);">Vol. Muestra [cm³]:</label>
+                                                        <input type="number" id="inputCaliperMeasuredVol" value="35" class="form-input" style="height: 24px; padding: 2px 4px; font-size: 0.72rem; width: 60px; background: var(--bg-panel); color: var(--text);" min="0.1" step="0.5">
+                                                    </div>
+                                                    <div style="display: flex; align-items: center; gap: 4px;">
+                                                        <label for="selectCaliperSampleSize" style="font-size: 0.7rem; color: var(--text-muted);">Muestra N:</label>
+                                                        <select id="selectCaliperSampleSize" class="form-input" style="height: 24px; padding: 2px 4px; font-size: 0.72rem; width: 90px; background: var(--bg-panel); color: var(--text);">
+                                                            <option value="5">5 Granos</option>
+                                                            <option value="10">10 Granos</option>
+                                                            <option value="15">15 Granos</option>
+                                                            <option value="20" selected>20 Granos</option>
+                                                        </select>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 8px;">Ingresa la longitud máxima (L<sub>i</sub> en mm) medida con calibre para cada partícula:</p>
@@ -1920,8 +1926,8 @@
         </div>
     </div>
 
-    <script src="public/ai.js?v=3.2.0"></script>
-    <script src="public/app_v2.js?v=3.2.0"></script>
+    <script src="public/ai.js?v=3.2.1"></script>
+    <script src="public/app_v2.js?v=3.2.1"></script>
     <!-- PRINTABLE CALCULATION MEMORY (HIDDEN ON SCREEN) -->
     <div id="printCalcMemory" class="print-only"></div>
 </body>
