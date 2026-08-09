@@ -4158,8 +4158,9 @@ async function calculateAndUpdate() {
         additives: activeAdditives
     };
 
-    let data;
     try {
+        let data;
+        try {
         const response = await fetch("/api/dosificar", {
             method: "POST",
             headers: {
