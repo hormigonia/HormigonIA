@@ -880,7 +880,7 @@
                                                     <th>Material</th>
                                                     <th>Dens. (kg/m³)</th>
                                                     <th>Coef. Ap</th>
-                                                    <th>Hum. (L/m³ / %)</th>
+                                                    <th>Hum. (%)</th>
                                                     <th>Abs. (%)</th>
                                                 </tr>
                                             </thead>
@@ -896,28 +896,28 @@
                                                     <td><strong>Arena</strong></td>
                                                     <td><input type="number" id="densSand" value="1650" step="50" class="table-input"></td>
                                                     <td><input type="number" id="coefSand" value="0.63" step="0.01" class="table-input"></td>
-                                                    <td><input type="number" id="moistSand" value="80" step="5" class="table-input"></td>
-                                                    <td><input type="number" id="absSand" value="0.6" step="0.1" class="table-input"></td>
+                                                    <td><input type="number" id="moistSand" value="4.0" step="0.5" class="table-input"></td>
+                                                    <td><input type="number" id="absSand" value="1.0" step="0.1" class="table-input"></td>
                                                 </tr>
                                                 <tr id="trLabGravilla">
                                                     <td><strong id="lblLabGravilla">Gravilla</strong></td>
                                                     <td><input type="number" id="densGravilla" value="1600" step="50" class="table-input"></td>
                                                     <td><input type="number" id="coefGravilla" value="0.51" step="0.01" class="table-input"></td>
-                                                    <td><input type="number" id="moistGravilla" value="50" step="5" class="table-input"></td>
-                                                    <td><input type="number" id="absGravilla" value="0.5" step="0.1" class="table-input"></td>
+                                                    <td><input type="number" id="moistGravilla" value="1.5" step="0.1" class="table-input"></td>
+                                                    <td><input type="number" id="absGravilla" value="0.8" step="0.1" class="table-input"></td>
                                                 </tr>
                                                 <tr id="trLabGrava">
                                                     <td><strong>Grava</strong></td>
                                                     <td><input type="number" id="densGrava" value="1600" step="50" class="table-input"></td>
                                                     <td><input type="number" id="coefGrava" value="0.51" step="0.01" class="table-input"></td>
-                                                    <td><input type="number" id="moistGrava" value="50" step="5" class="table-input"></td>
+                                                    <td><input type="number" id="moistGrava" value="1.0" step="0.1" class="table-input"></td>
                                                     <td><input type="number" id="absGrava" value="0.5" step="0.1" class="table-input"></td>
                                                 </tr>
                                                 <tr id="trLabGrava2" style="display: none;">
                                                     <td><strong>Grava 2</strong></td>
                                                     <td><input type="number" id="densGrava2" value="1600" step="50" class="table-input"></td>
                                                     <td><input type="number" id="coefGrava2" value="0.51" step="0.01" class="table-input"></td>
-                                                    <td><input type="number" id="moistGrava2" value="50" step="5" class="table-input"></td>
+                                                    <td><input type="number" id="moistGrava2" value="1.0" step="0.1" class="table-input"></td>
                                                     <td><input type="number" id="absGrava2" value="0.5" step="0.1" class="table-input"></td>
                                                 </tr>
                                             </tbody>
@@ -1017,6 +1017,7 @@
                                     <option value="arena">Arena (Árido Fino)</option>
                                     <option value="gravilla">Gravilla (Árido Grueso Intermedio)</option>
                                     <option value="grava">Grava (Árido Grueso Grande)</option>
+                                    <option value="grava2">Grava 2 (4º Árido)</option>
                                 </select>
                             </div>
                         </div>
@@ -1143,10 +1144,10 @@
                                         <div style="background: rgba(255, 255, 255, 0.02); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); margin-top: 5px;">
                                             <h3 style="font-size: 0.88rem; font-weight: bold; margin-bottom: 8px;">Resultados y Vinculación</h3>
                                             <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; line-height: 1.4;">
-                                                <div>• Humedad Calculada (H): <strong id="resSandMoisture">5.00</strong> %</div>
+                                                <div>• Humedad Porcentual Ensayo (H): <strong id="resSandMoisture">5.00</strong> % <span style="font-size: 0.72rem; color: var(--accent);">(Vinculada a dosificación)</span></div>
                                                 <div>• Coef. Entumecimiento (K<sub>ent</sub>): <strong id="resKent">1.28</strong></div>
                                                 <div>• Volumen en Obra Corregido (V<sub>obra</sub>): <strong id="resVObra">512.0</strong> Litros</div>
-                                                <div style="color: var(--accent); font-weight: bold; margin-top: 4px;">• Humedad equivalente para dosificación: <strong id="resMoistEquivalent">82.5</strong> L/m³</div>
+                                                <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">• Humedad equivalente por volumen de acopio: <strong id="resMoistEquivalent">82.5</strong> L/m³</div>
                                             </div>
 
                                             <button type="button" id="btnLinkMoisture" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 12px; font-weight: bold; padding: 8px 12px;">💾 Vincular Humedad a Dosificación</button>
