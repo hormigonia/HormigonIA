@@ -150,8 +150,8 @@ function showChoiceModal(title, message, option1Text, option2Text, callback) {
         }, 250);
     };
     
-    document.getElementById("customChoiceBtn1").addEventListener("click", () => cleanup(false));
-    document.getElementById("customChoiceBtn2").addEventListener("click", () => cleanup(true));
+    document.getElementById("customChoiceBtn1")?.addEventListener("click", () => cleanup(false));
+    document.getElementById("customChoiceBtn2")?.addEventListener("click", () => cleanup(true));
 }
 
 // Bind to window for standard scripts integration
@@ -1905,7 +1905,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderSavedMixesTable();
     
     // Saved mixes & global action listeners
-    document.getElementById("btnSaveCurrentMix").addEventListener("click", saveCurrentMix);
+    document.getElementById("btnSaveCurrentMix")?.addEventListener("click", saveCurrentMix);
     window.addEventListener("beforeprint", updatePrintCalcMemory);
 
     // Tab switching logic
@@ -1977,8 +1977,11 @@ document.addEventListener("DOMContentLoaded", () => {
         btnStartProduction.addEventListener("click", handleStartProductionClick);
     }
 
-    const restored = loadActiveDraft();
-    if (!restored) {
+    try {
+        loadActiveDraft();
+        calculateAndUpdate();
+    } catch (e) {
+        console.error("Error al cargar borrador o calcular inicial:", e);
         calculateAndUpdate();
     }
 
@@ -2955,10 +2958,10 @@ function setupEventListeners() {
         calculateAndUpdate();
     };
 
-    document.getElementById("selectStructuralElement").addEventListener("change", () => {
+    document.getElementById("selectStructuralElement")?.addEventListener("change", () => {
         applyProjectConstraints();
         
-        const elementVal = document.getElementById("selectStructuralElement").value;
+        const elementVal = document.getElementById("selectStructuralElement")?.value;
         if (elementVal) {
             // Request Notification Permission
             if ("Notification" in window) {
@@ -2984,11 +2987,11 @@ function setupEventListeners() {
             }
         }
     });
-    document.getElementById("selectExposureClass").addEventListener("change", () => {
+    document.getElementById("selectExposureClass")?.addEventListener("change", () => {
         applyProjectConstraints();
     });
-    document.getElementById("selectDesignMethod").addEventListener("change", () => {
-        const designMethod = document.getElementById("selectDesignMethod").value;
+    document.getElementById("selectDesignMethod")?.addEventListener("change", () => {
+        const designMethod = document.getElementById("selectDesignMethod")?.value;
         if (designMethod === "larrard") {
             currentChartMode = 'larrard';
         } else {
@@ -2999,7 +3002,7 @@ function setupEventListeners() {
     });
 
     // Cement category change
-    document.getElementById("selectCementCategory").addEventListener("change", () => {
+    document.getElementById("selectCementCategory")?.addEventListener("change", () => {
         autoAdjustCustomParamsFromStrength();
         calculateAndUpdate();
     });
@@ -3151,7 +3154,7 @@ function setupEventListeners() {
     }
 
     // Additive buttons
-    document.getElementById("btnExportPDF").addEventListener("click", () => {
+    document.getElementById("btnExportPDF")?.addEventListener("click", () => {
         saveCurrentMix((savedName) => {
             document.body.classList.add("printing-active");
             updatePrintCalcMemory(savedName);
@@ -3257,12 +3260,12 @@ function setupEventListeners() {
     document.getElementById("btnIaVincularAsentamiento")?.addEventListener("click", vincularAsentamientoVision);
 
     // Undo / Redo button listeners
-    document.getElementById("btnUndoConfig").addEventListener("click", () => undoAction("config"));
-    document.getElementById("btnRedoConfig").addEventListener("click", () => redoAction("config"));
-    document.getElementById("btnUndoAdditives").addEventListener("click", () => undoAction("additives"));
-    document.getElementById("btnRedoAdditives").addEventListener("click", () => redoAction("additives"));
-    document.getElementById("btnUndoLab").addEventListener("click", () => undoAction("lab"));
-    document.getElementById("btnRedoLab").addEventListener("click", () => redoAction("lab"));
+    document.getElementById("btnUndoConfig")?.addEventListener("click", () => undoAction("config"));
+    document.getElementById("btnRedoConfig")?.addEventListener("click", () => redoAction("config"));
+    document.getElementById("btnUndoAdditives")?.addEventListener("click", () => undoAction("additives"));
+    document.getElementById("btnRedoAdditives")?.addEventListener("click", () => redoAction("additives"));
+    document.getElementById("btnUndoLab")?.addEventListener("click", () => undoAction("lab"));
+    document.getElementById("btnRedoLab")?.addEventListener("click", () => redoAction("lab"));
 
     // Number of aggregates selector listener
     const selectNumAggregates = document.getElementById("selectNumAggregates");
@@ -3885,41 +3888,70 @@ function calculateDosificacionLocal(p) {
     let cementBaseM3 = p.customCement > 0 ? p.customCement : (waterTargetM3 / (p.targetWC || 0.45));
     cementBaseM3 = Math.max(300, cementBaseM3);
 
-    const volCement = cementBaseM3 / (p.densCement || 3.10);
-    const volWater = waterTargetM3;
+    const densCement = p.densCement || 1400.0;
+    const coefCement = p.coefCement || 0.47;
+    const densSand = p.densSand || 1650.0;
+    const coefSand = p.coefSand || 0.63;
+    const densGravilla = p.densGravilla || 1600.0;
+    const coefGravilla = p.coefGravilla || 0.51;
+    const densGrava = p.densGrava || 1600.0;
+    const coefGrava = p.coefGrava || 0.51;
+    const densGrava2 = p.densGrava2 || 1600.0;
+    const coefGrava2 = p.coefGrava2 || 0.51;
+
+    // Solid Volume Calculation (Liters per 1 m3 of concrete)
+    const volCement = (cementBaseM3 / densCement) * coefCement * 1000;
+    const volWater = waterTargetM3; 
     const volAir = (p.airPct || 1.5) * 10;
-    const remainingVol = Math.max(100, 1000 - volCement - volWater - volAir);
+    
+    let volAdditives = 0.0;
+    admixtureRecipes.forEach(add => {
+        const weightKg = cementBaseM3 * (add.weight / 100.0);
+        const volL = weightKg / (add.density || 1.11);
+        volAdditives += volL;
+    });
 
-    const densS = p.densSand || 2.65;
-    const densG1 = p.densGravilla || 2.70;
-    const densG2 = p.densGrava || 2.70;
-    const densG3 = p.densGrava2 || 2.70;
+    const volAggregates = Math.max(0.0, 1000 - volCement - volWater - volAdditives - volAir);
 
-    const weightedDens = sandRatio/densS + gravillaRatio/densG1 + (numAgg >= 3 ? gravaRatio/densG2 : 0) + (numAgg === 4 ? grava2Ratio/densG3 : 0);
-    const totalAggKg = remainingVol / weightedDens;
+    // Dry weights calculation per m3 (following traditional loose-bulk contribution method)
+    const drySandPerM3 = ((volAggregates * sandRatio) / 1000 / coefSand) * densSand;
+    const dryGravillaPerM3 = ((volAggregates * gravillaRatio) / 1000 / coefGravilla) * densGravilla;
+    const dryGravaPerM3 = numAgg >= 3 ? (((volAggregates * gravaRatio) / 1000 / coefGrava) * densGrava) : 0.0;
+    const dryGrava2PerM3 = numAgg === 4 ? (((volAggregates * grava2Ratio) / 1000 / coefGrava2) * densGrava2) : 0.0;
 
-    const sandDryWeight = totalAggKg * sandRatio;
-    const gravillaDryWeight = totalAggKg * gravillaRatio;
-    const gravaDryWeight = numAgg >= 3 ? totalAggKg * gravaRatio : 0;
-    const grava2DryWeight = numAgg === 4 ? totalAggKg * grava2Ratio : 0;
+    // Scale to batch volume (m3)
+    const volM3 = (p.batchVolume || 80.0) / 1000.0;
+
+    const sandDryWeight = drySandPerM3 * volM3;
+    const gravillaDryWeight = dryGravillaPerM3 * volM3;
+    const gravaDryWeight = dryGravaPerM3 * volM3;
+    const grava2DryWeight = dryGrava2PerM3 * volM3;
 
     const moistS = (p.moistSand || 0) / 1000.0;
     const moistG1 = (p.moistGravilla || 0) / 1000.0;
     const moistG2 = (p.moistGrava || 0) / 1000.0;
     const moistG3 = (p.moistGrava2 || 0) / 1000.0;
 
+    const absS = (p.absSand || 0) / 100.0;
+    const absG1 = (p.absGravilla || 0) / 100.0;
+    const absG2 = (p.absGrava || 0) / 100.0;
+    const absG3 = (p.absGrava2 || 0) / 100.0;
+
     const sandWetWeight = sandDryWeight * (1 + moistS);
     const gravillaWetWeight = gravillaDryWeight * (1 + moistG1);
     const gravaWetWeight = gravaDryWeight * (1 + moistG2);
     const grava2WetWeight = grava2DryWeight * (1 + moistG3);
 
-    const freeWaterS = sandDryWeight * (moistS - (p.absSand || 0)/100);
-    const freeWaterG1 = gravillaDryWeight * (moistG1 - (p.absGravilla || 0)/100);
-    const freeWaterG2 = gravaDryWeight * (moistG2 - (p.absGrava || 0)/100);
-    const freeWaterG3 = grava2DryWeight * (moistG3 - (p.absGrava2 || 0)/100);
+    // Free water in batch
+    const freeWaterS = sandDryWeight * (moistS - absS);
+    const freeWaterG1 = gravillaDryWeight * (moistG1 - absG1);
+    const freeWaterG2 = gravaDryWeight * (moistG2 - absG2);
+    const freeWaterG3 = grava2DryWeight * (moistG3 - absG3);
     const totalFreeWater = freeWaterS + freeWaterG1 + freeWaterG2 + freeWaterG3;
 
-    const netWaterFinal = Math.max(0, waterTargetM3 - totalFreeWater);
+    const targetWaterBatch = waterTargetM3 * volM3;
+    const netWaterFinal = Math.max(0.0, (targetWaterBatch - totalFreeWater) / 1.1);
+    const netWaterTheoretical = Math.max(0.0, targetWaterBatch / 1.1);
 
     const bolomeyIdealPassing = sieveSizes.map(d => Math.min(100, A + (100 - A) * Math.sqrt(d / D)));
     const fullerIdealPassing = sieveSizes.map(d => Math.min(100, 100 * Math.sqrt(d / D)));
@@ -3931,7 +3963,7 @@ function calculateDosificacionLocal(p) {
         combinedFM, cementBaseM3, waterTargetM3,
         sandDryWeight, gravillaDryWeight, gravaDryWeight, grava2DryWeight,
         sandWetWeight, gravillaWetWeight, gravaWetWeight, grava2WetWeight,
-        netWaterFinal, netWaterTheoretical: waterTargetM3,
+        netWaterFinal, netWaterTheoretical,
         slumpPred: slumpTarget,
         admixtureRecipes,
         packingPoints: []
@@ -6646,6 +6678,14 @@ function initAridosLab() {
         });
     }
 
+    const inputCaliperMeasuredVol = document.getElementById("inputCaliperMeasuredVol");
+    if (inputCaliperMeasuredVol) {
+        inputCaliperMeasuredVol.addEventListener("input", () => {
+            const n = parseInt(document.getElementById("selectCaliperSampleSize")?.value) || 20;
+            updateCaliperCalculations(n);
+        });
+    }
+
     const btnApplyCaliperCalc = document.getElementById("btnApplyCaliperCalc");
     if (btnApplyCaliperCalc) {
         btnApplyCaliperCalc.addEventListener("click", () => {
@@ -6657,14 +6697,24 @@ function initAridosLab() {
                 sumL3_cm += Math.pow(l_cm, 3);
             });
 
+            // Read actual measured volume of the N grains
+            const vMuestra = parseFloat(document.getElementById("inputCaliperMeasuredVol")?.value || 35.0);
+
             // Scale to 20 grains standard if n != 20
             const scaleFactor = 20.0 / n;
             const scaledSumL3 = sumL3_cm * scaleFactor;
-            const scaledV20 = (scaledSumL3 * Math.PI * 0.191) / 6.0;
+            const scaledV20 = vMuestra * scaleFactor;
 
-            document.getElementById("inputVgranos").value = scaledV20.toFixed(1);
-            document.getElementById("inputSumL3").value = scaledSumL3.toFixed(1);
-            document.getElementById("inputVgranos").dispatchEvent(new Event("input"));
+            const inputVgranos = document.getElementById("inputVgranos");
+            const inputSumL3 = document.getElementById("inputSumL3");
+            if (inputVgranos) {
+                inputVgranos.value = scaledV20.toFixed(1);
+                inputVgranos.dispatchEvent(new Event("input"));
+            }
+            if (inputSumL3) {
+                inputSumL3.value = scaledSumL3.toFixed(1);
+                inputSumL3.dispatchEvent(new Event("input"));
+            }
             showToast(`Valores inyectados: V₂₀ = ${scaledV20.toFixed(1)} cm³, ΣLᵢ³ = ${scaledSumL3.toFixed(1)} cm³ (Muestra de ${n} granos).`);
         });
     }
@@ -6719,8 +6769,8 @@ function updateCaliperCalculations(n) {
     });
 
     const avgL = n > 0 ? (sumL / n) : 0;
-    const calcV_N = (sumL3_cm * Math.PI * 0.191) / 6.0;
-    const cf = sumL3_cm > 0 ? (6.0 * calcV_N) / (Math.PI * sumL3_cm) : 0;
+    const vMuestra = parseFloat(document.getElementById("inputCaliperMeasuredVol")?.value || 35.0);
+    const cf = sumL3_cm > 0 ? (6.0 * vMuestra) / (Math.PI * sumL3_cm) : 0;
 
     if (document.getElementById("caliperAvgL")) document.getElementById("caliperAvgL").innerText = avgL.toFixed(1);
     if (document.getElementById("caliperSumL3")) document.getElementById("caliperSumL3").innerText = sumL3_cm.toFixed(1);
