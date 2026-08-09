@@ -1025,7 +1025,7 @@ const historyManager = {
             else if (state.moistStone !== undefined && state.moistStone !== null) document.getElementById("moistGrava").value = state.moistStone;
             
             if (state.absGrava !== undefined && state.absGrava !== null) document.getElementById("absGrava").value = state.absGrava;
-            else if (state.absStone !== undefined && state.absStone !== null) document.getElementById("absGrava").value = state.absStone;
+            else if (state.absStone !== undefined && state.absStone !== null) document.getElementById("absGrava").value = state.absGrava;
             
             if (document.getElementById("densGrava2")) {
                 if (state.densGrava2 !== undefined && state.densGrava2 !== null) document.getElementById("densGrava2").value = state.densGrava2;
@@ -6446,6 +6446,10 @@ function initAridosLab() {
                 document.getElementById("densGrava").value = Math.round(rhoConj);
                 document.getElementById("coefGrava").value = coefAp.toFixed(2);
                 document.getElementById("densGrava").dispatchEvent(new Event("input"));
+            } else if (activeLabAggregate === "grava2" && document.getElementById("densGrava2")) {
+                document.getElementById("densGrava2").value = Math.round(rhoConj);
+                document.getElementById("coefGrava2").value = coefAp.toFixed(2);
+                document.getElementById("densGrava2").dispatchEvent(new Event("input"));
             }
             showToast("Densidad y Coeficiente de Aporte vinculados para " + activeLabAggregate.toUpperCase() + ".");
         });
@@ -6455,19 +6459,22 @@ function initAridosLab() {
     if (btnLinkMoisture) {
         btnLinkMoisture.addEventListener("click", () => {
             calculateAridosLab();
-            const equivMoist = parseFloat(document.getElementById("resMoistEquivalent").innerText);
+            const moistPct = parseFloat(document.getElementById("resSandMoisture").innerText) || 0.0;
 
             if (activeLabAggregate === "arena") {
-                document.getElementById("moistSand").value = Math.round(equivMoist);
+                document.getElementById("moistSand").value = moistPct.toFixed(1);
                 document.getElementById("moistSand").dispatchEvent(new Event("input"));
             } else if (activeLabAggregate === "gravilla") {
-                document.getElementById("moistGravilla").value = Math.round(equivMoist);
+                document.getElementById("moistGravilla").value = moistPct.toFixed(1);
                 document.getElementById("moistGravilla").dispatchEvent(new Event("input"));
             } else if (activeLabAggregate === "grava") {
-                document.getElementById("moistGrava").value = Math.round(equivMoist);
+                document.getElementById("moistGrava").value = moistPct.toFixed(1);
                 document.getElementById("moistGrava").dispatchEvent(new Event("input"));
+            } else if (activeLabAggregate === "grava2" && document.getElementById("moistGrava2")) {
+                document.getElementById("moistGrava2").value = moistPct.toFixed(1);
+                document.getElementById("moistGrava2").dispatchEvent(new Event("input"));
             }
-            showToast("Humedad equivalente vinculada para " + activeLabAggregate.toUpperCase() + ".");
+            showToast("Humedad (" + moistPct.toFixed(1) + "%) vinculada para " + activeLabAggregate.toUpperCase() + ".");
         });
     }
 
@@ -6486,6 +6493,9 @@ function initAridosLab() {
             } else if (activeLabAggregate === "grava") {
                 document.getElementById("absGrava").value = absCoef.toFixed(2);
                 document.getElementById("absGrava").dispatchEvent(new Event("input"));
+            } else if (activeLabAggregate === "grava2" && document.getElementById("absGrava2")) {
+                document.getElementById("absGrava2").value = absCoef.toFixed(2);
+                document.getElementById("absGrava2").dispatchEvent(new Event("input"));
             }
             showToast("Coeficiente de absorción vinculado para " + activeLabAggregate.toUpperCase() + ".");
         });
@@ -6610,6 +6620,21 @@ function calculateAridosLab() {
     const aggregateOriginType = document.getElementById("selectAggregateOriginType").value;
     const absCoef = Math.max(0, ((mSss - mSecoEstufa) / mSecoEstufa) * 100);
     document.getElementById("resAbsCoef").innerText = absCoef.toFixed(2);
+
+    // Auto-sincronización en tiempo real con el calculador de dosificación
+    if (activeLabAggregate === "arena") {
+        if (document.getElementById("moistSand")) document.getElementById("moistSand").value = humidity.toFixed(1);
+        if (document.getElementById("absSand")) document.getElementById("absSand").value = absCoef.toFixed(1);
+    } else if (activeLabAggregate === "gravilla") {
+        if (document.getElementById("moistGravilla")) document.getElementById("moistGravilla").value = humidity.toFixed(1);
+        if (document.getElementById("absGravilla")) document.getElementById("absGravilla").value = absCoef.toFixed(1);
+    } else if (activeLabAggregate === "grava") {
+        if (document.getElementById("moistGrava")) document.getElementById("moistGrava").value = humidity.toFixed(1);
+        if (document.getElementById("absGrava")) document.getElementById("absGrava").value = absCoef.toFixed(1);
+    } else if (activeLabAggregate === "grava2") {
+        if (document.getElementById("moistGrava2")) document.getElementById("moistGrava2").value = humidity.toFixed(1);
+        if (document.getElementById("absGrava2")) document.getElementById("absGrava2").value = absCoef.toFixed(1);
+    }
 
     const badgeAbsorcion = document.getElementById("badgeAbsorcion");
     if (badgeAbsorcion) {
