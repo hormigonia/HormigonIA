@@ -1088,9 +1088,7 @@
                                             <label for="inputVconj" style="font-size: 0.75rem;">Vol. de Conjunto en Mezcla (V<sub>conj</sub>) [Litros]:</label>
                                             <input type="number" id="inputVconj" value="600" class="form-input" style="height: 28px; padding: 2px 8px; font-size: 0.8rem;" min="0">
                                         </div>
-                                        <div style="font-size: 0.8rem; margin-top: 5px;">• Vol. Pasta Mínima (V<sub>pasta</sub>): <strong id="resVPasta">223.8</strong> Litros</div>
-
-                                        <button type="button" id="btnLinkDensities" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 12px; font-weight: bold; padding: 8px 12px;">💾 Vincular Densidades a Dosificación</button>
+                                        <div style="margin-top: 10px; font-size: 0.72rem; color: var(--accent); text-align: center; font-weight: 600;">⚡ Sincronizado automáticamente con la dosificación</div>
                                     </div>
                                 </div>
                             </section>
@@ -1129,9 +1127,10 @@
                                                 <div class="form-group">
                                                     <label for="selectSandType">Tipo de Arena:</label>
                                                     <select id="selectSandType" class="form-select">
-                                                        <option value="fina">Fina</option>
-                                                        <option value="media" selected>Media</option>
-                                                        <option value="gruesa">Gruesa</option>
+                                                        <option value="auto" selected>⚡ Auto (Tamices / Módulo Finura)</option>
+                                                        <option value="fina">Fina (MF < 2.30)</option>
+                                                        <option value="media">Media (MF 2.30 - 3.10)</option>
+                                                        <option value="gruesa">Gruesa (MF > 3.10)</option>
                                                     </select>
                                                 </div>
                                                 <div class="form-group">
@@ -1145,12 +1144,11 @@
                                             <h3 style="font-size: 0.88rem; font-weight: bold; margin-bottom: 8px;">Resultados y Vinculación</h3>
                                             <div style="display: flex; flex-direction: column; gap: 6px; font-size: 0.8rem; line-height: 1.4;">
                                                 <div>• Humedad Porcentual Ensayo (H): <strong id="resSandMoisture">5.00</strong> % <span style="font-size: 0.72rem; color: var(--accent);">(Vinculada a dosificación)</span></div>
+                                                <div>• Módulo de Finura Granulométrico (MF): <strong id="resSandMF">2.47</strong> (<span id="resSandMFClass" style="font-weight: bold; color: var(--accent);">Arena Media</span>)</div>
                                                 <div>• Coef. Entumecimiento (K<sub>ent</sub>): <strong id="resKent">1.28</strong></div>
                                                 <div>• Volumen en Obra Corregido (V<sub>obra</sub>): <strong id="resVObra">512.0</strong> Litros</div>
-                                                <div style="color: var(--text-muted); font-size: 0.75rem; margin-top: 4px;">• Humedad equivalente por volumen de acopio: <strong id="resMoistEquivalent">82.5</strong> L/m³</div>
+                                                <div style="margin-top: 6px; font-size: 0.72rem; color: var(--accent); text-align: center; font-weight: 600;">⚡ Sincronizado automáticamente con la dosificación</div>
                                             </div>
-
-                                            <button type="button" id="btnLinkMoisture" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 12px; font-weight: bold; padding: 8px 12px;">💾 Vincular Humedad a Dosificación</button>
                                         </div>
                                     </div>
                                 </section>
@@ -1188,7 +1186,7 @@
                                                 • Coeficiente de Absorción (Ab): <strong id="resAbsCoef">1.00</strong> %
                                             </div>
                                             <div id="badgeAbsorcion" class="badge-container badge-success">✔️ Apto</div>
-                                            <button type="button" id="btnLinkAbsorcion" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 12px; font-weight: bold; padding: 8px 12px;">💾 Vincular Absorción a Dosificación</button>
+                                            <div style="margin-top: 8px; font-size: 0.72rem; color: var(--accent); text-align: center; font-weight: 600;">⚡ Sincronizado automáticamente con la dosificación</div>
                                         </div>
                                     </div>
                                 </section>
