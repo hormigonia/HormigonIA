@@ -3129,10 +3129,26 @@ function setupEventListeners() {
     });
 
     // Sieve series select change
-    document.getElementById("selectSieveSeries").addEventListener("change", () => {
-        updateSieveTableLabels();
-        calculateAndUpdate();
-    });
+    const selectSieveSeries = document.getElementById("selectSieveSeries");
+    if (selectSieveSeries) {
+        selectSieveSeries.addEventListener("change", () => {
+            updateSieveSeriesAndSizes();
+            calculateAndUpdate();
+        });
+    }
+
+    // Max sieve size D (mm) change
+    const inputMaxSieveSize = document.getElementById("inputMaxSieveSize");
+    if (inputMaxSieveSize) {
+        inputMaxSieveSize.addEventListener("input", () => {
+            updateSieveSeriesAndSizes();
+            calculateAndUpdate();
+        });
+        inputMaxSieveSize.addEventListener("change", () => {
+            updateSieveSeriesAndSizes();
+            calculateAndUpdate();
+        });
+    }
 
     // Additive buttons
     document.getElementById("btnExportPDF").addEventListener("click", () => {
@@ -3319,6 +3335,28 @@ function setupCollapsibles() {
             section.classList.toggle("collapsed");
         });
     });
+}
+
+function updateSieveSeriesAndSizes() {
+    const maxSieveVal = parseFloat(document.getElementById("inputMaxSieveSize")?.value || 38.0);
+    const row50 = document.getElementById("rowSieve50");
+    const row75 = document.getElementById("rowSieve75");
+
+    if (maxSieveVal > 50.0) {
+        SIEVE_SIZES = [75.0, 50.0, ...BASE_SIEVE_SIZES];
+        if (row75) row75.style.display = "";
+        if (row50) row50.style.display = "";
+    } else if (maxSieveVal > 38.0) {
+        SIEVE_SIZES = [50.0, ...BASE_SIEVE_SIZES];
+        if (row75) row75.style.display = "none";
+        if (row50) row50.style.display = "";
+    } else {
+        SIEVE_SIZES = [...BASE_SIEVE_SIZES];
+        if (row75) row75.style.display = "none";
+        if (row50) row50.style.display = "none";
+    }
+
+    updateSieveTableLabels();
 }
 
 function updateSieveTableLabels() {
