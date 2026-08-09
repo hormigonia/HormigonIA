@@ -4,21 +4,9 @@ import { createClient } from '@supabase/supabase-js';
 let supabaseUrl = '';
 let supabaseAnonKey = '';
 
-// 1. Fetch runtime config from backend API (universal endpoint for dev and prod)
+// 1. Check if running under Vite/bundler
 try {
-    const response = await fetch('/api/config');
-    if (response.ok) {
-        const config = await response.json();
-        supabaseUrl = config.supabaseUrl || '';
-        supabaseAnonKey = config.supabaseAnonKey || '';
-    }
-} catch (err) {
-    console.warn("Could not fetch runtime config from API, trying fallbacks...", err);
-}
-
-// 2. Check if running under Vite/bundler
-try {
-    if (!supabaseUrl && typeof import.meta !== 'undefined' && import.meta.env) {
+    if (typeof import.meta !== 'undefined' && import.meta.env) {
         supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
         supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
     }
@@ -26,7 +14,7 @@ try {
     // Suppress reference error if import.meta is not supported
 }
 
-// 3. Fallback to window globals or localStorage for build-free local testing
+// 2. Fallback to window globals or localStorage for build-free local testing
 if (!supabaseUrl) {
     supabaseUrl = window.VITE_SUPABASE_URL || localStorage.getItem("VITE_SUPABASE_URL") || '';
 }
@@ -34,22 +22,40 @@ if (!supabaseAnonKey) {
     supabaseAnonKey = window.VITE_SUPABASE_ANON_KEY || localStorage.getItem("VITE_SUPABASE_ANON_KEY") || '';
 }
 
-// Validate and clean config URL
-let client = null;
-if (supabaseUrl && supabaseAnonKey && !supabaseUrl.startsWith("%") && !supabaseAnonKey.startsWith("%")) {
-    let cleanUrl = supabaseUrl.trim();
-    if (cleanUrl.endsWith('/')) {
-        cleanUrl = cleanUrl.slice(0, -1);
+// Validate and clean config URL helper
+function createSupabaseClient(url, key) {
+    if (url && key && !url.startsWith("%") && !key.startsWith("%")) {
+        let cleanUrl = url.trim();
+        if (cleanUrl.endsWith('/')) {
+            cleanUrl = cleanUrl.slice(0, -1);
+        }
+        if (cleanUrl.endsWith('/rest/v1')) {
+            cleanUrl = cleanUrl.substring(0, cleanUrl.length - 8);
+        }
+        return createClient(cleanUrl, key);
     }
-    if (cleanUrl.endsWith('/rest/v1')) {
-        cleanUrl = cleanUrl.substring(0, cleanUrl.length - 8);
-    }
-    client = createClient(cleanUrl, supabaseAnonKey);
-} else {
-    console.warn("Supabase credentials missing or unreplaced placeholders. Local auth and cloud database will be inactive until VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY are set.");
+    return null;
 }
 
-export const supabase = client;
+let client = createSupabaseClient(supabaseUrl, supabaseAnonKey);
+
+// 3. Asynchronous fallback fetch from backend API if not yet initialized
+if (!client && typeof window !== 'undefined') {
+    fetch('/api/config')
+        .then(res => res.ok ? res.json() : null)
+        .then(config => {
+            if (config && config.supabaseUrl && config.supabaseAnonKey) {
+                const asyncClient = createSupabaseClient(config.supabaseUrl, config.supabaseAnonKey);
+                if (asyncClient) {
+                    supabase = asyncClient;
+                    window.supabase = asyncClient;
+                }
+            }
+        })
+        .catch(err => console.warn("Could not fetch runtime config from API:", err));
+}
+
+export let supabase = client;
 
 /**
  * Registra un nuevo usuario en Supabase
