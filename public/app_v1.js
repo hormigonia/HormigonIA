@@ -4464,8 +4464,16 @@ function updateChart(combined, sand, gravilla, grava, grava2, fullerIdeal, bolom
             });
         }
 
+        const activeSeries = document.getElementById("selectSieveSeries") ? document.getElementById("selectSieveSeries").value : "ASTM";
+        const seriesLabelMap = SIEVE_SERIES_LABELS[activeSeries] || SIEVE_SERIES_LABELS["ASTM"];
+
+        const sieveXAxisLabels = SIEVE_SIZES.map(s => {
+            const key = s.toString();
+            return seriesLabelMap[key] || `${s} mm`;
+        }).reverse();
+
         const chartData = {
-            labels: SIEVE_SIZES.map(s => s.toString()).reverse(),
+            labels: sieveXAxisLabels,
             datasets: datasets
         };
 
@@ -4493,7 +4501,7 @@ function updateChart(combined, sand, gravilla, grava, grava2, fullerIdeal, bolom
                         grid: { color: chartGridColor },
                         title: { 
                             display: true, 
-                            text: 'Tamiz ' + document.getElementById("selectSieveSeries").value.toUpperCase() + ' (mm) [Escala Inversa]', 
+                            text: 'Tamices Norma ' + activeSeries.toUpperCase() + ' [Escala Inversa]', 
                             color: chartMutedColor, 
                             font: { size: 11 } 
                         },
