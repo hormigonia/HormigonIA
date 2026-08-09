@@ -6426,7 +6426,106 @@ function initAridosLab() {
         }
     });
 
+    const btnToggleCaliperAssistant = document.getElementById("btnToggleCaliperAssistant");
+    const caliperAssistantContainer = document.getElementById("caliperAssistantContainer");
+    if (btnToggleCaliperAssistant && caliperAssistantContainer) {
+        btnToggleCaliperAssistant.addEventListener("click", () => {
+            const isHidden = caliperAssistantContainer.style.display === "none";
+            caliperAssistantContainer.style.display = isHidden ? "block" : "none";
+            if (isHidden) {
+                const n = parseInt(document.getElementById("selectCaliperSampleSize")?.value) || 20;
+                renderCaliperParticleGrid(n);
+            }
+        });
+    }
+
+    const selectCaliperSampleSize = document.getElementById("selectCaliperSampleSize");
+    if (selectCaliperSampleSize) {
+        selectCaliperSampleSize.addEventListener("change", (e) => {
+            const n = parseInt(e.target.value) || 20;
+            renderCaliperParticleGrid(n);
+        });
+    }
+
+    const btnApplyCaliperCalc = document.getElementById("btnApplyCaliperCalc");
+    if (btnApplyCaliperCalc) {
+        btnApplyCaliperCalc.addEventListener("click", () => {
+            const n = parseInt(document.getElementById("selectCaliperSampleSize")?.value) || 20;
+            const slice = caliperParticlesData.slice(0, n);
+            let sumL3_cm = 0;
+            slice.forEach(l_mm => {
+                const l_cm = l_mm / 10.0;
+                sumL3_cm += Math.pow(l_cm, 3);
+            });
+
+            // Scale to 20 grains standard if n != 20
+            const scaleFactor = 20.0 / n;
+            const scaledSumL3 = sumL3_cm * scaleFactor;
+            const scaledV20 = (scaledSumL3 * Math.PI * 0.191) / 6.0;
+
+            document.getElementById("inputVgranos").value = scaledV20.toFixed(1);
+            document.getElementById("inputSumL3").value = scaledSumL3.toFixed(1);
+            document.getElementById("inputVgranos").dispatchEvent(new Event("input"));
+            showToast(`Valores inyectados: V₂₀ = ${scaledV20.toFixed(1)} cm³, ΣLᵢ³ = ${scaledSumL3.toFixed(1)} cm³ (Muestra de ${n} granos).`);
+        });
+    }
+
+    renderCaliperParticleGrid(20);
+
     calculateAridosLab();
+}
+
+let caliperParticlesData = [26, 25, 27, 28, 26, 25, 26, 27, 29, 26, 25, 27, 26, 28, 25, 26, 27, 26, 28, 25];
+
+function renderCaliperParticleGrid(n) {
+    const grid = document.getElementById("caliperParticleGrid");
+    if (!grid) return;
+    grid.innerHTML = "";
+    
+    while (caliperParticlesData.length < n) {
+        caliperParticlesData.push(26);
+    }
+    
+    for (let i = 0; i < n; i++) {
+        const item = document.createElement("div");
+        item.style.cssText = "background: rgba(255,255,255,0.02); padding: 4px; border-radius: 4px; border: 1px solid var(--border-color); text-align: center;";
+        item.innerHTML = `
+            <div style="font-size: 0.65rem; color: var(--text-muted); font-weight: bold; margin-bottom: 2px;">Grano #${i + 1}</div>
+            <input type="number" class="caliper-particle-input form-input" data-index="${i}" value="${caliperParticlesData[i]}" style="height: 24px; padding: 2px 4px; font-size: 0.75rem; text-align: center; width: 100%;" min="1" step="0.5">
+        `;
+        grid.appendChild(item);
+    }
+
+    grid.querySelectorAll(".caliper-particle-input").forEach(input => {
+        input.addEventListener("input", (e) => {
+            const idx = parseInt(e.target.getAttribute("data-index"));
+            const val = parseFloat(e.target.value) || 0;
+            caliperParticlesData[idx] = val;
+            updateCaliperCalculations(n);
+        });
+    });
+
+    updateCaliperCalculations(n);
+}
+
+function updateCaliperCalculations(n) {
+    const slice = caliperParticlesData.slice(0, n);
+    let sumL3_cm = 0;
+    let sumL = 0;
+    
+    slice.forEach(l_mm => {
+        sumL += l_mm;
+        const l_cm = l_mm / 10.0;
+        sumL3_cm += Math.pow(l_cm, 3);
+    });
+
+    const avgL = n > 0 ? (sumL / n) : 0;
+    const calcV_N = (sumL3_cm * Math.PI * 0.191) / 6.0;
+    const cf = sumL3_cm > 0 ? (6.0 * calcV_N) / (Math.PI * sumL3_cm) : 0;
+
+    if (document.getElementById("caliperAvgL")) document.getElementById("caliperAvgL").innerText = avgL.toFixed(1);
+    if (document.getElementById("caliperSumL3")) document.getElementById("caliperSumL3").innerText = sumL3_cm.toFixed(1);
+    if (document.getElementById("caliperResultCf")) document.getElementById("caliperResultCf").innerText = cf.toFixed(3);
 }
 
 function saveAridosLabStateFromUI(agg) {
@@ -6634,14 +6733,21 @@ function calculateAridosLab() {
     document.getElementById("resCf").innerText = cf.toFixed(3);
 
     const badgeForma = document.getElementById("badgeForma");
+    const rheologyFormaImpact = document.getElementById("rheologyFormaImpact");
     if (badgeForma) {
         badgeForma.className = "badge-container";
-        if (cf < 0.15) {
-            badgeForma.innerText = "🚨 Forma del árido inadecuada (< 0.15). Partículas laminares/aciculares";
-            badgeForma.classList.add("badge-danger");
-        } else {
-            badgeForma.innerText = "✔️ Forma adecuada";
+        if (cf >= 0.20) {
+            badgeForma.innerText = "🟢 Forma Cúbica / Excelente (C_f ≥ 0.20). Mínima fricción interna";
             badgeForma.classList.add("badge-success");
+            if (rheologyFormaImpact) rheologyFormaImpact.innerHTML = "✨ <strong>Reología Óptima:</strong> La forma cúbica favorece la fluidez y reduce la demanda de agua de amasado.";
+        } else if (cf >= 0.15) {
+            badgeForma.innerText = "🟡 Forma Aceptable Normativa (0.15 ≤ C_f < 0.20). Apto para hormigón estructurado";
+            badgeForma.classList.add("badge-warning");
+            if (rheologyFormaImpact) rheologyFormaImpact.innerHTML = "ℹ️ <strong>Docilidad Normal:</strong> Cumple los requisitos estándar de la norma UNE 7104 / NCh.";
+        } else {
+            badgeForma.innerText = "🚨 Forma Inadecuada / Acicular (C_f < 0.15). Partículas laminares";
+            badgeForma.classList.add("badge-danger");
+            if (rheologyFormaImpact) rheologyFormaImpact.innerHTML = "⚠️ <strong>Alerta Reológica:</strong> Excesiva fricción por lajas. Se sugiere aumentar aditivo plastificante en +0.15% o ajustar agua (+4 L/m³).";
         }
     }
 
