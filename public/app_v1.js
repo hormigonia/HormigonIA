@@ -6323,7 +6323,7 @@ let aridosLabData = {
         eaArcilla: 100, eaArena: 78,
         structureType: "armado", chlorides: 0.02, sulfates: 0.12,
         mSss: 1010, mSecoEstufa: 1000, aggregateOriginType: "natural",
-        mallasTotal: 1000, barrasPasa: 250, vGranos: 25, sumL3: 400,
+        mallasTotal: 1000, barrasPasa: 250, vGranos: 35, sumL3: 350,
         rasMineralogy: "sano", sTotal: 0.15, so3: 0.05
     },
     gravilla: {
@@ -6337,7 +6337,7 @@ let aridosLabData = {
         eaArcilla: 100, eaArena: 78,
         structureType: "armado", chlorides: 0.02, sulfates: 0.12,
         mSss: 1010, mSecoEstufa: 1000, aggregateOriginType: "natural",
-        mallasTotal: 1000, barrasPasa: 250, vGranos: 25, sumL3: 400,
+        mallasTotal: 1000, barrasPasa: 250, vGranos: 35, sumL3: 350,
         rasMineralogy: "sano", sTotal: 0.15, so3: 0.05
     },
     grava: {
@@ -6351,7 +6351,7 @@ let aridosLabData = {
         eaArcilla: 100, eaArena: 78,
         structureType: "armado", chlorides: 0.02, sulfates: 0.12,
         mSss: 1010, mSecoEstufa: 1000, aggregateOriginType: "natural",
-        mallasTotal: 1000, barrasPasa: 250, vGranos: 25, sumL3: 400,
+        mallasTotal: 1000, barrasPasa: 250, vGranos: 35, sumL3: 350,
         rasMineralogy: "sano", sTotal: 0.15, so3: 0.05
     }
 };
