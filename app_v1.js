@@ -2510,6 +2510,9 @@ function setupEventListeners() {
             if (themeToggleIcon) {
                 themeToggleIcon.innerText = isLight ? "🌙" : "☀️";
             }
+            if (typeof calculateAndUpdate === "function") {
+                calculateAndUpdate();
+            }
         });
     }
 
@@ -4313,6 +4316,11 @@ async function calculateAndUpdate() {
 function updateChart(combined, sand, gravilla, grava, grava2, fullerIdeal, bolomeyIdeal, delapenaIdeal) {
     const ctx = document.getElementById("sieveChart").getContext("2d");
 
+    const isLightMode = document.documentElement.classList.contains("light-mode");
+    const chartTextColor = isLightMode ? "#0f172a" : "#f8fafc";
+    const chartMutedColor = isLightMode ? "#334155" : "#94a3b8";
+    const chartGridColor = isLightMode ? "rgba(0, 0, 0, 0.12)" : "rgba(255, 255, 255, 0.05)";
+
     // Dynamic Chart Title Update
     const chartTitleText = document.getElementById("chartTitleText");
     const designMethod = document.getElementById("selectDesignMethod").value;
@@ -4470,7 +4478,7 @@ function updateChart(combined, sand, gravilla, grava, grava2, fullerIdeal, bolom
                 plugins: {
                     legend: {
                         position: 'top',
-                        labels: { color: '#f8fafc', font: { family: 'Inter', size: 10 } }
+                        labels: { color: chartTextColor, font: { family: 'Inter', size: 10 } }
                     },
                     tooltip: {
                         callbacks: {
@@ -4482,21 +4490,21 @@ function updateChart(combined, sand, gravilla, grava, grava2, fullerIdeal, bolom
                 },
                 scales: {
                     x: {
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        grid: { color: chartGridColor },
                         title: { 
                             display: true, 
                             text: 'Tamiz ' + document.getElementById("selectSieveSeries").value.toUpperCase() + ' (mm) [Escala Inversa]', 
-                            color: '#94a3b8', 
+                            color: chartMutedColor, 
                             font: { size: 11 } 
                         },
-                        ticks: { color: '#94a3b8' }
+                        ticks: { color: chartMutedColor }
                     },
                     y: {
                         min: 0,
                         max: 100,
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        title: { display: true, text: '% Pasante Acumulado', color: '#94a3b8', font: { size: 11 } },
-                        ticks: { color: '#94a3b8' }
+                        grid: { color: chartGridColor },
+                        title: { display: true, text: '% Pasante Acumulado', color: chartMutedColor, font: { size: 11 } },
+                        ticks: { color: chartMutedColor }
                     }
                 }
             }
@@ -4566,7 +4574,7 @@ function updateChart(combined, sand, gravilla, grava, grava2, fullerIdeal, bolom
                 plugins: {
                     legend: {
                         position: 'top',
-                        labels: { color: '#f8fafc', font: { family: 'Inter', size: 10 } }
+                        labels: { color: chartTextColor, font: { family: 'Inter', size: 10 } }
                     },
                     tooltip: {
                         callbacks: {
@@ -4578,16 +4586,16 @@ function updateChart(combined, sand, gravilla, grava, grava2, fullerIdeal, bolom
                 },
                 scales: {
                     x: {
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        title: { display: true, text: 'Porcentaje de Arena en Agregado (%)', color: '#94a3b8', font: { size: 11 } },
-                        ticks: { color: '#94a3b8', maxTicksLimit: 11 }
+                        grid: { color: chartGridColor },
+                        title: { display: true, text: 'Porcentaje de Arena en Agregado (%)', color: chartMutedColor, font: { size: 11 } },
+                        ticks: { color: chartMutedColor, maxTicksLimit: 11 }
                     },
                     y: {
                         min: yMinScale,
                         max: yMaxScale,
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        title: { display: true, text: 'Compacidad Teórica (c)', color: '#94a3b8', font: { size: 11 } },
-                        ticks: { color: '#94a3b8' }
+                        grid: { color: chartGridColor },
+                        title: { display: true, text: 'Compacidad Teórica (c)', color: chartMutedColor, font: { size: 11 } },
+                        ticks: { color: chartMutedColor }
                     }
                 }
             }

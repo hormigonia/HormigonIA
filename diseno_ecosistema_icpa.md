@@ -1,4 +1,4 @@
-# Diseño del Ecosistema de Dosificación (ICPA / Racional)
+# Diseño del Ecosistema de Dosificación (ICPA / Precisión)
 
 Este documento detalla el esquema de base de datos relacional y los algoritmos matemáticos de corrección por humedad para el ecosistema **HormigónMix AI (Web & Mobile)** bajo la metodología **ICPA**.
 

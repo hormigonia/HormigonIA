@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HormigónIA - Dosificador Racional de Precisión</title>
+    <title>HormigónIA - Dosificador de Precisión</title>
     <!-- Open Graph / WhatsApp Preview -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="HormigónIA - Dosificador Racional de Precisión">
-    <meta property="og:description" content="Diseño y dosificación racional de mezclas de hormigón asistido por IA.">
+    <meta property="og:title" content="HormigónIA - Dosificador de Precisión">
+    <meta property="og:description" content="Diseño y dosificación de precisión de mezclas de hormigón asistido por IA.">
     <meta property="og:image" content="https://hormigonia.com/og_image.jpg">
     <meta property="og:image:type" content="image/jpeg">
     <meta property="og:image:width" content="1200">
@@ -1255,7 +1255,7 @@
                                     <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
                                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                                             <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin: 0;">B. Coeficiente de Forma (C<sub>f</sub>)</h3>
-                                            <button type="button" id="btnToggleCaliperAssistant" class="btn btn-secondary btn-sm" style="font-size: 0.72rem; padding: 2px 8px;">📏 Asistente Pie de Rey (Calibres)</button>
+                                            <span style="font-size: 0.72rem; color: var(--accent); font-weight: 600;">📏 Pie de Rey Normalizado</span>
                                         </div>
                                         
                                         <div class="form-grid-2" style="margin-bottom: 8px;">
@@ -1269,21 +1269,34 @@
                                             </div>
                                         </div>
 
-                                        <!-- ASISTENTE DIGITAL EXPANDIBLE (PIE DE REY / CALIBRES) -->
-                                        <div id="caliperAssistantContainer" style="display: none; background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px dashed var(--accent);">
-                                            <div style="font-size: 0.78rem; font-weight: bold; color: var(--accent); margin-bottom: 6px;">📏 Asistente de Medición Directa de Granos (UNE 7104)</div>
-                                            <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 8px;">Ingresa la longitud máxima promedio de muestra (L<sub>i</sub> en mm) para calcular automáticamente la sumatoria Σ L<sub>i</sub>³:</p>
-                                            <div class="form-grid-2">
-                                                <div class="form-group">
-                                                    <label for="inputAvgGrainLength" style="font-size: 0.72rem;">Longitud Promedio L<sub>i</sub> [mm]:</label>
-                                                    <input type="number" id="inputAvgGrainLength" value="26" class="form-input" style="height: 28px; font-size: 0.8rem;" min="1">
-                                                </div>
-                                                <div class="form-group">
-                                                    <label for="inputGrainDensity" style="font-size: 0.72rem;">Densidad Real Muestra [g/cm³]:</label>
-                                                    <input type="number" id="inputGrainDensity" value="2.65" class="form-input" style="height: 28px; font-size: 0.8rem;" step="0.01" min="1">
+                                        <!-- ASISTENTE DIGITAL EXPANDIBLE (PIE DE REY / CALIBRES INDIVIDUALES) -->
+                                        <div id="caliperAssistantContainer" style="display: block; background: rgba(0,0,0,0.25); padding: 10px; border-radius: 6px; margin-bottom: 10px; border: 1px dashed var(--accent);">
+                                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+                                                <div style="font-size: 0.78rem; font-weight: bold; color: var(--accent);">📏 Medición Grano por Grano (Pie de Rey / UNE 7104)</div>
+                                                <div style="display: flex; align-items: center; gap: 4px;">
+                                                    <label for="selectCaliperSampleSize" style="font-size: 0.7rem; color: var(--text-muted);">Muestra N:</label>
+                                                    <select id="selectCaliperSampleSize" class="form-input" style="height: 24px; padding: 2px 4px; font-size: 0.72rem; width: 90px; background: var(--bg-panel); color: var(--text);">
+                                                        <option value="5">5 Granos</option>
+                                                        <option value="10">10 Granos</option>
+                                                        <option value="15">15 Granos</option>
+                                                        <option value="20" selected>20 Granos</option>
+                                                    </select>
                                                 </div>
                                             </div>
-                                            <button type="button" id="btnApplyCaliperCalc" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 6px; font-size: 0.75rem; padding: 4px; font-weight: bold;">⚡ Calcular e Inyectar V₂₀ y ΣLᵢ³</button>
+                                            <p style="font-size: 0.72rem; color: var(--text-muted); margin-bottom: 8px;">Ingresa la longitud máxima (L<sub>i</sub> en mm) medida con calibre para cada partícula:</p>
+
+                                            <!-- GRILLA DINÁMICA DE PARTICULAS -->
+                                            <div id="caliperParticleGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 6px; max-height: 180px; overflow-y: auto; padding-right: 4px; margin-bottom: 8px;">
+                                                <!-- Se genera dinámicamente con JS -->
+                                            </div>
+
+                                            <div style="background: rgba(255,255,255,0.03); padding: 6px 8px; border-radius: 4px; font-size: 0.73rem; display: flex; justify-content: space-between; margin-bottom: 6px;">
+                                                <span>Promedio L̄: <strong id="caliperAvgL">26.0</strong> mm</span>
+                                                <span>Σ L<sub>i</sub>³: <strong id="caliperSumL3">350.0</strong> cm³</span>
+                                                <span>C<sub>f</sub> Muestra: <strong id="caliperResultCf">0.191</strong></span>
+                                            </div>
+
+                                            <button type="button" id="btnApplyCaliperCalc" class="btn btn-primary btn-sm" style="width: 100%; font-size: 0.75rem; padding: 4px; font-weight: bold;">⚡ Inyectar Resultados al Laboratorio</button>
                                         </div>
 
                                         <div style="font-size: 0.8rem; margin-bottom: 6px;">
