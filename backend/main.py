@@ -257,10 +257,11 @@ def api_optimizar_mezcla_ia(payload: Dict[str, Any]):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-# Serve static frontend files
-root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-app.mount("/", StaticFiles(directory=root_dir, html=True), name="static")
-
+# Serve static frontend files (only when running locally as main script)
 if __name__ == "__main__":
     import uvicorn
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    app.mount("/", StaticFiles(directory=root_dir, html=True), name="static")
     uvicorn.run(app, host="127.0.0.1", port=8000)
+
+
