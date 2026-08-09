@@ -6426,81 +6426,6 @@ function initAridosLab() {
         }
     });
 
-    const btnLinkDensities = document.getElementById("btnLinkDensities");
-    if (btnLinkDensities) {
-        btnLinkDensities.addEventListener("click", () => {
-            calculateAridosLab();
-            const rhoConj = parseFloat(document.getElementById("resRhoConj").innerText) * 1000;
-            const rhoRel = parseFloat(document.getElementById("resRhoRel").innerText);
-            const coefAp = rhoConj / (rhoRel * 1000);
-
-            if (activeLabAggregate === "arena") {
-                document.getElementById("densSand").value = Math.round(rhoConj);
-                document.getElementById("coefSand").value = coefAp.toFixed(2);
-                document.getElementById("densSand").dispatchEvent(new Event("input"));
-            } else if (activeLabAggregate === "gravilla") {
-                document.getElementById("densGravilla").value = Math.round(rhoConj);
-                document.getElementById("coefGravilla").value = coefAp.toFixed(2);
-                document.getElementById("densGravilla").dispatchEvent(new Event("input"));
-            } else if (activeLabAggregate === "grava") {
-                document.getElementById("densGrava").value = Math.round(rhoConj);
-                document.getElementById("coefGrava").value = coefAp.toFixed(2);
-                document.getElementById("densGrava").dispatchEvent(new Event("input"));
-            } else if (activeLabAggregate === "grava2" && document.getElementById("densGrava2")) {
-                document.getElementById("densGrava2").value = Math.round(rhoConj);
-                document.getElementById("coefGrava2").value = coefAp.toFixed(2);
-                document.getElementById("densGrava2").dispatchEvent(new Event("input"));
-            }
-            showToast("Densidad y Coeficiente de Aporte vinculados para " + activeLabAggregate.toUpperCase() + ".");
-        });
-    }
-
-    const btnLinkMoisture = document.getElementById("btnLinkMoisture");
-    if (btnLinkMoisture) {
-        btnLinkMoisture.addEventListener("click", () => {
-            calculateAridosLab();
-            const moistPct = parseFloat(document.getElementById("resSandMoisture").innerText) || 0.0;
-
-            if (activeLabAggregate === "arena") {
-                document.getElementById("moistSand").value = moistPct.toFixed(1);
-                document.getElementById("moistSand").dispatchEvent(new Event("input"));
-            } else if (activeLabAggregate === "gravilla") {
-                document.getElementById("moistGravilla").value = moistPct.toFixed(1);
-                document.getElementById("moistGravilla").dispatchEvent(new Event("input"));
-            } else if (activeLabAggregate === "grava") {
-                document.getElementById("moistGrava").value = moistPct.toFixed(1);
-                document.getElementById("moistGrava").dispatchEvent(new Event("input"));
-            } else if (activeLabAggregate === "grava2" && document.getElementById("moistGrava2")) {
-                document.getElementById("moistGrava2").value = moistPct.toFixed(1);
-                document.getElementById("moistGrava2").dispatchEvent(new Event("input"));
-            }
-            showToast("Humedad (" + moistPct.toFixed(1) + "%) vinculada para " + activeLabAggregate.toUpperCase() + ".");
-        });
-    }
-
-    const btnLinkAbsorcion = document.getElementById("btnLinkAbsorcion");
-    if (btnLinkAbsorcion) {
-        btnLinkAbsorcion.addEventListener("click", () => {
-            calculateAridosLab();
-            const absCoef = parseFloat(document.getElementById("resAbsCoef").innerText);
-
-            if (activeLabAggregate === "arena") {
-                document.getElementById("absSand").value = absCoef.toFixed(2);
-                document.getElementById("absSand").dispatchEvent(new Event("input"));
-            } else if (activeLabAggregate === "gravilla") {
-                document.getElementById("absGravilla").value = absCoef.toFixed(2);
-                document.getElementById("absGravilla").dispatchEvent(new Event("input"));
-            } else if (activeLabAggregate === "grava") {
-                document.getElementById("absGrava").value = absCoef.toFixed(2);
-                document.getElementById("absGrava").dispatchEvent(new Event("input"));
-            } else if (activeLabAggregate === "grava2" && document.getElementById("absGrava2")) {
-                document.getElementById("absGrava2").value = absCoef.toFixed(2);
-                document.getElementById("absGrava2").dispatchEvent(new Event("input"));
-            }
-            showToast("Coeficiente de absorción vinculado para " + activeLabAggregate.toUpperCase() + ".");
-        });
-    }
-
     calculateAridosLab();
 }
 
@@ -6600,9 +6525,43 @@ function calculateAridosLab() {
 
     const humidity = Math.max(0, ((mHumedo - mSecado) / Math.max(1, mSecado - mTara)) * 100);
     
+    // Cálculo de Módulo de Finura de la Arena a partir de los tamices
+    const sandSieveInputs = Array.from(document.querySelectorAll(".sand-sieve")).map(el => parseFloat(el.value) || 0);
+    const totalSandWeight = sandSieveInputs.reduce((a, b) => a + b, 0);
+    let mfSand = 2.47;
+    let effectiveSandType = sandType;
+
+    if (totalSandWeight > 0) {
+        let cumRetained = 0;
+        let mfSum = 0;
+        for (let i = 0; i < sandSieveInputs.length - 1; i++) { // Excluir fondo
+            cumRetained += (sandSieveInputs[i] / totalSandWeight) * 100.0;
+            if (i >= 4) { // Tamices 4.75mm (N°4) hasta 0.15mm (N°100)
+                mfSum += cumRetained;
+            }
+        }
+        mfSand = mfSum / 100.0;
+    }
+
+    if (sandType === "auto") {
+        if (mfSand < 2.30) effectiveSandType = "fina";
+        else if (mfSand <= 3.10) effectiveSandType = "media";
+        else effectiveSandType = "gruesa";
+    }
+
+    let sandTypeLabel = "Arena Media";
+    if (effectiveSandType === "fina") sandTypeLabel = "Arena Fina (MF < 2.30)";
+    else if (effectiveSandType === "gruesa") sandTypeLabel = "Arena Gruesa (MF > 3.10)";
+    else sandTypeLabel = "Arena Media (MF 2.30 - 3.10)";
+
+    const elSandMF = document.getElementById("resSandMF");
+    if (elSandMF) elSandMF.innerText = mfSand.toFixed(2);
+    const elSandMFClass = document.getElementById("resSandMFClass");
+    if (elSandMFClass) elSandMFClass.innerText = sandTypeLabel;
+
     let Hp = 6.0, Sp = 0.30;
-    if (sandType === "fina") { Hp = 8.5; Sp = 0.40; }
-    else if (sandType === "gruesa") { Hp = 5.0; Sp = 0.25; }
+    if (effectiveSandType === "fina") { Hp = 8.5; Sp = 0.40; }
+    else if (effectiveSandType === "gruesa") { Hp = 5.0; Sp = 0.25; }
 
     const swell = Math.max(0, - (Sp / (Hp * Hp)) * (humidity * humidity) + ((2.0 * Sp) / Hp) * humidity);
     const kEnt = 1.0 + swell;
