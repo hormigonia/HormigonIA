@@ -1,39 +1,59 @@
 // AI ASSISTANT MODULE - HORMIGONIA
 
-// Get DOM Elements for Chat
-const chatMessages = document.getElementById("chatMessages");
-const chatInput = document.getElementById("chatInput");
-const btnSendChat = document.getElementById("btnSendChat");
-const btnClearChat = document.getElementById("btnClearChat");
-const aiTypingIndicator = document.getElementById("aiTypingIndicator");
-
 // Chat history in-memory
 let conversationHistory = [];
 
-// Initialize Chat Event Listeners
+// Initialize Chat Event Listeners safely
 document.addEventListener("DOMContentLoaded", () => {
-    btnSendChat.addEventListener("click", handleUserMessage);
-    chatInput.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !e.shiftKey) {
-            e.preventDefault();
-            handleUserMessage();
-        }
-    });
+    const chatMessages = document.getElementById("chatMessages");
+    const chatInput = document.getElementById("chatInput");
+    const btnSendChat = document.getElementById("btnSendChat");
+    const btnClearChat = document.getElementById("btnClearChat");
+    const aiTypingIndicator = document.getElementById("aiTypingIndicator");
+
+    if (btnSendChat) {
+        btnSendChat.addEventListener("click", handleUserMessage);
+    }
     
-    btnClearChat.addEventListener("click", () => {
-        chatMessages.innerHTML = `
-            <div class="chat-bubble ai">
-                <p>Conversación borrada. ¿En qué puedo ayudarte a diseñar hoy?</p>
-            </div>
-        `;
-        conversationHistory = [];
-    });
+    if (chatInput) {
+        chatInput.addEventListener("keydown", (e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleUserMessage();
+            }
+        });
+        chatInput.addEventListener("input", function() {
+            this.style.height = "auto";
+            this.style.height = (this.scrollHeight) + "px";
+            if (this.scrollHeight > 150) {
+                this.style.overflowY = "scroll";
+                this.style.height = "150px";
+            } else {
+                this.style.overflowY = "hidden";
+            }
+        });
+    }
+    
+    if (btnClearChat) {
+        btnClearChat.addEventListener("click", () => {
+            if (chatMessages) {
+                chatMessages.innerHTML = `
+                    <div class="chat-bubble ai">
+                        <p>Conversación borrada. ¿En qué puedo ayudarte a diseñar hoy?</p>
+                    </div>
+                `;
+            }
+            conversationHistory = [];
+        });
+    }
 
     // Setup Quick Prompts
     document.querySelectorAll(".quick-prompt-btn").forEach(btn => {
         btn.addEventListener("click", () => {
-            chatInput.value = btn.innerText;
-            handleUserMessage();
+            if (chatInput) {
+                chatInput.value = btn.innerText;
+                handleUserMessage();
+            }
         });
     });
 });
@@ -150,6 +170,10 @@ function getCalculatorStateContext() {
 
 // User Message Handler
 async function handleUserMessage() {
+    const chatInput = document.getElementById("chatInput");
+    const aiTypingIndicator = document.getElementById("aiTypingIndicator");
+
+    if (!chatInput) return;
     const prompt = chatInput.value.trim();
     if (!prompt) return;
 
@@ -159,7 +183,7 @@ async function handleUserMessage() {
     chatInput.style.height = "auto";
     
     // Show typing loader
-    aiTypingIndicator.classList.remove("hidden");
+    if (aiTypingIndicator) aiTypingIndicator.classList.remove("hidden");
     
     try {
         // Prepare context payload
@@ -268,7 +292,7 @@ El formato del JSON debe ser exactamente el siguiente, conteniendo solo las vari
         console.error(error);
         appendMessageBubble("ai", `❌ **Error:** ${error.message}. Por favor, verifica la configuración de claves API del servidor backend o intenta nuevamente.`);
     } finally {
-        aiTypingIndicator.classList.add("hidden");
+        if (aiTypingIndicator) aiTypingIndicator.classList.add("hidden");
     }
 }
 
@@ -379,6 +403,8 @@ function applyUIUpdates(updates) {
 
 // Append bubble helpers
 function appendMessageBubble(sender, markdownText) {
+    const chatMessages = document.getElementById("chatMessages");
+    if (!chatMessages) return;
     const bubble = document.createElement("div");
     bubble.className = `chat-bubble ${sender}`;
     
@@ -391,6 +417,8 @@ function appendMessageBubble(sender, markdownText) {
 }
 
 function appendSystemNotice(text) {
+    const chatMessages = document.getElementById("chatMessages");
+    if (!chatMessages) return;
     const notice = document.createElement("div");
     notice.style.fontSize = "0.75rem";
     notice.style.color = "var(--accent)";
@@ -426,15 +454,3 @@ function parseSimpleMarkdown(text) {
 
     return `<p>${html}</p>`;
 }
-
-// Textarea auto-resize for clean typing experience
-chatInput.addEventListener("input", function() {
-    this.style.height = "auto";
-    this.style.height = (this.scrollHeight) + "px";
-    if (this.scrollHeight > 150) {
-        this.style.overflowY = "scroll";
-        this.style.height = "150px";
-    } else {
-        this.style.overflowY = "hidden";
-    }
-});
