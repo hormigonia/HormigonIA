@@ -883,6 +883,8 @@ let lastCalculatedPackingPoints = [];
 let lastCalculatedPassingGravilla = [];
 let lastCalculatedPassingGrava = [];
 let lastCalculatedPassingGrava2 = [];
+let sandRatio = 0.40;
+let stoneRatio = 0.60;
 let gravillaRatio = 0.30;
 let gravaRatio = 0.30;
 let grava2Ratio = 0.20;
@@ -3920,34 +3922,47 @@ function calculateDosificacionLocal(p) {
     const dryGrava2PerM3 = numAgg === 4 ? (((volAggregates * grava2Ratio) / 1000 / coefGrava2) * densGrava2) : 0.0;
 
     // Scale to batch volume (m3)
-    const volM3 = (p.batchVolume || 80.0) / 1000.0;
+    const volM3 = p.batchVolume !== undefined ? p.batchVolume : 0.08;
 
     const sandDryWeight = drySandPerM3 * volM3;
     const gravillaDryWeight = dryGravillaPerM3 * volM3;
     const gravaDryWeight = dryGravaPerM3 * volM3;
     const grava2DryWeight = dryGrava2PerM3 * volM3;
 
-    const moistS = (p.moistSand || 0) / 1000.0;
-    const moistG1 = (p.moistGravilla || 0) / 1000.0;
-    const moistG2 = (p.moistGrava || 0) / 1000.0;
-    const moistG3 = (p.moistGrava2 || 0) / 1000.0;
+    const moistSand = p.moistSand || 0.0;
+    const moistGravilla = p.moistGravilla || 0.0;
+    const moistGrava = p.moistGrava || 0.0;
+    const moistGrava2 = p.moistGrava2 || 0.0;
 
-    const absS = (p.absSand || 0) / 100.0;
-    const absG1 = (p.absGravilla || 0) / 100.0;
-    const absG2 = (p.absGrava || 0) / 100.0;
-    const absG3 = (p.absGrava2 || 0) / 100.0;
+    const absSand = p.absSand || 0.0;
+    const absGravilla = p.absGravilla || 0.0;
+    const absGrava = p.absGrava || 0.0;
+    const absGrava2 = p.absGrava2 || 0.0;
 
-    const sandWetWeight = sandDryWeight * (1 + moistS);
-    const gravillaWetWeight = gravillaDryWeight * (1 + moistG1);
-    const gravaWetWeight = gravaDryWeight * (1 + moistG2);
-    const grava2WetWeight = grava2DryWeight * (1 + moistG3);
+    // Loose bulk volumes in the batch (m3)
+    const bulkSand = sandDryWeight / densSand;
+    const bulkGravilla = gravillaDryWeight / densGravilla;
+    const bulkGrava = dryGravaPerM3 > 0 ? (gravaDryWeight / densGrava) : 0.0;
+    const bulkGrava2 = dryGrava2PerM3 > 0 ? (grava2DryWeight / densGrava2) : 0.0;
 
-    // Free water in batch
-    const freeWaterS = sandDryWeight * (moistS - absS);
-    const freeWaterG1 = gravillaDryWeight * (moistG1 - absG1);
-    const freeWaterG2 = gravaDryWeight * (moistG2 - absG2);
-    const freeWaterG3 = grava2DryWeight * (moistG3 - absG3);
-    const totalFreeWater = freeWaterS + freeWaterG1 + freeWaterG2 + freeWaterG3;
+    // Total moisture weight in the batch (kg)
+    const w_sand_total = bulkSand * moistSand;
+    const w_gravilla_total = bulkGravilla * moistGravilla;
+    const w_grava_total = bulkGrava * moistGrava;
+    const w_grava2_total = bulkGrava2 * moistGrava2;
+
+    // Free water contributed by aggregates to mixing water (kg)
+    const w_sand_free = bulkSand * (moistSand - (densSand * absSand / 100.0));
+    const w_gravilla_free = bulkGravilla * (moistGravilla - (densGravilla * absGravilla / 100.0));
+    const w_grava_free = bulkGrava * (moistGrava - (densGrava * absGrava / 100.0));
+    const w_grava2_free = bulkGrava2 * (moistGrava2 - (densGrava2 * absGrava2 / 100.0));
+
+    const sandWetWeight = sandDryWeight + w_sand_total;
+    const gravillaWetWeight = gravillaDryWeight + w_gravilla_total;
+    const gravaWetWeight = gravaDryWeight + w_grava_total;
+    const grava2WetWeight = grava2DryWeight + w_grava2_total;
+
+    const totalFreeWater = w_sand_free + w_gravilla_free + w_grava_free + w_grava2_free;
 
     const targetWaterBatch = waterTargetM3 * volM3;
     const netWaterFinal = Math.max(0.0, (targetWaterBatch - totalFreeWater) / 1.1);
