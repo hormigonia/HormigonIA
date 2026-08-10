@@ -609,16 +609,16 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     grava2_dry_weight = (vs_grava2 / coef_grava2) * dens_grava2 if num_aggregates == 4 else 0.0
 
     # Total moisture weight (kg)
-    w_sand_total = sand_dry_weight * (moist_sand / 100.0)
-    w_gravilla_total = gravilla_dry_weight * (moist_gravilla / 100.0)
-    w_grava_total = grava_dry_weight * (moist_grava / 100.0)
-    w_grava2_total = grava2_dry_weight * (moist_grava2 / 100.0) if num_aggregates == 4 else 0.0
+    w_sand_total = (vs_sand / coef_sand) * moist_sand
+    w_gravilla_total = (vs_gravilla / coef_gravilla) * moist_gravilla
+    w_grava_total = (vs_grava / coef_grava) * moist_grava
+    w_grava2_total = (vs_grava2 / coef_grava2) * moist_grava2 if num_aggregates == 4 else 0.0
 
     # Free water contributed by aggregates to mixing water (kg)
-    w_sand_free = sand_dry_weight * ((moist_sand - abs_sand) / 100.0)
-    w_gravilla_free = gravilla_dry_weight * ((moist_gravilla - abs_gravilla) / 100.0)
-    w_grava_free = grava_dry_weight * ((moist_grava - abs_grava) / 100.0)
-    w_grava2_free = grava2_dry_weight * ((moist_grava2 - abs_grava2) / 100.0) if num_aggregates == 4 else 0.0
+    w_sand_free = (vs_sand / coef_sand) * (moist_sand - (dens_sand * abs_sand / 100.0))
+    w_gravilla_free = (vs_gravilla / coef_gravilla) * (moist_gravilla - (dens_gravilla * abs_gravilla / 100.0))
+    w_grava_free = (vs_grava / coef_grava) * (moist_grava - (dens_grava * abs_grava / 100.0))
+    w_grava2_free = (vs_grava2 / coef_grava2) * (moist_grava2 - (dens_grava2 * abs_grava2 / 100.0)) if num_aggregates == 4 else 0.0
 
     total_free_water = w_sand_free + w_gravilla_free + w_grava_free + w_grava2_free
     net_water_final = max(0.0, (target_water_batch - total_free_water) / 1.1)
