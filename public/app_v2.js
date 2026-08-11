@@ -6945,16 +6945,16 @@ function calculateAridosLab() {
 
     // Auto-sincronización en tiempo real con el calculador de dosificación
     if (activeLabAggregate === "arena") {
-        if (document.getElementById("moistSand")) document.getElementById("moistSand").value = humidity.toFixed(1);
+        if (document.getElementById("moistSand")) document.getElementById("moistSand").value = equivMoist.toFixed(1);
         if (document.getElementById("absSand")) document.getElementById("absSand").value = absCoef.toFixed(1);
     } else if (activeLabAggregate === "gravilla") {
-        if (document.getElementById("moistGravilla")) document.getElementById("moistGravilla").value = humidity.toFixed(1);
+        if (document.getElementById("moistGravilla")) document.getElementById("moistGravilla").value = equivMoist.toFixed(1);
         if (document.getElementById("absGravilla")) document.getElementById("absGravilla").value = absCoef.toFixed(1);
     } else if (activeLabAggregate === "grava") {
-        if (document.getElementById("moistGrava")) document.getElementById("moistGrava").value = humidity.toFixed(1);
+        if (document.getElementById("moistGrava")) document.getElementById("moistGrava").value = equivMoist.toFixed(1);
         if (document.getElementById("absGrava")) document.getElementById("absGrava").value = absCoef.toFixed(1);
     } else if (activeLabAggregate === "grava2") {
-        if (document.getElementById("moistGrava2")) document.getElementById("moistGrava2").value = humidity.toFixed(1);
+        if (document.getElementById("moistGrava2")) document.getElementById("moistGrava2").value = equivMoist.toFixed(1);
         if (document.getElementById("absGrava2")) document.getElementById("absGrava2").value = absCoef.toFixed(1);
     }
 
