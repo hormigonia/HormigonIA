@@ -348,10 +348,12 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
             sand_ratio = best_sand_pct / 100.0
             gravilla_ratio = 1.0 - sand_ratio
             grava_ratio = 0.0
+            grava2_ratio = 0.0
         else:
             sand_ratio = best_sand_pct / 100.0
             gravilla_ratio = (1.0 - sand_ratio) * w_g
             grava_ratio = (1.0 - sand_ratio) * w_G
+            grava2_ratio = 0.0
             
     elif design_method == "aci":
         m_a = calculate_curve_fm(sieve_sizes, sand_sieves)
