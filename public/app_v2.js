@@ -7309,10 +7309,12 @@ async function runRheologyAdjustment() {
     const cementBaseM3 = inputCustomCement;
     const waterTargetM3 = cementBaseM3 * inputCustomWC;
     
-    const sandDryWeight = lastDosificarResponse ? lastDosificarResponse.sandDryWeight : 850.0;
-    const gravillaDryWeight = lastDosificarResponse ? lastDosificarResponse.gravillaDryWeight : 350.0;
-    const gravaDryWeight = lastDosificarResponse ? lastDosificarResponse.gravaDryWeight : 650.0;
-    const grava2DryWeight = (lastDosificarResponse && lastDosificarResponse.grava2DryWeight) ? lastDosificarResponse.grava2DryWeight : 0.0;
+    const batchVol = parseFloat(document.getElementById("inputBatchVolume")?.value) || 80;
+    const volM3 = batchVol / 1000;
+    const sandDryWeight = lastDosificarResponse ? (lastDosificarResponse.sandDryWeight / volM3) : 850.0;
+    const gravillaDryWeight = lastDosificarResponse ? (lastDosificarResponse.gravillaDryWeight / volM3) : 350.0;
+    const gravaDryWeight = lastDosificarResponse ? (lastDosificarResponse.gravaDryWeight / volM3) : 650.0;
+    const grava2DryWeight = (lastDosificarResponse && lastDosificarResponse.grava2DryWeight) ? (lastDosificarResponse.grava2DryWeight / volM3) : 0.0;
     
     const payload = {
         sTarget,
@@ -7427,12 +7429,14 @@ async function validateAndRescaleFormula() {
         const inputCustomCement = parseFloat(document.getElementById("inputCustomCement").value) || 350.0;
         const inputCustomWC = parseFloat(document.getElementById("inputCustomWC").value) || 0.45;
         
+        const batchVol = parseFloat(document.getElementById("inputBatchVolume")?.value) || 80;
+        const volM3 = batchVol / 1000;
         const payload = {
             cementBaseM3: inputCustomCement,
-            sandDryWeight: lastDosificarResponse ? lastDosificarResponse.sandDryWeight : 850.0,
-            gravillaDryWeight: lastDosificarResponse ? lastDosificarResponse.gravillaDryWeight : 350.0,
-            gravaDryWeight: lastDosificarResponse ? lastDosificarResponse.gravaDryWeight : 650.0,
-            grava2DryWeight: (lastDosificarResponse && lastDosificarResponse.grava2DryWeight) ? lastDosificarResponse.grava2DryWeight : 0.0,
+            sandDryWeight: lastDosificarResponse ? (lastDosificarResponse.sandDryWeight / volM3) : 850.0,
+            gravillaDryWeight: lastDosificarResponse ? (lastDosificarResponse.gravillaDryWeight / volM3) : 350.0,
+            gravaDryWeight: lastDosificarResponse ? (lastDosificarResponse.gravaDryWeight / volM3) : 650.0,
+            grava2DryWeight: (lastDosificarResponse && lastDosificarResponse.grava2DryWeight) ? (lastDosificarResponse.grava2DryWeight / volM3) : 0.0,
             waterTargetM3: inputCustomCement * inputCustomWC,
             deltaW: dW,
             deltaC: dC,
@@ -7501,16 +7505,19 @@ function importActivePhysicalMix() {
         return;
     }
     
+    const batchVol = parseFloat(document.getElementById("inputBatchVolume")?.value) || 80;
+    const volM3 = batchVol / 1000;
+    
     document.getElementById("inputIaCement").value = Math.round(lastDosificarResponse.cementBaseM3);
-    document.getElementById("inputIaWater").value = Math.round(lastDosificarResponse.netWaterTheoretical);
-    document.getElementById("inputIaSand").value = Math.round(lastDosificarResponse.sandDryWeight);
-    document.getElementById("inputIaGravilla").value = Math.round(lastDosificarResponse.gravillaDryWeight);
+    document.getElementById("inputIaWater").value = Math.round(lastDosificarResponse.netWaterTheoretical / volM3);
+    document.getElementById("inputIaSand").value = Math.round(lastDosificarResponse.sandDryWeight / volM3);
+    document.getElementById("inputIaGravilla").value = Math.round(lastDosificarResponse.gravillaDryWeight / volM3);
     
     const numAgg = parseInt(document.getElementById("selectNumAggregates")?.value || 3);
     if (numAgg === 4) {
-        document.getElementById("inputIaGrava").value = Math.round(lastDosificarResponse.gravaDryWeight + lastDosificarResponse.grava2DryWeight);
+        document.getElementById("inputIaGrava").value = Math.round((lastDosificarResponse.gravaDryWeight + lastDosificarResponse.grava2DryWeight) / volM3);
     } else if (numAgg === 3) {
-        document.getElementById("inputIaGrava").value = Math.round(lastDosificarResponse.gravaDryWeight);
+        document.getElementById("inputIaGrava").value = Math.round(lastDosificarResponse.gravaDryWeight / volM3);
     } else {
         document.getElementById("inputIaGrava").value = 0;
     }
