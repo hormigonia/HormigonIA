@@ -262,6 +262,23 @@ def get_ideal_curve(method: str, sieve_sizes: List[float], size_limit: float, D_
         curve.append(p)
     return curve
 
+def get_aath_friction_factor(aath_type: str) -> float:
+    mapping = {
+        "rodado_rio": 1.0,
+        "rodado_aluvional": 1.0,
+        "rodado_mar": 1.05,
+        "rodado_glaciar": 1.08,
+        "triturado_granitico": 1.18,
+        "triturado_basaltico": 1.20,
+        "triturado_calizo": 1.15,
+        "triturado_siliceo": 1.16,
+        "especial_reciclado": 1.25,
+        "especial_liviano_pomez": 1.22,
+        "especial_liviano_eps": 0.95,
+        "especial_pesado": 1.08
+    }
+    return mapping.get(aath_type, 1.10)
+
 def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     # Extract params
     sieve_sizes = params["sieveSizes"]
@@ -283,8 +300,15 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
     concrete_class = params.get("concreteClass", "H25")
     vol_raw = float(params.get("batchVolume", 1.0))
     vol_m3 = vol_raw / 1000.0 if vol_raw > 10.0 else vol_raw
+
+    # AATH Origin classifications
+    sand_aath = params.get("sandAATHType", "rodado_rio")
+    gravilla_aath = params.get("gravillaAATHType", "triturado_granitico")
+    grava_aath = params.get("gravaAATHType", "triturado_granitico")
+    grava2_aath = params.get("grava2AATHType", "triturado_granitico")
     target_wc = params.get("targetWC", 0.50)
     air_pct = params.get("airPct", 1.5)
+    apply_factor_g = bool(params.get("applyFactorG", True))
     
     dens_cement = float(params.get("densCement", 1400.0))
     coef_cement = float(params.get("coefCement", 0.47))
@@ -393,7 +417,16 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
                 diff = abs(combined_sieve[j] - ideal)
                 if size in G_FACTOR_SIEVES:
                     iter_sum_sieve_diffs += diff
-            iter_factor_g = 1.0 + (iter_sum_sieve_diffs / 100.0)
+            if apply_factor_g:
+                iter_aath_mult = (
+                    sand_ratio * get_aath_friction_factor(sand_aath) +
+                    gravilla_ratio * get_aath_friction_factor(gravilla_aath) +
+                    grava_ratio * get_aath_friction_factor(grava_aath) +
+                    (grava2_ratio * get_aath_friction_factor(grava2_aath) if num_aggregates == 4 else 0.0)
+                )
+                iter_factor_g = min(1.25, (1.0 + (iter_sum_sieve_diffs / 100.0)) * iter_aath_mult)
+            else:
+                iter_factor_g = 1.0
             
             w_target = b_water * 1.07 * iter_factor_g
             if air_pct > 1.0:
@@ -540,7 +573,16 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
         if sieve_sizes[i] in G_FACTOR_SIEVES:
             sum_sieve_diffs += diff
             
-    factor_g = 1.0 + (sum_sieve_diffs / 100.0)
+    if apply_factor_g:
+        aath_mult = (
+            sand_ratio * get_aath_friction_factor(sand_aath) +
+            gravilla_ratio * get_aath_friction_factor(gravilla_aath) +
+            grava_ratio * get_aath_friction_factor(grava_aath) +
+            (grava2_ratio * get_aath_friction_factor(grava2_aath) if num_aggregates == 4 else 0.0)
+        )
+        factor_g = min(1.25, (1.0 + (sum_sieve_diffs / 100.0)) * aath_mult)
+    else:
+        factor_g = 1.0
     combined_fm = calculate_curve_fm(sieve_sizes, combined_sieve_passing)
     
     # 3. Water demand & Cement Clamping
@@ -699,7 +741,8 @@ def dosificar_mezcla(params: Dict[str, Any]) -> Dict[str, Any]:
         "admixtureRecipes": admixture_recipes,
         "mpt": mpt,
         "mfp": mfp,
-        "packingPoints": packing_points
+        "packingPoints": packing_points,
+        "factorG": factor_g
     }
 
 
