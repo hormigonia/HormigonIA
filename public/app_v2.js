@@ -784,78 +784,47 @@ const FM_SIEVES = [75.0, 37.5, 19.0, 9.5, 4.75, 2.36, 1.18, 0.6, 0.3, 0.15];
 
 const SIEVE_SERIES_LABELS = {
     "ASTM": {
-        "75.0": '3"',
-        "50.0": '2"',
-        "37.5": '1 1/2"',
-        "25.0": '1"',
-        "19.0": '3/4"',
-        "9.5": '3/8"',
-        "4.75": 'N° 4',
-        "2.36": 'N° 8',
-        "1.18": 'N° 16',
-        "0.6": 'N° 30',
-        "0.3": 'N° 50',
-        "0.15": 'N° 100',
-        "0.0": "Fondo (Pan)"
+        "75.0": '3"', "63.0": '2 1/2"', "50.0": '2"', "40.0": '1.6"', "37.5": '1 1/2"',
+        "31.5": '1 1/4"', "25.0": '1"', "22.4": '7/8"', "19.0": '3/4"', "16.0": '5/8"',
+        "12.5": '1/2"', "9.5": '3/8"', "8.0": '5/16"', "5.6": '0.22"', "4.75": 'N° 4',
+        "4.0": 'N° 5', "2.36": 'N° 8', "2.0": 'N° 10', "1.18": 'N° 16', "1.0": 'N° 18',
+        "0.6": 'N° 30', "0.5": 'N° 35', "0.3": 'N° 50', "0.25": 'N° 60', "0.15": 'N° 100',
+        "0.125": 'N° 120', "0.075": 'N° 200', "0.063": 'N° 230', "0.0": "Fondo (Pan)"
     },
     "IRAM": {
-        "75.0": "75,0 mm",
-        "50.0": "50,0 mm",
-        "37.5": "37,5 mm",
-        "25.0": "25,0 mm",
-        "19.0": "19,0 mm",
-        "9.5": "9,50 mm",
-        "4.75": "4,75 mm",
-        "2.36": "2,36 mm",
-        "1.18": "1,18 mm",
-        "0.6": "600 μm",
-        "0.3": "300 μm",
-        "0.15": "150 μm",
-        "0.0": "Fondo"
+        "75.0": "75,0 mm", "63.0": "63,0 mm", "50.0": "50,0 mm", "40.0": "40,0 mm", "37.5": "37,5 mm",
+        "31.5": "31,5 mm", "25.0": "25,0 mm", "22.4": "22,4 mm", "19.0": "19,0 mm", "16.0": "16,0 mm",
+        "12.5": "12,5 mm", "9.5": "9,50 mm", "8.0": "8,00 mm", "5.6": "5,60 mm", "4.75": "4,75 mm",
+        "4.0": "4,00 mm", "2.36": "2,36 mm", "2.0": "2,00 mm", "1.18": "1,18 mm", "1.0": "1,00 mm",
+        "0.6": "600 μm", "0.5": "500 μm", "0.3": "300 μm", "0.25": "250 μm", "0.15": "150 μm",
+        "0.125": "125 μm", "0.075": "75 μm", "0.063": "63 μm", "0.0": "Fondo"
     },
     "UNE": {
-        "75.0": "75,0 mm",
-        "50.0": "50,0 mm",
-        "37.5": "37,5 mm",
-        "25.0": "25,0 mm",
-        "19.0": "20,0 mm",
-        "9.5": "10,0 mm",
-        "4.75": "5,00 mm",
-        "2.36": "2,00 mm",
-        "1.18": "1,00 mm",
-        "0.6": "0,50 mm",
-        "0.3": "0,25 mm",
-        "0.15": "0,125 mm",
-        "0.0": "Fondo"
+        "75.0": "75,0 mm", "63.0": "63,0 mm", "50.0": "50,0 mm", "40.0": "40,0 mm", "37.5": "37,5 mm",
+        "31.5": "31,5 mm", "25.0": "25,0 mm", "22.4": "22,4 mm", "19.0": "20,0 mm", "16.0": "16,0 mm",
+        "12.5": "12,5 mm", "9.5": "10,0 mm", "8.0": "8,00 mm", "5.6": "5,60 mm", "4.75": "5,00 mm",
+        "4.0": "4,00 mm", "2.36": "2,00 mm", "2.0": "2,00 mm", "1.18": "1,00 mm", "1.0": "1,00 mm",
+        "0.6": "0,50 mm", "0.5": "0,50 mm", "0.3": "0,25 mm", "0.25": "0,25 mm", "0.15": "0,125 mm",
+        "0.125": "0,125 mm", "0.075": "0,063 mm", "0.063": "0,063 mm", "0.0": "Fondo"
     },
     "ISO": {
-        "75.0": "75,0 mm",
-        "50.0": "50,0 mm",
-        "37.5": "37,5 mm",
-        "25.0": "25,0 mm",
-        "19.0": "20,0 mm",
-        "9.5": "10,0 mm",
-        "4.75": "5,00 mm",
-        "2.36": "2,00 mm",
-        "1.18": "1,00 mm",
-        "0.6": "500 μm",
-        "0.3": "250 μm",
-        "0.15": "125 μm",
-        "0.0": "Fondo"
+        "75.0": "75,0 mm", "63.0": "63,0 mm", "50.0": "50,0 mm", "40.0": "40,0 mm", "37.5": "37,5 mm",
+        "31.5": "31,5 mm", "25.0": "25,0 mm", "22.4": "22,4 mm", "19.0": "20,0 mm", "16.0": "16,0 mm",
+        "12.5": "12,5 mm", "9.5": "10,0 mm", "8.0": "8,00 mm", "5.6": "5,60 mm", "4.75": "5,00 mm",
+        "4.0": "4,00 mm", "2.36": "2,00 mm", "2.0": "2,00 mm", "1.18": "1,00 mm", "1.0": "1,00 mm",
+        "0.6": "500 μm", "0.5": "500 μm", "0.3": "250 μm", "0.25": "250 μm", "0.15": "125 μm",
+        "0.125": "125 μm", "0.075": "63 μm", "0.063": "63 μm", "0.0": "Fondo"
     },
     "ACI": {
-        "75.0": "3 in. (75.0 mm)",
-        "50.0": "2 in. (50.0 mm)",
-        "37.5": "1-1/2 in. (37.5 mm)",
-        "25.0": "1 in. (25.0 mm)",
-        "19.0": "3/4 in. (19.0 mm)",
-        "9.5": "3/8 in. (9.5 mm)",
-        "4.75": "No. 4 (4.75 mm)",
-        "2.36": "No. 8 (2.36 mm)",
-        "1.18": "No. 16 (1.18 mm)",
-        "0.6": "No. 30 (600 μm)",
-        "0.3": "No. 50 (300 μm)",
-        "0.15": "No. 100 (150 μm)",
+        "75.0": "3 in. (75 mm)", "63.0": "2.5 in. (63 mm)", "50.0": "2 in. (50 mm)", "40.0": "1.6 in. (40 mm)",
+        "37.5": "1-1/2 in. (37.5 mm)", "31.5": "1.25 in. (31.5 mm)", "25.0": "1 in. (25.0 mm)",
+        "22.4": "7/8 in. (22.4 mm)", "19.0": "3/4 in. (19.0 mm)", "16.0": "5/8 in. (16.0 mm)",
+        "12.5": "1/2 in. (12.5 mm)", "9.5": "3/8 in. (9.5 mm)", "8.0": "5/16 in. (8.0 mm)",
+        "5.6": "0.22 in. (5.6 mm)", "4.75": "No. 4 (4.75 mm)", "4.0": "No. 5 (4.0 mm)",
+        "2.36": "No. 8 (2.36 mm)", "2.0": "No. 10 (2.0 mm)", "1.18": "No. 16 (1.18 mm)",
+        "1.0": "No. 18 (1.0 mm)", "0.6": "No. 30 (600 μm)", "0.5": "No. 35 (500 μm)",
+        "0.3": "No. 50 (300 μm)", "0.25": "No. 60 (250 μm)", "0.15": "No. 100 (150 μm)",
+        "0.125": "No. 120 (125 μm)", "0.075": "No. 200 (75 μm)", "0.063": "No. 230 (63 μm)",
         "0.0": "Pan (Fondo)"
     }
 };
@@ -3350,23 +3319,45 @@ function setupCollapsibles() {
 }
 
 function updateSieveSeriesAndSizes() {
+    const standard = document.getElementById("selectSieveSeries")?.value || "ASTM";
     const maxSieveVal = parseFloat(document.getElementById("inputMaxSieveSize")?.value || 38.0);
-    const row50 = document.getElementById("rowSieve50");
-    const row75 = document.getElementById("rowSieve75");
 
-    if (maxSieveVal > 50.0) {
-        SIEVE_SIZES = [75.0, 50.0, ...BASE_SIEVE_SIZES];
-        if (row75) row75.style.display = "";
-        if (row50) row50.style.display = "";
-    } else if (maxSieveVal > 38.0) {
-        SIEVE_SIZES = [50.0, ...BASE_SIEVE_SIZES];
-        if (row75) row75.style.display = "none";
-        if (row50) row50.style.display = "";
-    } else {
-        SIEVE_SIZES = [...BASE_SIEVE_SIZES];
-        if (row75) row75.style.display = "none";
-        if (row50) row50.style.display = "none";
-    }
+    const STANDARD_SIEVES = {
+        "ASTM": [75.0, 50.0, 37.5, 25.0, 19.0, 12.5, 9.5, 4.75, 2.36, 1.18, 0.6, 0.3, 0.15, 0.075],
+        "ACI": [75.0, 50.0, 37.5, 25.0, 19.0, 12.5, 9.5, 4.75, 2.36, 1.18, 0.6, 0.3, 0.15, 0.075],
+        "IRAM": [75.0, 50.0, 37.5, 25.0, 19.0, 12.5, 9.5, 4.75, 2.36, 1.18, 0.6, 0.3, 0.15, 0.075],
+        "UNE": [63.0, 40.0, 31.5, 22.4, 16.0, 12.5, 8.0, 5.6, 4.0, 2.0, 1.0, 0.5, 0.25, 0.125, 0.063],
+        "ISO": [63.0, 40.0, 31.5, 22.4, 16.0, 12.5, 8.0, 5.6, 4.0, 2.0, 1.0, 0.5, 0.25, 0.125, 0.063]
+    };
+
+    let activeSieves = STANDARD_SIEVES[standard] || STANDARD_SIEVES["ASTM"];
+
+    // Filter by max sieve size (D)
+    activeSieves = activeSieves.filter(s => {
+        if (standard === "UNE" || standard === "ISO") {
+            if (s > 40.0 && maxSieveVal <= 40.0) return false;
+            if (s > 31.5 && s <= 40.0 && maxSieveVal <= 31.5) return false;
+        } else {
+            if (s > 50.0 && maxSieveVal <= 50.0) return false;
+            if (s > 38.0 && s <= 50.0 && maxSieveVal <= 38.0) return false;
+        }
+        return true;
+    });
+
+    SIEVE_SIZES = [...activeSieves];
+
+    // Show/hide rows dynamically
+    const rows = document.querySelectorAll("#tableSieves tbody tr");
+    rows.forEach(row => {
+        const size = parseFloat(row.dataset.sieve);
+        if (size === 0.0) {
+            row.style.display = ""; // Always show Fondo (Pan)
+        } else if (activeSieves.includes(size)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
 
     updateSieveTableLabels();
 }
@@ -4068,11 +4059,15 @@ async function calculateAndUpdate() {
     
     const customCement = parseFloat(document.getElementById("inputCustomCement")?.value || 350.0);
     
-    // Sieve curves inputs (Retained weight to Passing percentage)
-    const sandInputs = document.querySelectorAll(".sand-sieve");
-    const gravillaInputs = document.querySelectorAll(".gravilla-sieve");
-    const gravaInputs = document.querySelectorAll(".grava-sieve");
-    const grava2Inputs = document.querySelectorAll(".grava2-sieve");
+    // Sieve curves inputs (Retained weight to Passing percentage) - Filtered by active rows
+    const activeRows = Array.from(document.querySelectorAll("#tableSieves tbody tr")).filter(row => {
+        const size = parseFloat(row.dataset.sieve);
+        return row.style.display !== "none" || size === 0.0;
+    });
+    const sandInputs = activeRows.map(row => row.querySelector(".sand-sieve"));
+    const gravillaInputs = activeRows.map(row => row.querySelector(".gravilla-sieve"));
+    const gravaInputs = activeRows.map(row => row.querySelector(".grava-sieve"));
+    const grava2Inputs = activeRows.map(row => row.querySelector(".grava2-sieve"));
     
     const sandRetained = [];
     const gravillaRetained = [];
@@ -6905,14 +6900,15 @@ function loadAridosLabStateToUI(agg) {
         }
     }
     
-    const panelSand = document.getElementById("panelSandMoistureBulking");
-    if (panelSand) {
+    const containerKentInput = document.getElementById("containerKentInput");
+    const containerKentResults = document.getElementById("containerKentResults");
+    if (containerKentInput && containerKentResults) {
         if (agg === "arena") {
-            panelSand.style.opacity = "1";
-            panelSand.style.pointerEvents = "auto";
+            containerKentInput.style.display = "block";
+            containerKentResults.style.display = "flex";
         } else {
-            panelSand.style.opacity = "0.4";
-            panelSand.style.pointerEvents = "none";
+            containerKentInput.style.display = "none";
+            containerKentResults.style.display = "none";
         }
     }
     
@@ -6946,18 +6942,29 @@ function calculateAridosLab() {
 
     const humidity = Math.max(0, ((mHumedo - mSecado) / Math.max(1, mSecado - mTara)) * 100);
     
-    // Cálculo de Módulo de Finura de la Arena a partir de los tamices
-    const sandSieveInputs = Array.from(document.querySelectorAll(".sand-sieve")).map(el => parseFloat(el.value) || 0);
+    // Cálculo de Módulo de Finura de la Arena a partir de los tamices activos
+    const activeRows = Array.from(document.querySelectorAll("#tableSieves tbody tr")).filter(row => {
+        const size = parseFloat(row.dataset.sieve);
+        return row.style.display !== "none" || size === 0.0;
+    });
+    const sandSieveInputs = activeRows.map(row => parseFloat(row.querySelector(".sand-sieve")?.value) || 0);
     const totalSandWeight = sandSieveInputs.reduce((a, b) => a + b, 0);
     let mfSand = 2.47;
     let effectiveSandType = sandType;
 
     if (totalSandWeight > 0) {
+        const standard = document.getElementById("selectSieveSeries")?.value || "ASTM";
+        const isEuro = (standard === "UNE" || standard === "ISO");
+        const fmSieveList = isEuro ? 
+            [63.0, 31.5, 16.0, 8.0, 4.0, 2.0, 1.0, 0.5, 0.25, 0.125] : 
+            [75.0, 37.5, 19.0, 9.5, 4.75, 2.36, 1.18, 0.6, 0.3, 0.15];
+            
         let cumRetained = 0;
         let mfSum = 0;
-        for (let i = 0; i < sandSieveInputs.length - 1; i++) { // Excluir fondo
+        for (let i = 0; i < activeRows.length - 1; i++) { // Excluir fondo
+            const size = parseFloat(activeRows[i].dataset.sieve);
             cumRetained += (sandSieveInputs[i] / totalSandWeight) * 100.0;
-            if (i >= 4) { // Tamices 4.75mm (N°4) hasta 0.15mm (N°100)
+            if (fmSieveList.includes(size)) {
                 mfSum += cumRetained;
             }
         }
@@ -7064,18 +7071,31 @@ function calculateAridosLab() {
         // Vincular los porcentajes pasantes calculados de la grilla principal
         if (totalSandWeight > 0) {
             let cumulativeRetainedGrams = 0;
-            const passingPctList = [];
-            for (let i = 0; i < sandSieveInputs.length; i++) {
+            const passingMap = {};
+            for (let i = 0; i < activeRows.length - 1; i++) {
+                const size = parseFloat(activeRows[i].dataset.sieve);
                 cumulativeRetainedGrams += sandSieveInputs[i];
-                const passingPct = Math.max(0, 100 - (cumulativeRetainedGrams / totalSandWeight) * 100);
-                passingPctList.push(passingPct);
+                passingMap[size] = Math.max(0, 100 - (cumulativeRetainedGrams / totalSandWeight) * 100);
             }
-            if (document.getElementById("labSandPassN4")) document.getElementById("labSandPassN4").innerText = passingPctList[6].toFixed(1);
-            if (document.getElementById("labSandPassN8")) document.getElementById("labSandPassN8").innerText = passingPctList[7].toFixed(1);
-            if (document.getElementById("labSandPassN16")) document.getElementById("labSandPassN16").innerText = passingPctList[8].toFixed(1);
-            if (document.getElementById("labSandPassN30")) document.getElementById("labSandPassN30").innerText = passingPctList[9].toFixed(1);
-            if (document.getElementById("labSandPassN50")) document.getElementById("labSandPassN50").innerText = passingPctList[10].toFixed(1);
-            if (document.getElementById("labSandPassN100")) document.getElementById("labSandPassN100").innerText = passingPctList[11].toFixed(1);
+            
+            const standard = document.getElementById("selectSieveSeries")?.value || "ASTM";
+            const isEuro = (standard === "UNE" || standard === "ISO");
+            
+            const n4Size = isEuro ? 4.0 : 4.75;
+            const n8Size = isEuro ? 2.0 : 2.36;
+            const n16Size = isEuro ? 1.0 : 1.18;
+            const n30Size = isEuro ? 0.5 : 0.6;
+            const n50Size = isEuro ? 0.25 : 0.3;
+            const n100Size = isEuro ? 0.125 : 0.15;
+            
+            const getVal = (size) => passingMap[size] !== undefined ? passingMap[size].toFixed(1) : "100.0";
+            
+            if (document.getElementById("labSandPassN4")) document.getElementById("labSandPassN4").innerText = getVal(n4Size);
+            if (document.getElementById("labSandPassN8")) document.getElementById("labSandPassN8").innerText = getVal(n8Size);
+            if (document.getElementById("labSandPassN16")) document.getElementById("labSandPassN16").innerText = getVal(n16Size);
+            if (document.getElementById("labSandPassN30")) document.getElementById("labSandPassN30").innerText = getVal(n30Size);
+            if (document.getElementById("labSandPassN50")) document.getElementById("labSandPassN50").innerText = getVal(n50Size);
+            if (document.getElementById("labSandPassN100")) document.getElementById("labSandPassN100").innerText = getVal(n100Size);
         } else {
             if (document.getElementById("labSandPassN4")) document.getElementById("labSandPassN4").innerText = "100.0";
             if (document.getElementById("labSandPassN8")) document.getElementById("labSandPassN8").innerText = "100.0";
