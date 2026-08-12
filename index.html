@@ -248,6 +248,16 @@
                                 </select>
                             </div>
 
+                            <!-- Factor G (Corrección Granulométrica) -->
+                            <div class="form-group" style="margin-top: 15px; margin-bottom: 15px;">
+                                <div style="display: flex; align-items: center; gap: 10px; background-color: var(--bg-panel); padding: 10px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                    <input type="checkbox" id="checkApplyFactorG" checked style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--accent);">
+                                    <label for="checkApplyFactorG" style="margin: 0; cursor: pointer; font-size: 0.85rem; font-weight: 600; color: var(--text-muted);">
+                                        Aplicar Coeficiente G (Desviación Granulométrica)
+                                    </label>
+                                </div>
+                            </div>
+
                             <!-- Exposición -->
                             <div class="form-group">
                                 <label for="selectExposureClass">Exposición Ambiental (CIRSOC 201)</label>
@@ -1013,14 +1023,42 @@
                             <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; margin-bottom: 5px;">
                                 Selecciona qué árido estás ensayando. Los campos correspondientes cargarán los datos guardados para dicho árido y permitirán vincular los resultados calculados directamente en la pestaña del Calculador de Dosificación de Hormigón.
                             </p>
-                            <div class="form-group" style="max-width: 300px; margin-top: 5px;">
-                                <label for="selectLabActiveAggregate" style="font-weight: bold;">Árido a Ensayar:</label>
-                                <select id="selectLabActiveAggregate" class="form-select">
-                                    <option value="arena">Arena (Árido Fino)</option>
-                                    <option value="gravilla">Gravilla (Árido Grueso Intermedio)</option>
-                                    <option value="grava">Grava (Árido Grueso Grande)</option>
-                                    <option value="grava2">Grava 2 (4º Árido)</option>
-                                </select>
+                            <div style="display: flex; gap: 15px; flex-wrap: wrap; margin-top: 8px;">
+                                <div class="form-group" style="min-width: 200px; flex: 1;">
+                                    <label for="selectLabActiveAggregate" style="font-weight: bold;">Árido a Ensayar:</label>
+                                    <select id="selectLabActiveAggregate" class="form-select">
+                                        <option value="arena">Arena (Árido Fino)</option>
+                                        <option value="gravilla">Gravilla (Árido Grueso Intermedio)</option>
+                                        <option value="grava">Grava (Árido Grueso Grande)</option>
+                                        <option value="grava2">Grava 2 (4º Árido)</option>
+                                    </select>
+                                </div>
+                                <div class="form-group" style="min-width: 250px; flex: 1.5;">
+                                    <label for="selectLabAggregateAATHType" style="font-weight: bold;">Clasificación de Árido (AATH):</label>
+                                    <select id="selectLabAggregateAATHType" class="form-select">
+                                        <!-- Rodados -->
+                                        <optgroup label="Rodados Naturales (Forma redondeada, menor fricción)">
+                                            <option value="rodado_rio" selected>Rodado de Río (Natural)</option>
+                                            <option value="rodado_aluvional">Rodado Aluvional</option>
+                                            <option value="rodado_mar">Rodado de Mar (Requiere lavado)</option>
+                                            <option value="rodado_glaciar">Rodado de Glaciar (Forma errática)</option>
+                                        </optgroup>
+                                        <!-- Triturados -->
+                                        <optgroup label="Triturados/Machaqueo (Forma angulosa, mayor fricción)">
+                                            <option value="triturado_granitico">Triturado Granítico</option>
+                                            <option value="triturado_basaltico">Triturado Basáltico</option>
+                                            <option value="triturado_calizo">Triturado Calizo</option>
+                                            <option value="triturado_siliceo">Triturado Silíceo</option>
+                                        </optgroup>
+                                        <!-- Especiales -->
+                                        <optgroup label="Especiales y Reciclados">
+                                            <option value="especial_reciclado">Reciclado (Trituración de Hormigón)</option>
+                                            <option value="especial_liviano_pomez">Liviano Natural (Pómez/Perlita)</option>
+                                            <option value="especial_liviano_eps">Liviano Artificial (EPS/Arcilla Expandida)</option>
+                                            <option value="especial_pesado">Pesado (Magnetita/Hematita/Baritina)</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
                             </div>
                         </div>
                     </section>
@@ -1198,7 +1236,8 @@
 
                     <!-- SUB-TAB CONTENT: MECÁNICA/GEOMÉTRICA -->
                     <div id="subtab-mecanica" class="sub-tab-content">
-                        <div class="lab-grid">
+                        <!-- Contenedor para Áridos Gruesos (Gravilla / Grava) -->
+                        <div class="lab-grid" id="containerLabMecanicaCoarse" style="display: grid;">
                             
                             <!-- TARJETA 1: ENSAYO LOS ANGELES (MÓDULO 4) -->
                             <section class="panel">
@@ -1312,6 +1351,94 @@
                                         </div>
                                         <div id="badgeForma" class="badge-container badge-success">🟢 Forma Cúbica / Excelente (C<sub>f</sub> ≥ 0.20)</div>
                                         <div id="rheologyFormaImpact" style="font-size: 0.73rem; color: var(--accent); margin-top: 6px; font-weight: 500;"></div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+
+                        <!-- Contenedor para Árido Fino (Arena) -->
+                        <div class="lab-grid" id="containerLabMecanicaFine" style="display: none;">
+                            <!-- TARJETA 1: DURABILIDAD / SANIDAD (IRAM 1525) -->
+                            <section class="panel">
+                                <div class="panel-header">
+                                    <span class="panel-icon">❄️</span>
+                                    <h2>Sanidad: Durabilidad por Sulfatos (IRAM 1525)</h2>
+                                </div>
+                                <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
+                                    <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">Ensayo de Durabilidad (Sulfato de Sodio)</h3>
+                                        <div class="form-group" style="margin-bottom: 8px;">
+                                            <label for="inputSandDurabilityLoss">Pérdida por Desintegración [%]:</label>
+                                            <input type="number" id="inputSandDurabilityLoss" value="4.5" class="form-input" min="0" max="100" step="0.1">
+                                        </div>
+                                        <div style="font-size: 0.8rem; margin-bottom: 6px;">
+                                            Pérdida Registrada: <strong id="resSandDurabilityLoss">4.5</strong> %
+                                        </div>
+                                        <div id="badgeSandDurability" class="badge-container badge-success">✔️ Apto (&le; 10%)</div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- TARJETA 2: RESISTENCIA EN MORTERO (IRAM 1622) -->
+                            <section class="panel">
+                                <div class="panel-header">
+                                    <span class="panel-icon">🧱</span>
+                                    <h2>Mecánica: Resistencia en Mortero (IRAM 1622)</h2>
+                                </div>
+                                <div class="panel-body" style="display: flex; flex-direction: column; gap: 15px;">
+                                    <div style="background: rgba(255, 255, 255, 0.01); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <h3 style="font-size: 0.88rem; font-weight: bold; color: var(--accent); margin-bottom: 8px;">Relación de Resistencia Mecánica a 28d</h3>
+                                        <div class="form-group" style="margin-bottom: 8px;">
+                                            <label for="inputSandMortarRatio">Resistencia Compresiva vs. Patrón [%]:</label>
+                                            <input type="number" id="inputSandMortarRatio" value="98.0" class="form-input" min="0" max="200" step="0.5">
+                                        </div>
+                                        <div style="font-size: 0.8rem; margin-bottom: 6px;">
+                                            Relación Obtenida: <strong id="resSandMortarRatio">98.0</strong> %
+                                        </div>
+                                        <div id="badgeSandMortar" class="badge-container badge-success">✔️ Apto (&ge; 95%)</div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            <!-- TARJETA 3: GRANULOMETRÍA Y MÓDULO DE FINURA DE LA ARENA -->
+                            <section class="panel" style="grid-column: span 2;">
+                                <div class="panel-header">
+                                    <span class="panel-icon">📊</span>
+                                    <h2>Granulometría y Módulo de Finura de la Arena</h2>
+                                </div>
+                                <div class="panel-body" style="display: flex; flex-direction: column; gap: 12px;">
+                                    <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4; margin: 0;">
+                                        Porcentaje acumulado que pasa en cada tamiz (vinculado automáticamente con el tamizado de arena de la pestaña Dosificación):
+                                    </p>
+                                    <div style="display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; text-align: center; background: rgba(0,0,0,0.2); padding: 12px; border-radius: 8px; border: 1px solid var(--border-color);">
+                                        <div>
+                                            <div style="font-size: 0.72rem; font-weight: bold; color: var(--text-muted);">Tamiz N° 4</div>
+                                            <div style="font-size: 0.95rem; font-weight: bold; margin-top: 4px; color: var(--text);"><span id="labSandPassN4">100.0</span>%</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.72rem; font-weight: bold; color: var(--text-muted);">Tamiz N° 8</div>
+                                            <div style="font-size: 0.95rem; font-weight: bold; margin-top: 4px; color: var(--text);"><span id="labSandPassN8">100.0</span>%</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.72rem; font-weight: bold; color: var(--text-muted);">Tamiz N° 16</div>
+                                            <div style="font-size: 0.95rem; font-weight: bold; margin-top: 4px; color: var(--text);"><span id="labSandPassN16">100.0</span>%</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.72rem; font-weight: bold; color: var(--text-muted);">Tamiz N° 30</div>
+                                            <div style="font-size: 0.95rem; font-weight: bold; margin-top: 4px; color: var(--text);"><span id="labSandPassN30">100.0</span>%</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.72rem; font-weight: bold; color: var(--text-muted);">Tamiz N° 50</div>
+                                            <div style="font-size: 0.95rem; font-weight: bold; margin-top: 4px; color: var(--text);"><span id="labSandPassN50">100.0</span>%</div>
+                                        </div>
+                                        <div>
+                                            <div style="font-size: 0.72rem; font-weight: bold; color: var(--text-muted);">Tamiz N° 100</div>
+                                            <div style="font-size: 0.95rem; font-weight: bold; margin-top: 4px; color: var(--text);"><span id="labSandPassN100">100.0</span>%</div>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.02); padding: 10px; border-radius: 6px; border: 1px dashed var(--border-color); font-size: 0.82rem; margin-top: 5px;">
+                                        <span>Módulo de Finura de la Arena (MF): <strong id="labSandCalculatedFM">0.00</strong></span>
+                                        <span id="labSandFMClass" style="font-weight: bold; color: var(--accent);">Arena Media</span>
                                     </div>
                                 </div>
                             </section>
@@ -1449,6 +1576,17 @@
                             </section>
                         </div>
                     </div>
+
+                    <!-- PANEL DE ASESOR TÉCNICO AATH -->
+                    <section class="panel" style="margin-top: 20px; grid-column: span 2; border: 1px solid var(--accent); background: rgba(255,100,0,0.01);">
+                        <div class="panel-header" style="background: rgba(255,100,0,0.03); display: flex; align-items: center; gap: 8px;">
+                            <span class="panel-icon">💡</span>
+                            <h2 style="color: var(--accent); font-weight: bold;">Asesor Técnico de Materiales (Directrices AATH)</h2>
+                        </div>
+                        <div class="panel-body" id="labAATHAdvisorContent" style="font-size: 0.78rem; line-height: 1.5; color: var(--text);">
+                            <p style="color: var(--text-muted); margin: 0;">Selecciona un árido y realiza sus ensayos para recibir recomendaciones y alertas sobre su influencia reológica, mecánicas y químicas en el hormigón final.</p>
+                        </div>
+                    </section>
 
                 </div>
             </div>
