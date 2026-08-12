@@ -909,7 +909,8 @@ const historyManager = {
                 maxSieveSize: document.getElementById("inputMaxSieveSize").value,
                 airPercentage: document.getElementById("inputAirPercentage").value,
                 manualStrength: document.getElementById("inputTargetStrength") ? document.getElementById("inputTargetStrength").value : "21",
-                cementCategory: document.getElementById("selectCementCategory").value
+                cementCategory: document.getElementById("selectCementCategory").value,
+                applyFactorG: document.getElementById("checkApplyFactorG")?.checked !== false
             };
         },
         restoreState: function(state) {
@@ -923,6 +924,8 @@ const historyManager = {
             const targetStrEl = document.getElementById("inputTargetStrength");
             if (targetStrEl && state.manualStrength !== undefined && state.manualStrength !== null) targetStrEl.value = state.manualStrength;
             if (state.cementCategory !== undefined && state.cementCategory !== null) document.getElementById("selectCementCategory").value = state.cementCategory;
+            const applyGEl = document.getElementById("checkApplyFactorG");
+            if (applyGEl && state.applyFactorG !== undefined) applyGEl.checked = state.applyFactorG;
         }
     },
     additives: {
@@ -3003,6 +3006,10 @@ function setupEventListeners() {
         calculateAndUpdate();
     });
 
+    document.getElementById("checkApplyFactorG")?.addEventListener("change", () => {
+        calculateAndUpdate();
+    });
+
     // Cement category change
     document.getElementById("selectCementCategory")?.addEventListener("change", () => {
         autoAdjustCustomParamsFromStrength();
@@ -4202,7 +4209,12 @@ async function calculateAndUpdate() {
         grava2Passing: grava2Passing,
         grava2Ratio: grava2Ratio,
         customCement: customCement,
-        additives: activeAdditives
+        additives: activeAdditives,
+        applyFactorG: document.getElementById("checkApplyFactorG")?.checked !== false,
+        sandAATHType: aridosLabData.arena.aggregateAATHType || "rodado_rio",
+        gravillaAATHType: aridosLabData.gravilla.aggregateAATHType || "triturado_granitico",
+        gravaAATHType: aridosLabData.grava.aggregateAATHType || "triturado_granitico",
+        grava2AATHType: aridosLabData.grava2 ? (aridosLabData.grava2.aggregateAATHType || "triturado_granitico") : "triturado_granitico"
     };
 
     try {
@@ -4290,6 +4302,9 @@ async function calculateAndUpdate() {
         
         const resWaterTheoreticalEl = document.getElementById("resWaterTheoretical");
         if (resWaterTheoreticalEl) resWaterTheoreticalEl.innerText = netWaterTheoretical.toFixed(2);
+        
+        const resFactorGDisplayEl = document.getElementById("resFactorGDisplay");
+        if (resFactorGDisplayEl) resFactorGDisplayEl.innerText = (data.factorG || 1.0).toFixed(3);
         
         const resSandEl = document.getElementById("resSand");
         if (resSandEl) resSandEl.innerText = sandWetWeight.toFixed(1);
@@ -6570,7 +6585,9 @@ let aridosLabData = {
         structureType: "armado", chlorides: 0.02, sulfates: 0.12,
         mSss: 1010, mSecoEstufa: 1000, aggregateOriginType: "natural",
         mallasTotal: 1000, barrasPasa: 250, vGranos: 35, sumL3: 350,
-        rasMineralogy: "sano", sTotal: 0.15, so3: 0.05
+        rasMineralogy: "sano", sTotal: 0.15, so3: 0.05,
+        sandDurabilityLoss: 4.5, sandMortarRatio: 98.0,
+        aggregateAATHType: "rodado_rio"
     },
     gravilla: {
         mRec: 3200, mLleno: 18700, vRec: 10.0,
@@ -6584,7 +6601,9 @@ let aridosLabData = {
         structureType: "armado", chlorides: 0.02, sulfates: 0.12,
         mSss: 1010, mSecoEstufa: 1000, aggregateOriginType: "natural",
         mallasTotal: 1000, barrasPasa: 250, vGranos: 35, sumL3: 350,
-        rasMineralogy: "sano", sTotal: 0.15, so3: 0.05
+        rasMineralogy: "sano", sTotal: 0.15, so3: 0.05,
+        sandDurabilityLoss: 4.5, sandMortarRatio: 98.0,
+        aggregateAATHType: "triturado_granitico"
     },
     grava: {
         mRec: 3200, mLleno: 18500, vRec: 10.0,
@@ -6598,7 +6617,9 @@ let aridosLabData = {
         structureType: "armado", chlorides: 0.02, sulfates: 0.12,
         mSss: 1010, mSecoEstufa: 1000, aggregateOriginType: "natural",
         mallasTotal: 1000, barrasPasa: 250, vGranos: 35, sumL3: 350,
-        rasMineralogy: "sano", sTotal: 0.15, so3: 0.05
+        rasMineralogy: "sano", sTotal: 0.15, so3: 0.05,
+        sandDurabilityLoss: 4.5, sandMortarRatio: 98.0,
+        aggregateAATHType: "triturado_granitico"
     }
 };
 
@@ -6617,6 +6638,17 @@ function initAridosLab() {
         loadAridosLabStateToUI(activeLabAggregate);
         calculateAridosLab();
     });
+
+    const selectAATH = document.getElementById("selectLabAggregateAATHType");
+    if (selectAATH) {
+        selectAATH.addEventListener("change", () => {
+            saveAridosLabStateFromUI(activeLabAggregate);
+            calculateAridosLab();
+            if (typeof calculateAndUpdate === "function") {
+                calculateAndUpdate();
+            }
+        });
+    }
 
     // Sub-tab Switching Logic inside Laboratorio de Áridos
     document.querySelectorAll(".sub-tab-btn").forEach(btn => {
@@ -6809,7 +6841,12 @@ function saveAridosLabStateFromUI(agg) {
         // Module 6
         mallasTotal: "inputMallasTotal", barrasPasa: "inputBarrasPasa", vGranos: "inputVgranos", sumL3: "inputSumL3",
         // Module 7
-        rasMineralogy: "selectRASMineralogy", sTotal: "inputStotal", so3: "inputSO3"
+        rasMineralogy: "selectRASMineralogy", sTotal: "inputStotal", so3: "inputSO3",
+        // Sand specific
+        sandDurabilityLoss: "inputSandDurabilityLoss",
+        sandMortarRatio: "inputSandMortarRatio",
+        // AATH classification
+        aggregateAATHType: "selectLabAggregateAATHType"
     };
     for (let key in fields) {
         const el = document.getElementById(fields[key]);
@@ -6819,6 +6856,20 @@ function saveAridosLabStateFromUI(agg) {
             } else {
                 aridosLabData[agg][key] = el.value;
             }
+        }
+    }
+}
+
+function updateLabMecanicaVisibility(agg) {
+    const containerCoarse = document.getElementById("containerLabMecanicaCoarse");
+    const containerFine = document.getElementById("containerLabMecanicaFine");
+    if (containerCoarse && containerFine) {
+        if (agg === "arena") {
+            containerCoarse.style.display = "none";
+            containerFine.style.display = "grid";
+        } else {
+            containerCoarse.style.display = "grid";
+            containerFine.style.display = "none";
         }
     }
 }
@@ -6840,12 +6891,17 @@ function loadAridosLabStateToUI(agg) {
         // Module 6
         mallasTotal: "inputMallasTotal", barrasPasa: "inputBarrasPasa", vGranos: "inputVgranos", sumL3: "inputSumL3",
         // Module 7
-        rasMineralogy: "selectRASMineralogy", sTotal: "inputStotal", so3: "inputSO3"
+        rasMineralogy: "selectRASMineralogy", sTotal: "inputStotal", so3: "inputSO3",
+        // Sand specific
+        sandDurabilityLoss: "inputSandDurabilityLoss",
+        sandMortarRatio: "inputSandMortarRatio",
+        // AATH classification
+        aggregateAATHType: "selectLabAggregateAATHType"
     };
     for (let key in fields) {
         const el = document.getElementById(fields[key]);
         if (el) {
-            el.value = aridosLabData[agg][key];
+            el.value = aridosLabData[agg][key] || "";
         }
     }
     
@@ -6859,6 +6915,8 @@ function loadAridosLabStateToUI(agg) {
             panelSand.style.pointerEvents = "none";
         }
     }
+    
+    updateLabMecanicaVisibility(agg);
 }
 
 function calculateAridosLab() {
@@ -6973,66 +7031,124 @@ function calculateAridosLab() {
         }
     }
 
-    // MÓDULO 6: Propiedades geométricas de la grava
-    const mallasTotal = parseFloat(document.getElementById("inputMallasTotal").value) || 1.0;
-    const barrasPasa = parseFloat(document.getElementById("inputBarrasPasa").value) || 0;
-    const iLajas = Math.max(0, (barrasPasa / mallasTotal) * 100);
-    document.getElementById("resILajas").innerText = iLajas.toFixed(1);
-
-    const badgeLajas = document.getElementById("badgeLajas");
-    if (badgeLajas) {
-        badgeLajas.className = "badge-container";
-        if (iLajas > 35.0) {
-            badgeLajas.innerText = "🚨 Índice de lajas excesivo (> 35%). Riesgo de pérdida de docilidad";
-            badgeLajas.classList.add("badge-danger");
-        } else {
-            badgeLajas.innerText = "✔️ Apto";
-            badgeLajas.classList.add("badge-success");
+    if (activeLabAggregate === "arena") {
+        // Ensayos mecánicos y geométricos específicos de la arena
+        const lossVal = parseFloat(document.getElementById("inputSandDurabilityLoss").value) || 0.0;
+        document.getElementById("resSandDurabilityLoss").innerText = lossVal.toFixed(1);
+        const badgeDurability = document.getElementById("badgeSandDurability");
+        if (badgeDurability) {
+            badgeDurability.className = "badge-container";
+            if (lossVal > 10.0) {
+                badgeDurability.innerText = "🚨 No Apto (> 10% pérdida con Sulfato de Sodio). Riesgo de desintegración por intemperismo";
+                badgeDurability.classList.add("badge-danger");
+            } else {
+                badgeDurability.innerText = "✔️ Apto (≤ 10% pérdida)";
+                badgeDurability.classList.add("badge-success");
+            }
         }
-    }
 
-    const vGranos = parseFloat(document.getElementById("inputVgranos").value) || 0;
-    const sumL3 = parseFloat(document.getElementById("inputSumL3").value) || 1.0;
-    const cf = (6.0 * vGranos) / (Math.PI * sumL3);
-    document.getElementById("resCf").innerText = cf.toFixed(3);
-
-    const badgeForma = document.getElementById("badgeForma");
-    const rheologyFormaImpact = document.getElementById("rheologyFormaImpact");
-    if (badgeForma) {
-        badgeForma.className = "badge-container";
-        if (cf >= 0.20) {
-            badgeForma.innerText = "🟢 Forma Cúbica / Excelente (C_f ≥ 0.20). Mínima fricción interna";
-            badgeForma.classList.add("badge-success");
-            if (rheologyFormaImpact) rheologyFormaImpact.innerHTML = "✨ <strong>Reología Óptima:</strong> La forma cúbica favorece la fluidez y reduce la demanda de agua de amasado.";
-        } else if (cf >= 0.15) {
-            badgeForma.innerText = "🟡 Forma Aceptable Normativa (0.15 ≤ C_f < 0.20). Apto para hormigón estructurado";
-            badgeForma.classList.add("badge-warning");
-            if (rheologyFormaImpact) rheologyFormaImpact.innerHTML = "ℹ️ <strong>Docilidad Normal:</strong> Cumple los requisitos estándar de la norma UNE 7104 / NCh.";
-        } else {
-            badgeForma.innerText = "🚨 Forma Inadecuada / Acicular (C_f < 0.15). Partículas laminares";
-            badgeForma.classList.add("badge-danger");
-            if (rheologyFormaImpact) rheologyFormaImpact.innerHTML = "⚠️ <strong>Alerta Reológica:</strong> Excesiva fricción por lajas. Se sugiere aumentar aditivo plastificante en +0.15% o ajustar agua (+4 L/m³).";
+        const mortarRatio = parseFloat(document.getElementById("inputSandMortarRatio").value) || 0.0;
+        document.getElementById("resSandMortarRatio").innerText = mortarRatio.toFixed(1);
+        const badgeMortar = document.getElementById("badgeSandMortar");
+        if (badgeMortar) {
+            badgeMortar.className = "badge-container";
+            if (mortarRatio < 95.0) {
+                badgeMortar.innerText = "🚨 No Apto (< 95% resistencia vs. patrón). Interferencia por impurezas orgánicas o mecánicas";
+                badgeMortar.classList.add("badge-danger");
+            } else {
+                badgeMortar.innerText = "✔️ Apto (≥ 95% de resistencia)";
+                badgeMortar.classList.add("badge-success");
+            }
         }
-    }
 
-    // MÓDULO 4: Ensayos Mecánicos Los Ángeles
-    const laIni = parseFloat(document.getElementById("inputLAInitial").value) || 1.0;
-    const laFin = parseFloat(document.getElementById("inputLAFinal").value) || 0.0;
-    const laCoef = Math.max(0, ((laIni - laFin) / laIni) * 100);
-    document.getElementById("resLACoef").innerText = laCoef.toFixed(1);
-    
-    const badgeLA = document.getElementById("badgeLA");
-    if (badgeLA) {
-        badgeLA.className = "badge-container";
-        if (laCoef > 40) {
-            badgeLA.innerText = "🚨 Árido no apto para hormigón estructural ordinario";
-            badgeLA.classList.add("badge-danger");
-        } else if (laCoef > 25) {
-            badgeLA.innerText = "⚠️ No apto para hormigones de alta resistencia";
-            badgeLA.classList.add("badge-warning");
+        // Vincular los porcentajes pasantes calculados de la grilla principal
+        if (totalSandWeight > 0) {
+            let cumulativeRetainedGrams = 0;
+            const passingPctList = [];
+            for (let i = 0; i < sandSieveInputs.length; i++) {
+                cumulativeRetainedGrams += sandSieveInputs[i];
+                const passingPct = Math.max(0, 100 - (cumulativeRetainedGrams / totalSandWeight) * 100);
+                passingPctList.push(passingPct);
+            }
+            if (document.getElementById("labSandPassN4")) document.getElementById("labSandPassN4").innerText = passingPctList[6].toFixed(1);
+            if (document.getElementById("labSandPassN8")) document.getElementById("labSandPassN8").innerText = passingPctList[7].toFixed(1);
+            if (document.getElementById("labSandPassN16")) document.getElementById("labSandPassN16").innerText = passingPctList[8].toFixed(1);
+            if (document.getElementById("labSandPassN30")) document.getElementById("labSandPassN30").innerText = passingPctList[9].toFixed(1);
+            if (document.getElementById("labSandPassN50")) document.getElementById("labSandPassN50").innerText = passingPctList[10].toFixed(1);
+            if (document.getElementById("labSandPassN100")) document.getElementById("labSandPassN100").innerText = passingPctList[11].toFixed(1);
         } else {
-            badgeLA.innerText = "✔️ Apto";
-            badgeLA.classList.add("badge-success");
+            if (document.getElementById("labSandPassN4")) document.getElementById("labSandPassN4").innerText = "100.0";
+            if (document.getElementById("labSandPassN8")) document.getElementById("labSandPassN8").innerText = "100.0";
+            if (document.getElementById("labSandPassN16")) document.getElementById("labSandPassN16").innerText = "100.0";
+            if (document.getElementById("labSandPassN30")) document.getElementById("labSandPassN30").innerText = "100.0";
+            if (document.getElementById("labSandPassN50")) document.getElementById("labSandPassN50").innerText = "100.0";
+            if (document.getElementById("labSandPassN100")) document.getElementById("labSandPassN100").innerText = "100.0";
+        }
+        
+        if (document.getElementById("labSandCalculatedFM")) document.getElementById("labSandCalculatedFM").innerText = mfSand.toFixed(2);
+        if (document.getElementById("labSandFMClass")) document.getElementById("labSandFMClass").innerText = sandTypeLabel;
+    } else {
+        // MÓDULO 6: Propiedades geométricas de la grava
+        const mallasTotal = parseFloat(document.getElementById("inputMallasTotal").value) || 1.0;
+        const barrasPasa = parseFloat(document.getElementById("inputBarrasPasa").value) || 0;
+        const iLajas = Math.max(0, (barrasPasa / mallasTotal) * 100);
+        document.getElementById("resILajas").innerText = iLajas.toFixed(1);
+
+        const badgeLajas = document.getElementById("badgeLajas");
+        if (badgeLajas) {
+            badgeLajas.className = "badge-container";
+            if (iLajas > 35.0) {
+                badgeLajas.innerText = "🚨 Índice de lajas excesivo (> 35%). Riesgo de pérdida de docilidad";
+                badgeLajas.classList.add("badge-danger");
+            } else {
+                badgeLajas.innerText = "✔️ Apto";
+                badgeLajas.classList.add("badge-success");
+            }
+        }
+
+        const vGranos = parseFloat(document.getElementById("inputVgranos").value) || 0;
+        const sumL3 = parseFloat(document.getElementById("inputSumL3").value) || 1.0;
+        const cf = (6.0 * vGranos) / (Math.PI * sumL3);
+        document.getElementById("resCf").innerText = cf.toFixed(3);
+
+        const badgeForma = document.getElementById("badgeForma");
+        const rheologyFormaImpact = document.getElementById("rheologyFormaImpact");
+        if (badgeForma) {
+            badgeForma.className = "badge-container";
+            if (cf >= 0.20) {
+                badgeForma.innerText = "🟢 Forma Cúbica / Excelente (C_f ≥ 0.20). Mínima fricción interna";
+                badgeForma.classList.add("badge-success");
+                if (rheologyFormaImpact) rheologyFormaImpact.innerHTML = "✨ <strong>Reología Óptima:</strong> La forma cúbica favorece la fluidez y reduce la demanda de agua de amasado.";
+            } else if (cf >= 0.15) {
+                badgeForma.innerText = "🟡 Forma Aceptable Normativa (0.15 ≤ C_f < 0.20). Apto para hormigón estructurado";
+                badgeForma.classList.add("badge-warning");
+                if (rheologyFormaImpact) rheologyFormaImpact.innerHTML = "ℹ️ <strong>Docilidad Normal:</strong> Cumple los requisitos estándar de la norma UNE 7104 / NCh.";
+            } else {
+                badgeForma.innerText = "🚨 Forma Inadecuada / Acicular (C_f < 0.15). Partículas laminares";
+                badgeForma.classList.add("badge-danger");
+                if (rheologyFormaImpact) rheologyFormaImpact.innerHTML = "⚠️ <strong>Alerta Reológica:</strong> Excesiva fricción por lajas. Se sugiere aumentar aditivo plastificante en +0.15% o ajustar agua (+4 L/m³).";
+            }
+        }
+
+        // MÓDULO 4: Ensayos Mecánicos Los Ángeles
+        const laIni = parseFloat(document.getElementById("inputLAInitial").value) || 1.0;
+        const laFin = parseFloat(document.getElementById("inputLAFinal").value) || 0.0;
+        const laCoef = Math.max(0, ((laIni - laFin) / laIni) * 100);
+        document.getElementById("resLACoef").innerText = laCoef.toFixed(1);
+        
+        const badgeLA = document.getElementById("badgeLA");
+        if (badgeLA) {
+            badgeLA.className = "badge-container";
+            if (laCoef > 40) {
+                badgeLA.innerText = "🚨 Árido no apto para hormigón estructural ordinario";
+                badgeLA.classList.add("badge-danger");
+            } else if (laCoef > 25) {
+                badgeLA.innerText = "⚠️ No apto para hormigones de alta resistencia";
+                badgeLA.classList.add("badge-warning");
+            } else {
+                badgeLA.innerText = "✔️ Apto";
+                badgeLA.classList.add("badge-success");
+            }
         }
     }
 
@@ -7143,6 +7259,83 @@ function calculateAridosLab() {
         } else {
             badgeSulfuros.innerText = "✔️ Sulfuros dentro de límites de seguridad";
             badgeSulfuros.classList.add("badge-success");
+        }
+    }
+
+    // ASESOR TÉCNICO AATH DE MATERIALES
+    const advisorContent = document.getElementById("labAATHAdvisorContent");
+    if (advisorContent) {
+        const warnings = [];
+        const aathType = document.getElementById("selectLabAggregateAATHType").value;
+        const lossVal = parseFloat(document.getElementById("inputSandDurabilityLoss")?.value) || 0.0;
+        const mortarRatio = parseFloat(document.getElementById("inputSandMortarRatio")?.value) || 0.0;
+
+        // 1. Análisis por procedencia AATH
+        if (activeLabAggregate === "arena") {
+            if (aathType.startsWith("rodado")) {
+                warnings.push("💧 <strong>Reología Natural:</strong> Los áridos rodados (" + aathType.replace("rodado_", "") + ") tienen partículas de forma redondeada que minimizan la fricción interna de la mezcla, requiriendo menor volumen de pasta y agua de amasado.");
+                if (finosPct > 5.0) {
+                    warnings.push("⚠️ <strong>Exceso de Finos en Arena Natural:</strong> El contenido de finos del " + finosPct.toFixed(1) + "% supera el límite del 3-5% para arenas de río. Esto incrementa de forma nociva la superficie específica y disparará la demanda de agua de diseño.");
+                }
+                if (aathType === "rodado_mar") {
+                    warnings.push("🌊 <strong>Lavado por Cloruros:</strong> El árido de mar requiere lavado obligatorio. Verifica que el contenido de cloruros (" + chlorides.toFixed(2) + "%) no supere el límite de la estructura (" + (structureType === "pretensado" ? "0.03" : structureType === "armado" ? "0.05" : "0.15") + "%).");
+                }
+            } else if (aathType.startsWith("triturado")) {
+                warnings.push("📐 <strong>Filler de Trituración:</strong> Al usar arena de machaqueo, los finos inertes actúan como filler lubricante (filler effect).");
+                if (finosPct >= 6.0 && finosPct <= 15.0) {
+                    warnings.push("✨ <strong>Efecto Filler Óptimo:</strong> El contenido de finos (" + finosPct.toFixed(1) + "%) está en el rango ideal (6% a 15%), mejorando la cohesión, la docilidad y reduciendo la exudación sin aumentar el consumo de agua.");
+                } else if (finosPct > 15.0) {
+                    warnings.push("🚨 <strong>Exceso de Polvo en Machaqueo:</strong> El pasante del tamiz N° 200 es " + finosPct.toFixed(1) + "% (Límite: 15-16%). Esto incrementará la demanda de agua y el riesgo de contracción.");
+                }
+            } else if (aathType === "especial_reciclado") {
+                warnings.push("♻️ <strong>Arena Reciclada (RCD):</strong> Presenta una absorción sumamente elevada (" + absCoef.toFixed(2) + "%). AATH sugiere limitar el reemplazo a un máximo del 20% para evitar la pérdida brusca de asentamiento.");
+            }
+            
+            // Ensayos mecánicos y químicos de arena
+            if (ea < 70) {
+                warnings.push("🚨 <strong>Contaminación Arcillosa:</strong> Equivalente de Arena (" + ea.toFixed(1) + "%) menor a 70. Las arcillas interfieren con la hidratación y debilitan la zona de adherencia. Se recomienda lavado urgente.");
+            }
+            if (lossVal > 10.0) {
+                warnings.push("❄️ <strong>Riesgo de Intemperismo:</strong> La pérdida por durabilidad es del " + lossVal.toFixed(1) + "% (Límite IRAM 1525: 10%). Se desaconseja su uso en hormigones expuestos a ciclos de congelamiento.");
+            }
+            if (mortarRatio < 95.0) {
+                warnings.push("🧱 <strong>Bajo Desempeño del Mortero:</strong> La relación de resistencia del mortero de " + mortarRatio.toFixed(1) + "% (Límite: 95%) delata la presencia de impurezas orgánicas o mecánicas en la arena.");
+            }
+        } else {
+            // Gruesos
+            if (aathType.startsWith("triturado")) {
+                warnings.push("⛏️ <strong>Fricción de Triturados:</strong> El machaqueo grueso genera mayor fricción mecánica por su forma angulosa y rugosa. Esto puede aumentar la demanda de agua teórica en un 5-10%.");
+            } else if (aathType.startsWith("rodado")) {
+                warnings.push("💧 <strong>Fluidez por Forma:</strong> El árido rodado grueso disminuye el volumen de vacíos y reduce la fricción, permitiendo bajar el agua de diseño en ~10 litros/m³.");
+            } else if (aathType === "especial_reciclado") {
+                warnings.push("♻️ <strong>Grava Reciclada:</strong> Debido a su alta absorción (" + absCoef.toFixed(2) + "%), se recomienda pre-humedecer el agregado antes del mezclado.");
+            }
+
+            if (iLajas > 35.0) {
+                warnings.push("🚨 <strong>Lajas Excesivas:</strong> El índice del " + iLajas.toFixed(1) + "% dificultará la docilidad y bombeabilidad del hormigón fresco.");
+            }
+            if (cf < 0.15) {
+                warnings.push("⚠️ <strong>Partículas Alargadas:</strong> Coeficiente de forma inadecuado (" + cf.toFixed(3) + "). Se aconseja aumentar dosis de aditivo plastificante en +0.15% para mantener trabajabilidad.");
+            }
+            if (laCoef > 40.0) {
+                warnings.push("🚨 <strong>Debilidad Mecánica:</strong> Desgaste Los Ángeles del " + laCoef.toFixed(1) + "% supera el 40%. Inadecuado para hormigón estructural ordinario.");
+            }
+        }
+
+        // Químicas (Comunes)
+        if (rasMineralogy !== "sano") {
+            warnings.push("⚠️ <strong>Peligro RAS:</strong> Mineralogía clasificada como '" + rasMineralogy + "'. Se recomienda el uso de cementos con adiciones puzolánicas activas (CPP o CPF) para mitigar la expansión.");
+        }
+        if (deltaS > 0.25) {
+            warnings.push("🚨 <strong>Sulfuros Oxidables:</strong> Presencia de piritas superior al 0.25%. Puede generar expansiones tardías y manchas óxidas.");
+        }
+
+        if (warnings.length > 0) {
+            advisorContent.innerHTML = "<ul style='margin: 0; padding-left: 15px; display: flex; flex-direction: column; gap: 6px;'>" + 
+                warnings.map(w => "<li>" + w + "</li>").join("") + 
+                "</ul>";
+        } else {
+            advisorContent.innerHTML = "<p style='color: var(--text-muted); margin: 0;'>✔️ No se registran alertas ni observaciones técnicas para los ensayos actuales de este árido.</p>";
         }
     }
 }
