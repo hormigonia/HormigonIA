@@ -4714,7 +4714,7 @@ function updateChart(combined, sand, gravilla, grava, grava2, fullerIdeal, bolom
         const seriesLabelMap = SIEVE_SERIES_LABELS[activeSeries] || SIEVE_SERIES_LABELS["ASTM"];
 
         const sieveXAxisLabels = SIEVE_SIZES.map(s => {
-            const key = s.toString();
+            const key = seriesLabelMap[s.toString()] ? s.toString() : s.toFixed(1);
             return seriesLabelMap[key] || `${s} mm`;
         }).reverse();
 
@@ -6711,7 +6711,8 @@ function renderLabActiveSieves() {
         }
         
         const passingPct = Math.max(0, 100 - cumRetainedPct);
-        const label = labelMap[size.toString()] || `${size} mm`;
+        const labelKey = labelMap[size.toString()] ? size.toString() : size.toFixed(1);
+        const label = labelMap[labelKey] || `${size} mm`;
 
         const tr = document.createElement("tr");
         tr.dataset.sieve = size;
@@ -7124,6 +7125,9 @@ function loadAridosLabStateToUI(agg) {
 
 function calculateAridosLab() {
     console.log("calculateAridosLab running. activeLabAggregate:", activeLabAggregate);
+    let iLajas = 0;
+    let cf = 0.20;
+    let laCoef = 0;
     const mRec = parseFloat(document.getElementById("inputMrec").value) || 0;
     const mLleno = parseFloat(document.getElementById("inputMlleno").value) || 0;
     const vRec = parseFloat(document.getElementById("inputVrec").value) || 1.0;
@@ -7279,7 +7283,7 @@ function calculateAridosLab() {
         // MÓDULO 6: Propiedades geométricas de la grava
         const mallasTotal = parseFloat(document.getElementById("inputMallasTotal").value) || 1.0;
         const barrasPasa = parseFloat(document.getElementById("inputBarrasPasa").value) || 0;
-        const iLajas = Math.max(0, (barrasPasa / mallasTotal) * 100);
+        iLajas = Math.max(0, (barrasPasa / mallasTotal) * 100);
         document.getElementById("resILajas").innerText = iLajas.toFixed(1);
 
         const badgeLajas = document.getElementById("badgeLajas");
@@ -7296,7 +7300,7 @@ function calculateAridosLab() {
 
         const vGranos = parseFloat(document.getElementById("inputVgranos").value) || 0;
         const sumL3 = parseFloat(document.getElementById("inputSumL3").value) || 1.0;
-        const cf = (6.0 * vGranos) / (Math.PI * sumL3);
+        cf = (6.0 * vGranos) / (Math.PI * sumL3);
         document.getElementById("resCf").innerText = cf.toFixed(3);
 
         const badgeForma = document.getElementById("badgeForma");
@@ -7321,7 +7325,7 @@ function calculateAridosLab() {
         // MÓDULO 4: Ensayos Mecánicos Los Ángeles
         const laIni = parseFloat(document.getElementById("inputLAInitial").value) || 1.0;
         const laFin = parseFloat(document.getElementById("inputLAFinal").value) || 0.0;
-        const laCoef = Math.max(0, ((laIni - laFin) / laIni) * 100);
+        laCoef = Math.max(0, ((laIni - laFin) / laIni) * 100);
         document.getElementById("resLACoef").innerText = laCoef.toFixed(1);
         
         const badgeLA = document.getElementById("badgeLA");
