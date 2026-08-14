@@ -3854,6 +3854,51 @@ function calculateDosificacionLocal(p) {
 
     const combinedFM = calcFM(combinedSievePassing);
 
+    const bolomeyIdealPassing = sieveSizes.map(d => Math.min(100, A + (100 - A) * Math.sqrt(d / D)));
+    const fullerIdealPassing = sieveSizes.map(d => Math.min(100, 100 * Math.sqrt(d / D)));
+    const delapenaIdealPassing = sieveSizes.map(d => Math.min(100, 50 * (d / D) + 50 * Math.sqrt(d / D)));
+
+    const getAathFrictionFactor = (type) => {
+        const mapping = {
+            "rodado_rio": 1.0,
+            "rodado_aluvional": 1.0,
+            "rodado_mar": 1.05,
+            "rodado_glaciar": 1.08,
+            "triturado_granitico": 1.18,
+            "triturado_basaltico": 1.20,
+            "triturado_calizo": 1.15,
+            "triturado_siliceo": 1.16,
+            "especial_reciclado": 1.25
+        };
+        return mapping[type] || 1.0;
+    };
+
+    let factorG = 1.0;
+    if (p.applyFactorG !== false) {
+        let sumSieveDiffs = 0.0;
+        const gFactorSieves = [37.5, 19.0, 9.5, 4.75, 2.36, 1.18, 0.6, 0.3, 0.15];
+        sieveSizes.forEach((size, i) => {
+            if (gFactorSieves.includes(size)) {
+                let ideal = bolomeyIdealPassing[i];
+                if (p.designMethod === "fuller") {
+                    ideal = fullerIdealPassing[i];
+                } else if (p.designMethod === "delapena") {
+                    ideal = delapenaIdealPassing[i];
+                }
+                const diff = Math.abs(combinedSievePassing[i] - ideal);
+                sumSieveDiffs += diff;
+            }
+        });
+        
+        const aathMult = 
+            sandRatio * getAathFrictionFactor(p.sandAATHType) +
+            gravillaRatio * getAathFrictionFactor(p.gravillaAATHType) +
+            gravaRatio * getAathFrictionFactor(p.gravaAATHType) +
+            (grava2Ratio * getAathFrictionFactor(p.grava2AATHType || "triturado_granitico"));
+            
+        factorG = Math.min(1.25, (1.0 + (sumSieveDiffs / 100.0)) * aathMult);
+    }
+
     const interpolateWater = (mf, slump) => {
         const mfs = [3.0, 4.0, 5.0, 6.0, 6.5];
         const slumps = [2, 5, 10, 15, 20];
@@ -3876,7 +3921,7 @@ function calculateDosificacionLocal(p) {
     };
 
     const slumpTarget = 10.0;
-    let baseWater = interpolateWater(combinedFM, slumpTarget) * 1.07;
+    let baseWater = interpolateWater(combinedFM, slumpTarget) * 1.07 * factorG;
     if (p.airPct > 1.5) {
         baseWater *= (1.0 - 0.025 * (p.airPct - 1.5));
     }
@@ -3971,10 +4016,6 @@ function calculateDosificacionLocal(p) {
     const targetWaterBatch = waterTargetM3 * volM3;
     const netWaterFinal = Math.max(0.0, (targetWaterBatch - totalFreeWater) / 1.1);
     const netWaterTheoretical = Math.max(0.0, targetWaterBatch / 1.1);
-
-    const bolomeyIdealPassing = sieveSizes.map(d => Math.min(100, A + (100 - A) * Math.sqrt(d / D)));
-    const fullerIdealPassing = sieveSizes.map(d => Math.min(100, 100 * Math.sqrt(d / D)));
-    const delapenaIdealPassing = sieveSizes.map(d => Math.min(100, 50 * (d / D) + 50 * Math.sqrt(d / D)));
 
     return {
         gravillaRatio, gravaRatio, grava2Ratio, sandRatio,
