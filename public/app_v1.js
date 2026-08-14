@@ -1,3 +1,29 @@
+// Global Error Handling to show runtime errors as Toasts in the UI
+window.onerror = function(message, source, lineno, colno, error) {
+    const errorMsg = `JavaScript Error: ${message} (at ${source?.split('/').pop()}:${lineno}:${colno})`;
+    console.error(errorMsg);
+    setTimeout(() => {
+        if (typeof showToast === "function") {
+            showToast(errorMsg, "error", 15000);
+        } else {
+            alert(errorMsg);
+        }
+    }, 500);
+    return false;
+};
+
+window.onunhandledrejection = function(event) {
+    const errorMsg = `Promise Rejected: ${event.reason}`;
+    console.error(errorMsg);
+    setTimeout(() => {
+        if (typeof showToast === "function") {
+            showToast(errorMsg, "error", 15000);
+        } else {
+            alert(errorMsg);
+        }
+    }, 500);
+};
+
 let currentUserSession = null;
 let curingInterval = null;
 let curingMapInstance = null;
@@ -6724,8 +6750,9 @@ function renderLabActiveSieves() {
 
     const sieveWeights = {};
     let totalWeight = 0;
+    const rowsInMain = Array.from(document.querySelectorAll("#tableSieves tbody tr"));
     sieves.forEach(size => {
-        const rowInMain = document.querySelector(`#tableSieves tr[data-sieve="${size}"]`);
+        const rowInMain = rowsInMain.find(tr => Math.abs(parseFloat(tr.dataset.sieve) - size) < 0.01);
         const val = rowInMain ? parseFloat(rowInMain.querySelector(`.${colClass}`)?.value) || 0 : 0;
         sieveWeights[size] = val;
         totalWeight += val;
@@ -6772,7 +6799,8 @@ function renderLabActiveSieves() {
         input.addEventListener("input", (e) => {
             const newVal = parseFloat(e.target.value) || 0;
             isEditingLabSieves = true;
-            const mainRow = document.querySelector(`#tableSieves tr[data-sieve="${size}"]`);
+            const mainRow = Array.from(document.querySelectorAll("#tableSieves tbody tr"))
+                .find(tr => Math.abs(parseFloat(tr.dataset.sieve) - size) < 0.01);
             if (mainRow) {
                 const mainInput = mainRow.querySelector(`.${colClass}`);
                 if (mainInput) {
