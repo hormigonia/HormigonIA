@@ -6618,6 +6618,172 @@ let aridosLabData = {
     }
 };
 
+let isEditingLabSieves = false;
+
+function renderLabActiveSieves() {
+    const tbody = document.getElementById("tableLabActiveSievesBody");
+    if (!tbody) return;
+    tbody.innerHTML = "";
+
+    const standard = document.getElementById("selectSieveSeries")?.value || "ASTM";
+    const labelMap = SIEVE_SERIES_LABELS[standard] || SIEVE_SERIES_LABELS["ASTM"];
+    
+    const labelStandard = document.getElementById("labActiveSieveStandardLabel");
+    if (labelStandard) labelStandard.innerText = standard;
+
+    const isFine = (activeLabAggregate === "arena");
+    let sieves = [];
+    if (isFine) {
+        if (standard === "UNE" || standard === "ISO") {
+            sieves = [4.0, 2.0, 1.0, 0.5, 0.25, 0.125, 0.063, 0.0];
+        } else { // IRAM, ASTM, ACI
+            sieves = [9.5, 4.75, 2.36, 1.18, 0.6, 0.3, 0.15, 0.075, 0.0];
+        }
+    } else { // Coarse (gravilla, grava, grava2)
+        if (standard === "UNE" || standard === "ISO") {
+            sieves = [63.0, 40.0, 31.5, 22.4, 16.0, 12.5, 8.0, 5.6, 4.0, 2.0, 0.0];
+        } else { // IRAM, ASTM, ACI
+            sieves = [75.0, 50.0, 37.5, 25.0, 19.0, 12.5, 9.5, 4.75, 2.36, 1.18, 0.0];
+        }
+    }
+
+    let colClass = "sand-sieve";
+    if (activeLabAggregate === "gravilla") colClass = "gravilla-sieve";
+    else if (activeLabAggregate === "grava") colClass = "grava-sieve";
+    else if (activeLabAggregate === "grava2") colClass = "grava2-sieve";
+
+    const sieveWeights = {};
+    let totalWeight = 0;
+    sieves.forEach(size => {
+        const rowInMain = document.querySelector(`#tableSieves tr[data-sieve="${size}"]`);
+        const val = rowInMain ? parseFloat(rowInMain.querySelector(`.${colClass}`)?.value) || 0 : 0;
+        sieveWeights[size] = val;
+        totalWeight += val;
+    });
+
+    const nameMap = {
+        "arena": "Arena (Árido Fino)",
+        "gravilla": "Gravilla (Árido Grueso Intermedio)",
+        "grava": "Grava (Árido Grueso Grande)",
+        "grava2": "Grava 2 (4º Árido)"
+    };
+    const titleEl = document.getElementById("labActiveGranulometryTitle");
+    if (titleEl) titleEl.innerText = `Granulometría de: ${nameMap[activeLabAggregate] || activeLabAggregate}`;
+
+    let cumRetainedPct = 0;
+    sieves.forEach(size => {
+        const val = sieveWeights[size] || 0;
+        const partRetainedPct = totalWeight > 0 ? (val / totalWeight) * 100 : 0;
+        
+        if (size > 0) {
+            cumRetainedPct += partRetainedPct;
+        } else {
+            cumRetainedPct = 100;
+        }
+        
+        const passingPct = Math.max(0, 100 - cumRetainedPct);
+        const label = labelMap[size.toString()] || `${size} mm`;
+
+        const tr = document.createElement("tr");
+        tr.dataset.sieve = size;
+        
+        tr.innerHTML = `
+            <td style="text-align: left; font-weight: bold; padding: 6px 10px;">${label}</td>
+            <td style="padding: 4px 6px;">
+                <input type="number" value="${val}" min="0" step="any" class="table-input lab-active-sieve-input" style="width: 80px; text-align: center; font-weight: bold; background-color: var(--bg-panel); color: var(--text); border: 1px solid var(--border-color); border-radius: 4px; padding: 2px 4px; font-size: 0.75rem;">
+            </td>
+            <td style="padding: 6px 10px; color: var(--text-muted);">${totalWeight > 0 ? partRetainedPct.toFixed(1) + "%" : "0.0%"}</td>
+            <td style="padding: 6px 10px; color: var(--text-muted);">${totalWeight > 0 ? (size > 0 ? cumRetainedPct.toFixed(1) : "100.0") + "%" : "0.0%"}</td>
+            <td style="padding: 6px 10px; font-weight: 600; color: var(--accent);">${totalWeight > 0 ? (size > 0 ? passingPct.toFixed(1) : "0.0") + "%" : "100.0%"}</td>
+        `;
+        
+        const input = tr.querySelector(".lab-active-sieve-input");
+        input.addEventListener("input", (e) => {
+            const newVal = parseFloat(e.target.value) || 0;
+            isEditingLabSieves = true;
+            const mainRow = document.querySelector(`#tableSieves tr[data-sieve="${size}"]`);
+            if (mainRow) {
+                const mainInput = mainRow.querySelector(`.${colClass}`);
+                if (mainInput) {
+                    mainInput.value = newVal;
+                    mainInput.dispatchEvent(new Event("input"));
+                }
+            }
+            recalculateLocalActiveSieves();
+            isEditingLabSieves = false;
+        });
+
+        tbody.appendChild(tr);
+    });
+
+    recalculateLocalActiveSieves();
+}
+
+function recalculateLocalActiveSieves() {
+    const tbody = document.getElementById("tableLabActiveSievesBody");
+    if (!tbody) return;
+
+    const standard = document.getElementById("selectSieveSeries")?.value || "ASTM";
+    const isEuro = (standard === "UNE" || standard === "ISO");
+    const fmSieveList = isEuro ? 
+        [63.0, 31.5, 16.0, 8.0, 4.0, 2.0, 1.0, 0.5, 0.25, 0.125] : 
+        [75.0, 37.5, 19.0, 9.5, 4.75, 2.36, 1.18, 0.6, 0.3, 0.15];
+
+    let totalWeight = 0;
+    const rows = tbody.querySelectorAll("tr");
+    rows.forEach(tr => {
+        const input = tr.querySelector(".lab-active-sieve-input");
+        const val = input ? parseFloat(input.value) || 0 : 0;
+        totalWeight += val;
+    });
+
+    const elTotal = document.getElementById("labActiveTotalSample");
+    if (elTotal) elTotal.innerText = totalWeight.toFixed(0);
+
+    let cumRetainedPct = 0;
+    let mfSum = 0;
+
+    rows.forEach(tr => {
+        const size = parseFloat(tr.dataset.sieve);
+        const input = tr.querySelector(".lab-active-sieve-input");
+        const val = input ? parseFloat(input.value) || 0 : 0;
+        
+        const partRetainedPct = totalWeight > 0 ? (val / totalWeight) * 100 : 0;
+        if (size > 0) {
+            cumRetainedPct += partRetainedPct;
+            if (fmSieveList.includes(size)) {
+                mfSum += cumRetainedPct;
+            }
+        } else {
+            cumRetainedPct = 100;
+        }
+        
+        const passingPct = Math.max(0, 100 - cumRetainedPct);
+        
+        const cells = tr.cells;
+        if (cells.length >= 5) {
+            cells[2].innerText = totalWeight > 0 ? partRetainedPct.toFixed(1) + "%" : "0.0%";
+            cells[3].innerText = totalWeight > 0 ? (size > 0 ? cumRetainedPct.toFixed(1) : "100.0") + "%" : "0.0%";
+            cells[4].innerText = totalWeight > 0 ? (size > 0 ? passingPct.toFixed(1) : "0.0") + "%" : "100.0%";
+        }
+    });
+
+    const mf = totalWeight > 0 ? mfSum / 100 : 0.0;
+    const elMF = document.getElementById("labActiveCalculatedFM");
+    if (elMF) elMF.innerText = mf.toFixed(2);
+
+    const elClass = document.getElementById("labActiveFMClass");
+    if (elClass) {
+        if (activeLabAggregate === "arena") {
+            if (mf < 2.30) elClass.innerText = "Arena Fina";
+            else if (mf <= 3.10) elClass.innerText = "Arena Media";
+            else elClass.innerText = "Arena Gruesa";
+        } else {
+            elClass.innerText = `Árido Grueso (MF: ${mf.toFixed(2)})`;
+        }
+    }
+}
+
 let activeLabAggregate = "arena";
 
 function initAridosLab() {
@@ -6626,12 +6792,14 @@ function initAridosLab() {
 
     activeLabAggregate = selectAggregate.value;
     loadAridosLabStateToUI(activeLabAggregate);
+    renderLabActiveSieves();
 
     selectAggregate.addEventListener("change", (e) => {
         saveAridosLabStateFromUI(activeLabAggregate);
         activeLabAggregate = e.target.value;
         loadAridosLabStateToUI(activeLabAggregate);
         calculateAridosLab();
+        renderLabActiveSieves();
     });
 
     const selectAATH = document.getElementById("selectLabAggregateAATHType");
@@ -7068,45 +7236,10 @@ function calculateAridosLab() {
             }
         }
 
-        // Vincular los porcentajes pasantes calculados de la grilla principal
-        if (totalSandWeight > 0) {
-            let cumulativeRetainedGrams = 0;
-            const passingMap = {};
-            for (let i = 0; i < activeRows.length - 1; i++) {
-                const size = parseFloat(activeRows[i].dataset.sieve);
-                cumulativeRetainedGrams += sandSieveInputs[i];
-                passingMap[size] = Math.max(0, 100 - (cumulativeRetainedGrams / totalSandWeight) * 100);
-            }
-            
-            const standard = document.getElementById("selectSieveSeries")?.value || "ASTM";
-            const isEuro = (standard === "UNE" || standard === "ISO");
-            
-            const n4Size = isEuro ? 4.0 : 4.75;
-            const n8Size = isEuro ? 2.0 : 2.36;
-            const n16Size = isEuro ? 1.0 : 1.18;
-            const n30Size = isEuro ? 0.5 : 0.6;
-            const n50Size = isEuro ? 0.25 : 0.3;
-            const n100Size = isEuro ? 0.125 : 0.15;
-            
-            const getVal = (size) => passingMap[size] !== undefined ? passingMap[size].toFixed(1) : "100.0";
-            
-            if (document.getElementById("labSandPassN4")) document.getElementById("labSandPassN4").innerText = getVal(n4Size);
-            if (document.getElementById("labSandPassN8")) document.getElementById("labSandPassN8").innerText = getVal(n8Size);
-            if (document.getElementById("labSandPassN16")) document.getElementById("labSandPassN16").innerText = getVal(n16Size);
-            if (document.getElementById("labSandPassN30")) document.getElementById("labSandPassN30").innerText = getVal(n30Size);
-            if (document.getElementById("labSandPassN50")) document.getElementById("labSandPassN50").innerText = getVal(n50Size);
-            if (document.getElementById("labSandPassN100")) document.getElementById("labSandPassN100").innerText = getVal(n100Size);
-        } else {
-            if (document.getElementById("labSandPassN4")) document.getElementById("labSandPassN4").innerText = "100.0";
-            if (document.getElementById("labSandPassN8")) document.getElementById("labSandPassN8").innerText = "100.0";
-            if (document.getElementById("labSandPassN16")) document.getElementById("labSandPassN16").innerText = "100.0";
-            if (document.getElementById("labSandPassN30")) document.getElementById("labSandPassN30").innerText = "100.0";
-            if (document.getElementById("labSandPassN50")) document.getElementById("labSandPassN50").innerText = "100.0";
-            if (document.getElementById("labSandPassN100")) document.getElementById("labSandPassN100").innerText = "100.0";
+        // Sync active aggregate sieve table in the Lab tab
+        if (typeof renderLabActiveSieves === "function" && !isEditingLabSieves) {
+            renderLabActiveSieves();
         }
-        
-        if (document.getElementById("labSandCalculatedFM")) document.getElementById("labSandCalculatedFM").innerText = mfSand.toFixed(2);
-        if (document.getElementById("labSandFMClass")) document.getElementById("labSandFMClass").innerText = sandTypeLabel;
     } else {
         // MÓDULO 6: Propiedades geométricas de la grava
         const mallasTotal = parseFloat(document.getElementById("inputMallasTotal").value) || 1.0;
@@ -7363,6 +7496,9 @@ function calculateAridosLab() {
 function updateAridosLabUI() {
     loadAridosLabStateToUI(activeLabAggregate);
     calculateAridosLab();
+    if (typeof renderLabActiveSieves === "function") {
+        renderLabActiveSieves();
+    }
 }
 
 // Export function globally for simulation module and main script
