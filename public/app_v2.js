@@ -7235,11 +7235,6 @@ function calculateAridosLab() {
                 badgeMortar.classList.add("badge-success");
             }
         }
-
-        // Sync active aggregate sieve table in the Lab tab
-        if (typeof renderLabActiveSieves === "function" && !isEditingLabSieves) {
-            renderLabActiveSieves();
-        }
     } else {
         // MÓDULO 6: Propiedades geométricas de la grava
         const mallasTotal = parseFloat(document.getElementById("inputMallasTotal").value) || 1.0;
@@ -7490,6 +7485,11 @@ function calculateAridosLab() {
         } else {
             advisorContent.innerHTML = "<p style='color: var(--text-muted); margin: 0;'>✔️ No se registran alertas ni observaciones técnicas para los ensayos actuales de este árido.</p>";
         }
+    }
+
+    // Sync active aggregate sieve table in the Lab tab
+    if (typeof renderLabActiveSieves === "function" && !isEditingLabSieves) {
+        renderLabActiveSieves();
     }
 }
 
