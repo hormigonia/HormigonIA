@@ -6904,6 +6904,12 @@ function initAridosLab() {
             console.log("selectLabActiveAggregate change event completed. activeLabAggregate is now:", activeLabAggregate);
         } catch (err) {
             console.error("Error in selectLabActiveAggregate change listener:", err);
+            const msg = `Error al cambiar árido: ${err.message} (Línea: ${err.lineNumber || err.line || 'N/D'})`;
+            if (typeof showToast === "function") {
+                showToast(msg, "error", 20000);
+            } else {
+                alert(msg);
+            }
         }
     });
 
@@ -7210,10 +7216,14 @@ function calculateAridosLab() {
     const oquedad = Math.max(0, Math.min(100, ((rhoRel - rhoConj) / Math.max(0.1, rhoRel)) * 100));
     const vPasta = (oquedad / 100) * vConj;
 
-    document.getElementById("resRhoConj").innerText = rhoConj.toFixed(3);
-    document.getElementById("resRhoRel").innerText = rhoRel.toFixed(3);
-    document.getElementById("resOquedad").innerText = oquedad.toFixed(1);
-    document.getElementById("resVPasta").innerText = vPasta.toFixed(1);
+    const elRhoConj = document.getElementById("resRhoConj");
+    if (elRhoConj) elRhoConj.innerText = rhoConj.toFixed(3);
+    const elRhoRel = document.getElementById("resRhoRel");
+    if (elRhoRel) elRhoRel.innerText = rhoRel.toFixed(3);
+    const elOquedad = document.getElementById("resOquedad");
+    if (elOquedad) elOquedad.innerText = oquedad.toFixed(1);
+    const elVPasta = document.getElementById("resVPasta");
+    if (elVPasta) elVPasta.innerText = vPasta.toFixed(1);
 
     const mHumedo = parseFloat(document.getElementById("inputMhumedo").value) || 0;
     const mSecado = parseFloat(document.getElementById("inputMsecado").value) || 0;
@@ -7277,17 +7287,22 @@ function calculateAridosLab() {
     const vObra = vDesignSeco * kEnt;
     const equivMoist = rhoConj * 1000 * (humidity / 100);
 
-    document.getElementById("resSandMoisture").innerText = humidity.toFixed(2);
-    document.getElementById("resKent").innerText = kEnt.toFixed(2);
-    document.getElementById("resVObra").innerText = vObra.toFixed(1);
-    document.getElementById("resMoistEquivalent").innerText = equivMoist.toFixed(1);
+    const elSandMoisture = document.getElementById("resSandMoisture");
+    if (elSandMoisture) elSandMoisture.innerText = humidity.toFixed(2);
+    const elKent = document.getElementById("resKent");
+    if (elKent) elKent.innerText = kEnt.toFixed(2);
+    const elVObra = document.getElementById("resVObra");
+    if (elVObra) elVObra.innerText = vObra.toFixed(1);
+    const elMoistEquivalent = document.getElementById("resMoistEquivalent");
+    if (elMoistEquivalent) elMoistEquivalent.innerText = equivMoist.toFixed(1);
 
     // MÓDULO 5: Absorción de agua
     const mSss = parseFloat(document.getElementById("inputMsss").value) || 0;
     const mSecoEstufa = parseFloat(document.getElementById("inputMsecoEstufa").value) || 1.0;
     const aggregateOriginType = document.getElementById("selectAggregateOriginType").value;
     const absCoef = Math.max(0, ((mSss - mSecoEstufa) / mSecoEstufa) * 100);
-    document.getElementById("resAbsCoef").innerText = absCoef.toFixed(2);
+    const elAbsCoef = document.getElementById("resAbsCoef");
+    if (elAbsCoef) elAbsCoef.innerText = absCoef.toFixed(2);
 
     // Auto-sincronización en tiempo real con el calculador de dosificación
     if (activeLabAggregate === "arena") {
