@@ -1008,7 +1008,13 @@ const historyManager = {
                 if (state.absGrava2 !== undefined && state.absGrava2 !== null) document.getElementById("absGrava2").value = state.absGrava2;
             }
             if (state.aridosLabData) {
-                aridosLabData = JSON.parse(JSON.stringify(state.aridosLabData));
+                const restored = JSON.parse(JSON.stringify(state.aridosLabData));
+                for (const key in DEFAULT_ARIDOS_LAB_DATA) {
+                    if (!restored[key]) {
+                        restored[key] = JSON.parse(JSON.stringify(DEFAULT_ARIDOS_LAB_DATA[key]));
+                    }
+                }
+                aridosLabData = restored;
                 updateAridosLabUI();
             }
         }
@@ -6567,7 +6573,8 @@ function updatePrintCalcMemory(customName = null) {
 }
 
 // State for Laboratorio de Áridos
-let aridosLabData = {
+// State for Laboratorio de Áridos
+const DEFAULT_ARIDOS_LAB_DATA = {
     arena: {
         mRec: 3200, mLleno: 19700, vRec: 10.0,
         mSeco: 1000, vAguaIni: 500, vAguaFin: 880,
@@ -6615,8 +6622,26 @@ let aridosLabData = {
         rasMineralogy: "sano", sTotal: 0.15, so3: 0.05,
         sandDurabilityLoss: 4.5, sandMortarRatio: 98.0,
         aggregateAATHType: "triturado_granitico"
+    },
+    grava2: {
+        mRec: 3200, mLleno: 18500, vRec: 10.0,
+        mSeco: 1000, vAguaIni: 500, vAguaFin: 890,
+        vConj: 600,
+        mHumedo: 1015, mSecado: 1000, mTara: 100,
+        sandType: "media", vDesignSeco: 400,
+        laInitial: 5000, laFinal: 3800,
+        finosMuestra: 2000, finosOlla: 45, finosType: "rodado",
+        eaArcilla: 100, eaArena: 78,
+        structureType: "armado", chlorides: 0.02, sulfates: 0.12,
+        mSss: 1010, mSecoEstufa: 1000, aggregateOriginType: "natural",
+        mallasTotal: 1000, barrasPasa: 250, vGranos: 35, sumL3: 350,
+        rasMineralogy: "sano", sTotal: 0.15, so3: 0.05,
+        sandDurabilityLoss: 4.5, sandMortarRatio: 98.0,
+        aggregateAATHType: "triturado_granitico"
     }
 };
+
+let aridosLabData = JSON.parse(JSON.stringify(DEFAULT_ARIDOS_LAB_DATA));
 
 let isEditingLabSieves = false;
 
