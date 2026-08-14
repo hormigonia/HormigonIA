@@ -6646,8 +6646,12 @@ let aridosLabData = JSON.parse(JSON.stringify(DEFAULT_ARIDOS_LAB_DATA));
 let isEditingLabSieves = false;
 
 function renderLabActiveSieves() {
+    console.log("renderLabActiveSieves running. activeLabAggregate:", activeLabAggregate);
     const tbody = document.getElementById("tableLabActiveSievesBody");
-    if (!tbody) return;
+    if (!tbody) {
+        console.warn("renderLabActiveSieves: tbody not found!");
+        return;
+    }
     tbody.innerHTML = "";
 
     const standard = document.getElementById("selectSieveSeries")?.value || "ASTM";
@@ -6820,11 +6824,17 @@ function initAridosLab() {
     renderLabActiveSieves();
 
     selectAggregate.addEventListener("change", (e) => {
-        saveAridosLabStateFromUI(activeLabAggregate);
-        activeLabAggregate = e.target.value;
-        loadAridosLabStateToUI(activeLabAggregate);
-        calculateAridosLab();
-        renderLabActiveSieves();
+        console.log("selectLabActiveAggregate change event fired! Prev active aggregate:", activeLabAggregate, "New selected value:", e.target.value);
+        try {
+            saveAridosLabStateFromUI(activeLabAggregate);
+            activeLabAggregate = e.target.value;
+            loadAridosLabStateToUI(activeLabAggregate);
+            calculateAridosLab();
+            renderLabActiveSieves();
+            console.log("selectLabActiveAggregate change event completed. activeLabAggregate is now:", activeLabAggregate);
+        } catch (err) {
+            console.error("Error in selectLabActiveAggregate change listener:", err);
+        }
     });
 
     const selectAATH = document.getElementById("selectLabAggregateAATHType");
@@ -7063,7 +7073,11 @@ function updateLabMecanicaVisibility(agg) {
 }
 
 function loadAridosLabStateToUI(agg) {
-    if (!aridosLabData[agg]) return;
+    console.log("loadAridosLabStateToUI called. agg:", agg, "aridosLabData keys:", Object.keys(aridosLabData));
+    if (!aridosLabData[agg]) {
+        console.warn("loadAridosLabStateToUI: agg not found in aridosLabData:", agg);
+        return;
+    }
     const fields = {
         mRec: "inputMrec", mLleno: "inputMlleno", vRec: "inputVrec",
         mSeco: "inputMseco", vAguaIni: "inputVaguaIni", vAguaFin: "inputVaguaFin",
@@ -7109,6 +7123,7 @@ function loadAridosLabStateToUI(agg) {
 }
 
 function calculateAridosLab() {
+    console.log("calculateAridosLab running. activeLabAggregate:", activeLabAggregate);
     const mRec = parseFloat(document.getElementById("inputMrec").value) || 0;
     const mLleno = parseFloat(document.getElementById("inputMlleno").value) || 0;
     const vRec = parseFloat(document.getElementById("inputVrec").value) || 1.0;
